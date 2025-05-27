@@ -1,0 +1,9 @@
+.modalContent {
+  background-color: rgba(10, 11, 28, 0.85); // ダークで透け感ある背景
+  border-radius: 1rem;
+  padding: 2rem;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px); // 背景ぼかし
+}

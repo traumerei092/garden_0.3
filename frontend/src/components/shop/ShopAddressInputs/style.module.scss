@@ -1,0 +1,80 @@
+.createForm {
+  width: 75%;
+  background-color: rgba(53, 131, 200, 0.1);
+  border-radius: 15px;
+  padding: 50px 50px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.formRow {
+  display: flex;
+  width: 100%;
+}
+
+.formLabel {
+  width: 20%;
+  display: flex;
+  align-items: center;
+}
+
+.formRequire {
+  width: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formItem {
+  width: 70%;
+  display: flex;
+  align-items: center;
+}
+
+.formInput {
+  background: rgba(168, 168, 168, 0.1);
+
+  &:hover {
+    background: rgba(168, 168, 168, 0.2);
+  }
+
+  &:focus-within {
+    background: rgba(168, 168, 168, 0.2) !important;
+  }
+}
+
+.formInputElement {
+  color: white !important;
+}
+
+.formZip {
+  gap: 1.5rem;
+}
+
+.formZipcodeBase {
+  width: 50%;
+}
+
+.formZipcode {
+  background: rgba(168, 168, 168, 0.1);
+
+  &:hover {
+    background: rgba(168, 168, 168, 0.2);
+  }
+
+  &:focus-within {
+    background: rgba(168, 168, 168, 0.2) !important;
+  }
+}
+
+.zipSearchBtn {
+  padding: 5px 10px;
+}
+
+.createNext {
+  display: flex;
+  gap: 1.5rem;
+}

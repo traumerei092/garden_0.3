@@ -1,0 +1,31 @@
+.ratingItem {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    }
+
+.ratingLabel {
+    width: 150px;
+    font-size: 0.7rem;
+    color: #cccccc;
+    margin-right: 5px;
+}
+
+.ratingBar {
+    flex: 1;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.ratingFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #4cc9f0, #f72585);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}

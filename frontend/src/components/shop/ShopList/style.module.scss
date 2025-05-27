@@ -1,0 +1,26 @@
+.container {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  transition: margin-top 0.3s ease;
+  margin-top: 30px;
+  padding-bottom: 2em;
+  max-width: 1200px;
+
+}
+
+.link {
+  margin-top: 5rem;
+}
+
+.error {
+  padding: 20px;
+  margin: 20px;
+  background-color: #fff3f3;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  color: #d32f2f;
+  text-align: center;
+}

@@ -1,0 +1,97 @@
+.container {
+  width: 80%;
+  display: flex;
+  align-items: center;
+  transition: margin-top 0.3s ease;
+  margin-top: 90px;
+
+  height: 50px;
+}
+
+.headerLeft {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.headerCenter {
+  width: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.tabs {
+  width: 60%;
+}
+
+.tabList {
+  width: 100%;
+  background-color: rgba(53, 131, 200, 0.1);
+}
+
+.cursor {
+  background-color: rgba(0, 255, 255, 0.15);
+}
+
+.tabContent {
+  svg {
+      color: white;
+
+      &[data-state='active'] {
+        color: rgba(0, 255, 255, 1);
+      }
+  }
+}
+
+.headerRight {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 0.5rem;
+}
+
+.autocomplete {
+  min-width: 200px;
+  font-size: 10px;
+  color: white;
+  border: none;
+}
+
+.autocompleteInputWrapper {
+  background: rgba(10,11,28,1);
+  border: none;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.autocompletePopoverContent {
+  background: transparent;
+  border: none;
+}
+
+.autocompleteListboxWrapper {
+  background-color: rgba(53, 131, 200, 0.1);
+  border-radius: 10px;
+}
+
+.autocompleteItem {
+  font-size: 10px;
+  color: white;
+
+  &:hover {
+    background-color: rgba(0, 255, 255, 0.15);
+    color: rgba(0, 255, 255, 1);
+  }
+}
+
+.tooltip {
+  background-color: rgba(53, 131, 200, 0.5);
+  border-radius: 10px;
+  padding: 4px 8px;
+  color: white;
+  font-size: 0.7rem;
+}

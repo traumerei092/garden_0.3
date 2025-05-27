@@ -1,0 +1,16 @@
+.checkboxChip {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  color: rgba(220, 220, 220, 0.8);
+}
+
+.selected {
+  background-color: rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(0, 255, 255, 1);
+  color: white;
+}
+
+.font {
+  font-size: 12px;
+}

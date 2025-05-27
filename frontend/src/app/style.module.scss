@@ -1,0 +1,100 @@
+.main {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgb(10,11,28);
+  color: white;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 95%;
+  padding-top: 10em;
+}
+
+.firstView {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.backgroundImage {
+  position: absolute;
+  top: 0; // 追加
+  width: 100%;
+  height: 100vh; // 修正
+  max-height: 100vh; // 追加
+  background-image: url("/assets/picture/party.jpg");
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.overlay {
+  position: absolute;
+  top: 0; // 追加
+  width: 100%;
+  height: 100vh; // 修正
+  max-height: 100vh; // 追加
+  background-color: rgba(10, 11, 28, 0.85);
+  z-index: 2;
+}
+
+.content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.anotherStyle {
+  min-width: 300px;
+  text-align: center;
+}
+
+.firstViewUnder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4em;
+}
+
+.about {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  height: 500px;
+  width: 100%;
+
+  border: solid 1px white;
+}
+
+.aboutWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  border: solid 1px white;
+}
+
+.aboutWrapperChild {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 50%;
+
+  border: solid 1px white;
+}
+
+.loading {
+  color: rgba(0, 255, 255, 1);
+}

@@ -1,0 +1,29 @@
+.wrapper {
+  border-radius: 5em;
+  color: white;
+  height: 0.8em;
+  font-size: 0.7em;
+  padding: 10px 7px 10px 7px;
+  display: flex;
+  align-items: center;
+}
+
+.type {
+  background: rgba(0, 198, 255, 0.4);
+  border: 0.5px solid rgba(0, 198, 255, 1);
+}
+
+.layout {
+  background: rgba(235, 14, 242, 0.4);
+  border: 0.5px solid rgba(235, 14, 242, 1);
+}
+
+.option {
+  background: rgba(255, 174, 0, 0.4);
+  border: 0.5px solid rgba(255, 174, 0, 1);
+}
+
+.default {
+  background: rgba(108, 108, 108, 0.4);
+  border: 0.5px solid rgba(108, 108, 108, 1);
+}

@@ -1,0 +1,260 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 90%;
+  color: white;
+  padding: 70px 0;
+  margin: 0 auto;
+}
+
+.loadingContainer, .errorContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.detailHeader {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+}
+
+.mainContent {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 2.5%;
+  margin-bottom: 30px;
+}
+
+.shopImageContainer {
+  width: 48.75%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.shopImageWrapper {
+  width: 100%;
+  height: 500px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.shopImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.subImageWrapper {
+  width: 100%;
+  height: 110px;
+  padding: 5px 0;
+  gap: 15px;
+}
+
+.addImageButton {
+  min-width: 100px;
+  height: 100px;
+  background-color: rgba(53, 131, 200, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 8px;
+
+  &:hover {
+    background-color: rgba(53, 131, 200, 0.3);
+  }
+
+  svg {
+    color: #ffffff;
+  }
+}
+
+.thumbnailImage {
+  position: relative;
+  min-width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.subImageWrapper {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.thumbnailImage {
+  flex: 0 0 auto;
+  height: 100px;
+  width: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+.activeThumbnail {
+  border-color: #4cc9f0;
+  box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+}
+
+.shopInfoContainer {
+  width: 48.75%;
+  display: flex;
+  flex-direction: column;
+}
+
+.shopName {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  padding: 0;
+  color: white;
+  line-height: 1.2;
+}
+
+.locationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.distance {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.address {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+}
+
+.tagSection {
+  margin-bottom: 5px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.noTags {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.impressionTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 5px;
+  background-color: rgba(53, 131, 200, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.addTagButton {
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0 8px;
+  height: 30px;
+  min-width: auto;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.matchSection {
+  display: flex;
+  gap: 20px;
+}
+
+.atmosphereSection {
+  margin-bottom: 25px;
+  width: 70%;
+}
+
+.ratingBars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 8px;
+}
+
+.matchRateSection {
+  margin-bottom: 25px;
+}
+
+.actionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shopDetailsSection {
+  width: 100%;
+  background-color: rgba(20, 20, 40, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  
+  .tagSection {
+    margin-bottom: 15px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

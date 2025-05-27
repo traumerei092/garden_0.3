@@ -1,0 +1,17 @@
+.link {
+  border-radius: 5px;
+  padding: 10px 7px;
+  color: white;
+  min-width: 80px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+
+  &:hover {
+    background: rgba(0, 255, 255, 0.15);
+    color: rgba(0, 255, 255, 1);
+  }
+}
+
+

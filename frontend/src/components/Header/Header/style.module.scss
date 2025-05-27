@@ -1,0 +1,63 @@
+.headerAll {
+  width: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  position: fixed;
+}
+
+.headerWrapper {
+  width: 100%;
+  max-width: 1470px;
+  display: flex; // 追加
+  justify-content: space-between; // 追加
+  align-items: center; // 追加
+  padding: 0;
+}
+
+.headerLeft {
+  width: 20%;
+  color: white;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.headerCenter {
+  width: 60%;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerRight {
+  width: 20%;
+  color: white;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  padding: 15px;
+}
+
+.userAvatar {
+  width: 3rem;
+  cursor: pointer;
+}
+
+.dropdownMenu {
+  background: rgba(53, 131, 200, 0.1);
+}
+
+.divider {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dropdownItem {
+  &:hover {
+    background: rgba(0, 255, 255, 0.15);
+    color: rgba(0, 255, 255, 1);
+  }
+}

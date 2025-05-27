@@ -1,0 +1,21 @@
+.gradient {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  border-radius: 7px;
+  border: transparent;
+  color: rgba(0, 255, 255, 1);
+  min-width: 150px;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.circleIcon {
+  color: rgba(0, 255, 255, 1);
+}

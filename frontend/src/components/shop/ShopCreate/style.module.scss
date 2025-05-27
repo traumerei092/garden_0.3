@@ -1,0 +1,206 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  background-color: rgb(10,11,28);
+}
+
+.createTitle, .createNav {
+  width: 75%;
+  background: linear-gradient(to right, rgba(0,198,255,0.2), rgba(0235,14,242,0.2));
+  color: white;
+  margin-bottom: 30px;
+}
+
+.createTitle {
+  margin-top: 90px;
+  padding: 10px 30px;
+}
+
+.createTitleBody {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.5rem;
+
+  h1 {
+    font-size: 24px;
+    font-weight: bolder;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: bolder;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+.createNavBody {
+  display: flex;
+  align-items: center;
+}
+
+.createForm {
+  width: 75%;
+  background-color: rgba(53, 131, 200, 0.1);
+  border-radius: 15px;
+  padding: 50px 50px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+// currentStep === 0
+
+.formRow {
+  display: flex;
+  width: 100%;
+}
+
+.formLabel {
+  width: 20%;
+  display: flex;
+  align-items: center;
+}
+
+.formRequire {
+  width: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formItem {
+  width: 70%;
+  display: flex;
+  align-items: center;
+}
+
+.formInput {
+  background: rgba(168, 168, 168, 0.1);
+
+  &:hover {
+    background: rgba(168, 168, 168, 0.2);
+  }
+
+  &:focus-within {
+    background-color: rgba(168, 168, 168, 0.2) !important;
+  }
+}
+
+.formInputElement {
+  color: white !important;
+}
+
+.formCheckbox {
+  background: rgba(168, 168, 168, 0.1);
+  border-radius: 10px;
+  padding: 10px 15px;
+}
+
+.formHalf {
+  width: 50%;
+}
+
+.imageUploadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(168, 168, 168, 0.1);
+  gap: 1rem;
+  border-radius: 10px;
+  padding: 10px 15px;
+}
+
+.imageRadioGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+  justify-items: center;
+}
+
+.radioItem {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  border-radius: 10px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.selected {
+  border: 2px solid #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.3);
+}
+
+
+// currentStep === 1
+
+.confirmRow {
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.confirmLabel {
+  color: #aaa;
+  width: 40%;
+}
+
+.confirmValue {
+  color: white;
+  width: 60%;
+  word-break: break-word;
+}
+
+.confirmChip {
+  gap: 1rem;
+}
+
+
+
+.imagePreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.imagePreviewItem {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.imageThumb {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.imageFilename {
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 0.25rem;
+}
+
+.imageCaption {
+  font-size: 14px;
+  color: #eee;
+  margin-bottom: 0.25rem;
+}
+
+.createNext {
+  display: flex;
+  gap: 1.5rem;
+}

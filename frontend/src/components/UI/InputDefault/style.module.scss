@@ -1,0 +1,24 @@
+.input {
+  color: rgb(255, 255, 255);
+  max-width: 500px;
+}
+
+.customInputWrapper {
+  border-bottom: solid 1px rgb(255, 255, 255);
+
+  &:after {
+    border-bottom: solid 1px rgba(0, 255, 255, 1); // ホバー時のアンダーライン色
+  }
+}
+
+.customLabel {
+  color: rgba(255, 255, 255, 1);
+  font-size: 0.85em;
+}
+
+.customInput {
+  width: 100%;
+  color: rgb(255, 255, 255);
+  background: transparent;
+  border: none;
+}

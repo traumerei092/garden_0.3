@@ -1,0 +1,30 @@
+# Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+backend/venv/
+backend/.env
+backend/db.sqlite3
+backend/media/
+backend/static/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env
+frontend/.env.local
+frontend/build/
+frontend/.vercel
+frontend/.turbo
+frontend/coverage
+frontend/dist
+
+# General
+.DS_Store
+.env
+.env.local
+.idea/
+.vscode/
+*.swp
+*.swo
