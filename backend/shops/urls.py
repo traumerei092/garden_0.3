@@ -16,6 +16,7 @@ router.register(r'user-shop-relations', UserShopRelationViewSet, basename='user-
 router.register(r'shop-create', ShopCreateViewSet, basename='shop-create')
 router.register(r'shop-tags', ShopTagViewSet)
 router.register(r'shop-tag-reactions', ShopTagReactionViewSet)
+router.register(r'shop-images', ShopImageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

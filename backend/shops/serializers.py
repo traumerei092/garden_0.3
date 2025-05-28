@@ -63,6 +63,19 @@ class ShopSerializer(serializers.ModelSerializer):
             context=context
         ).data
 
+class ShopImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ShopImage
+        fields = ['id', 'shop', 'image', 'image_url', 'caption', 'is_icon', 'created_at']
+        read_only_fields = ['created_at']
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+
 class ShopImageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopImage

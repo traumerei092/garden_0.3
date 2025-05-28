@@ -180,7 +180,7 @@ const ShopCreate = () => {
             } catch (err) {
                 console.error('ショップオプション取得失敗:', err);
             }
-            };
+        };
 
         load();
     }, []);
@@ -364,7 +364,8 @@ const ShopCreate = () => {
                                             onFileChange={handleImageChange}
                                             onCaptionChange={handleCaptionChange}
                                             value={index.toString()}
-                                            hideIconSelect={true}
+                                            hideIconSelect={false}
+                                            isRequired={false}
                                         />
                                     ))}
                                 </RadioGroup>

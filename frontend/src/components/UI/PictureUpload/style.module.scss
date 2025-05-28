@@ -95,8 +95,11 @@
 
 .uploadButtonWrapper {
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .uploadButton {
   width: 100%;
+  max-width: 200px;
 }

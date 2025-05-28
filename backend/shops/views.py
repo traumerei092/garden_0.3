@@ -13,7 +13,8 @@ from .models import (
     BusinessHour
 )
 from .serializers import ShopCreateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, \
-    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer
+    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, \
+    ShopImageSerializer
 from .utils.geocode import get_coordinates_from_address
 
 
@@ -501,6 +502,18 @@ class ShopMessageViewSet(viewsets.ModelViewSet):
 class ShopStaffViewSet(viewsets.ModelViewSet):
     queryset = ShopStaff.objects.all()
     permission_classes = [IsAuthenticated]
+
+class ShopImageViewSet(viewsets.ModelViewSet):
+    """
+    店舗画像の管理用ViewSet
+    """
+    queryset = ShopImage.objects.all()
+    serializer_class = ShopImageSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def perform_create(self, serializer):
+        serializer.save(shop_id=self.request.data.get('shop'))
 
 # UserShopRelationViewSet
 class UserShopRelationViewSet(viewsets.ModelViewSet):

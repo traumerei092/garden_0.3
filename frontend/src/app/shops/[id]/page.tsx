@@ -329,6 +329,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                 isOpen={showShopImageModal}
                 onClose={() => setShowShopImageModal(false)}
                 onSubmit={handleAddImage}
+                shopId={params.id}
             />
           </ScrollShadow>
         </div>
