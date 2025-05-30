@@ -1,0 +1,202 @@
+.container {
+  width: 100%;
+  color: white;
+  padding: 20px 0;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 0;
+  padding-left: 10px;
+  border-left: 4px solid #4cc9f0;
+  color: white;
+}
+
+.writeReviewButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(76, 201, 240, 0.2);
+  color: #4cc9f0;
+  border: 1px solid rgba(76, 201, 240, 0.3);
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(76, 201, 240, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  svg {
+    color: #4cc9f0;
+  }
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewCard {
+  background-color: rgba(53, 131, 200, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(53, 131, 200, 0.2);
+  }
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nameAndRating {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.halfStar {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+    &:first-child {
+      clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    }
+    
+    &:last-child {
+      clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+    }
+  }
+}
+
+.ratingValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #FFD700;
+}
+
+.reviewDate {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  
+  svg {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.reviewContent {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.reviewFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.likeButton {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    
+    svg {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+  
+  svg {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.noReviews {
+  background-color: rgba(53, 131, 200, 0.1);
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .reviewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .writeReviewButton {
+    align-self: flex-end;
+  }
+}

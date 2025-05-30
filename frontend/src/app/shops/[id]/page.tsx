@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { ChevronLeft, Plus, MapPin, Star, Heart } from 'lucide-react';
+import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner, Tabs, Tab } from '@nextui-org/react'
+import { ChevronLeft, Plus, MapPin, Star, Heart, Info, MessageCircle, Wine, Divide } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
 import { Shop, ShopTag, ShopStats } from "@/types/shops";
@@ -17,6 +17,9 @@ import ShopMatchRate from '@/components/shop/ShopMatchRate';
 import ShopActionLink from '@/components/shop/ShopActionLink';
 import ShopTagModal from '@/components/shop/ShopTagModal';
 import { ShopImageModal } from '@/components/shop/ShopImageModal';
+import ShopBasicInfo from '@/components/shop/ShopBasicInfo';
+import ShopReviews from '@/components/shop/ShopReviews';
+import ShopDrinks from '@/components/shop/ShopDrinks';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
@@ -325,12 +328,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
             <button className={styles.addImageButton} onClick={() => setShowShopImageModal(true)}>
               <Plus size={24} strokeWidth={1} />
             </button>
-            <ShopImageModal
-                isOpen={showShopImageModal}
-                onClose={() => setShowShopImageModal(false)}
-                onSubmit={handleAddImage}
-                shopId={params.id}
-            />
           </ScrollShadow>
         </div>
 
@@ -348,9 +345,27 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
             </div>
           </div>
 
+          <div className={styles.matchSection}>
+            <div className={styles.matchRateSection}>
+              <ShopMatchRate rate={70} />
+            </div>
+            <div className={styles.atmosphereSection}>
+              <div className={styles.sectionTitle}>雰囲気</div>
+              <div className={styles.ratingBars}>
+                {SAMPLE_ATMOSPHERE_RATINGS.map((rating) => (
+                  <ShopRatingBar
+                    key={rating.id}
+                    label={rating.label}
+                    value={rating.value}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className={styles.tagSection}>
             <div className={styles.sectionTitle}>
-              行った人の印象
+              雰囲気・印象
               <Button
                 type='button'
                 className={styles.addTagButton}
@@ -382,24 +397,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
             </div>
           </div>
 
-          <div className={styles.matchSection}>
-            <div className={styles.matchRateSection}>
-              <ShopMatchRate rate={70} />
-            </div>
-            <div className={styles.atmosphereSection}>
-              <div className={styles.sectionTitle}>雰囲気</div>
-              <div className={styles.ratingBars}>
-                {SAMPLE_ATMOSPHERE_RATINGS.map((rating) => (
-                  <ShopRatingBar
-                    key={rating.id}
-                    label={rating.label}
-                    value={rating.value}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className={styles.actionSection}>
             <ShopActionLink label="お店からのメッセージを見る" />
             <ShopActionLink label="紹介動画" />
@@ -407,36 +404,58 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
       </div>
+
+      <Divide className={styles.divider} />
       
       <div className={styles.shopDetailsSection}>
-        <div className={styles.tagSection}>
-          <div className={styles.sectionTitle}>店舗タイプ</div>
-          <div className={styles.tagContainer}>
-            {shop.shop_types && Array.isArray(shop.shop_types) && shop.shop_types.length > 0 ?
-              renderChips(shop.shop_types.map((type: { name: string }) => type.name), 'type') :
-              <span className={styles.noTags}>登録されていません</span>
-            }
-          </div>
-        </div>
-
-        <div className={styles.tagSection}>
-          <div className={styles.sectionTitle}>レイアウト</div>
-          <div className={styles.tagContainer}>
-            {shop.shop_layouts && Array.isArray(shop.shop_layouts) && shop.shop_layouts.length > 0 ?
-              renderChips(shop.shop_layouts.map((layout: { name: string }) => layout.name), 'layout') :
-              <span className={styles.noTags}>登録されていません</span>
-            }
-          </div>
-        </div>
-
-        <div className={styles.tagSection}>
-          <div className={styles.sectionTitle}>オプション</div>
-          <div className={styles.tagContainer}>
-            {shop.shop_options && Array.isArray(shop.shop_options) && shop.shop_options.length > 0 ? 
-              renderChips(shop.shop_options.map((option: { name: string }) => option.name), 'option') : 
-              <span className={styles.noTags}>登録されていません</span>
-            }
-          </div>
+        <div className={styles.tabsContainer}>
+          <Tabs
+            aria-label="店舗詳細タブ"
+            className={styles.tabs}
+            variant="underlined"
+            classNames={{
+              tabList: styles.tabList,
+              cursor: styles.tabCursor,
+              tabContent: styles.tabContent,
+            }}
+          >
+            <Tab
+              key="basic"
+              className={styles.tab}
+              title={
+                <div className={styles.tabTitle}>
+                  <Info size={18} strokeWidth={1}/>
+                  <span>基本情報</span>
+                </div>
+              }
+            >
+              <ShopBasicInfo shop={shop} />
+            </Tab>
+            <Tab
+              key="reviews"
+              className={styles.tab}
+              title={
+                <div className={styles.tabTitle}>
+                  <MessageCircle size={18} strokeWidth={1}/>
+                  <span>口コミ</span>
+                </div>
+              }
+            >
+              <ShopReviews shop={shop} />
+            </Tab>
+            <Tab
+              key="drinks"
+              className={styles.tab}
+              title={
+                <div className={styles.tabTitle}>
+                  <Wine size={18} strokeWidth={1}/>
+                  <span>お酒メニュー</span>
+                </div>
+              }
+            >
+              <ShopDrinks shop={shop} />
+            </Tab>
+          </Tabs>
         </div>
       </div>
       
@@ -447,6 +466,14 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         shopId={shop.id}
         onTagAdded={loadShop}
         existingTags={shop.tags && Array.isArray(shop.tags) ? shop.tags.map(tag => ({ id: tag.id, value: tag.value })) : []}
+      />
+
+      {/* 画像追加モーダル */}
+      <ShopImageModal
+          isOpen={showShopImageModal}
+          onClose={() => setShowShopImageModal(false)}
+          onSubmit={handleAddImage}
+          shopId={params.id}
       />
       
       {/* ログインモーダル */}
