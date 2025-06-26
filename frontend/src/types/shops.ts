@@ -19,6 +19,12 @@ export interface ShopTag {
   };
 }
 
+// 支払方法の型定義
+export interface PaymentMethod {
+  id: number;
+  name: string;
+}
+
 // 想定されるShop型の定義（types/shops.ts）
 export interface ShopImage {
   id: number;
@@ -46,6 +52,10 @@ export interface Shop {
   latitude: number | null;
   longitude: number | null;
   tags: ShopTag[];
+  // 新しいフィールド
+  phone_number: string | null;
+  access: string | null;
+  payment_methods: PaymentMethod[];
 }
 
 export interface ShopType {
@@ -79,7 +89,11 @@ export interface ShopFormValues {
     file: File | null;
     caption: string;
     isIcon: boolean;
-  }>
+  }>;
+  // 新しいフィールド
+  phoneNumber: string;
+  access: string;
+  paymentMethods: PaymentMethod[];
 }
 
 ///* 営業日・営業時間フィールド *////

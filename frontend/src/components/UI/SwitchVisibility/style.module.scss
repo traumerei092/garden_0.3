@@ -1,0 +1,26 @@
+.switchVisibilityContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.iconVisible {
+  color: white;
+}
+
+.iconHidden {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.switchWrapper {
+  background: rgba(0, 255, 255, 1) !important;
+}
+
+.switchWrapperOff {
+  background: rgba(128, 128, 128, 0.5) !important;
+}
+
+.switchThumb {
+  background: rgba(0, 0, 0, 1) !important;
+}

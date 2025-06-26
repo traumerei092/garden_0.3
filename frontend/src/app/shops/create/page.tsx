@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './style.module.scss';
-import Header from "@/components/Header/Header";
-import ShopCreate from "@/components/shop/ShopCreate";
+import Header from "@/components/Layout/Header";
+import ShopCreate from "@/components/Shop/ShopCreate";
 
 const shopCreate = () => {
     return (

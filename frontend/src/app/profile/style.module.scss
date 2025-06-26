@@ -1,0 +1,36 @@
+.profilePageContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: #fff;
+}
+
+.profileHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0 20px 0;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.viewProfileButton {
+  font-size: 12px;
+  gap: 5px;
+}
+
+@media (max-width: 768px) {
+  .profilePageContainer {
+    padding: 30px 16px;
+  }
+  
+  .pageTitle {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+}

@@ -7,16 +7,17 @@ import RowSteps from "@/components/UI/RowSteps";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import {useRouter} from "next/navigation";
-import ShopAddressInputs from "@/components/shop/ShopAddressInputs";
-import {ShopFormValues, ShopType, ShopLayout, ShopOption, BusinessHourForm, WeekDay} from "@/types/shops";
+import ShopAddressInputs from "@/components/Shop/ShopAddressInputs";
+import {ShopFormValues, ShopType, ShopLayout, ShopOption, BusinessHourForm, WeekDay, PaymentMethod} from "@/types/shops";
 import CheckboxGroup from "@/components/UI/CheckboxGroup";
 import { fetchShopTypes } from '@/actions/shop/fetchShopTypes';
 import { fetchShopLayouts } from "@/actions/shop/fetchShopLayouts";
 import { fetchShopOptions } from "@/actions/shop/fetchShopOptions";
-import ShopBusinessHourTable from "@/components/shop/ShopBusinessHourTable";
+import { fetchPaymentMethods } from "@/actions/shop/fetchPaymentMethods";
+import ShopBusinessHourTable from "@/components/Shop/ShopBusinessHourTable";
 import ChipSelected from "@/components/UI/ChipSelected";
 import { Time } from '@internationalized/date';
-import ShopCreateModal from "@/components/shop/ShopCreateModal";
+import ShopCreateModal from "@/components/Shop/ShopCreateModal";
 import {PictureUpload} from "@/components/UI/PictureUpload";
 
 const steps = [
@@ -43,10 +44,11 @@ const ShopCreate = () => {
     const [showModal, setShowModal] = useState(false);
     const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-    // タイプ、レイアウト、オプション
+    // タイプ、レイアウト、オプション、支払方法
     const [shopTypeOptions, setShopTypeOptions] = useState<ShopType[]>([]);
     const [shopLayoutOptions, setShopLayoutOptions] = useState<ShopLayout[]>([]);
     const [shopOptionOptions, setShopOptionOptions] = useState<ShopOption[]>([]);
+    const [paymentMethodOptions, setPaymentMethodOptions] = useState<PaymentMethod[]>([]);
 
     const [formValues, setFormValues] = useState<ShopFormValues>({
         shopName: '',
@@ -61,6 +63,9 @@ const ShopCreate = () => {
         capacity: null,
         businessHours: initialBusinessHours,
         images: Array(6).fill({ file: null, caption: '', isIcon: false }),
+        phoneNumber: '',
+        access: '',
+        paymentMethods: [],
     });
 
     const validateForm = () => {
@@ -180,6 +185,13 @@ const ShopCreate = () => {
             } catch (err) {
                 console.error('ショップオプション取得失敗:', err);
             }
+
+            try {
+                const paymentMethods = await fetchPaymentMethods();
+                setPaymentMethodOptions(paymentMethods);
+            } catch (err) {
+                console.error('支払方法取得失敗:', err);
+            }
         };
 
         load();
@@ -297,6 +309,67 @@ const ShopCreate = () => {
                                         label: type.name,
                                         value: type.id,
                                     }))}
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.formRow}>
+                            <div className={styles.formLabel}>
+                                <p>支払方法</p>
+                            </div>
+                            <div className={styles.formRequire}/>
+                            <div className={`${styles.formItem} ${styles.formCheckbox}`}>
+                                <CheckboxGroup
+                                    name="paymentMethods"
+                                    values={formValues.paymentMethods.map((method) => String(method.id))}
+                                    onChange={(selected: string[]) =>
+                                        setFormValues((prev) => ({
+                                            ...prev,
+                                            paymentMethods: paymentMethodOptions.filter((method) => selected.includes(String(method.id))),
+                                        }))
+                                    }
+                                    options={paymentMethodOptions.map((method) => ({
+                                        label: method.name,
+                                        value: String(method.id),
+                                    }))}
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.formRow}>
+                            <div className={styles.formLabel}>
+                                <p>電話番号</p>
+                            </div>
+                            <div className={styles.formRequire}/>
+                            <div className={`${styles.formItem} ${styles.form}`}>
+                                <Input
+                                    label="電話番号"
+                                    type="tel"
+                                    name="phoneNumber"
+                                    value={formValues.phoneNumber}
+                                    onChange={(e) => handleInputChange(e.target.name as keyof ShopFormValues, e.target.value)}
+                                    classNames={{
+                                        base: styles.formHalf,
+                                        inputWrapper: styles.formInput,
+                                        input: styles.formInputElement,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.formRow}>
+                            <div className={styles.formLabel}>
+                                <p>アクセス</p>
+                            </div>
+                            <div className={styles.formRequire}/>
+                            <div className={`${styles.formItem} ${styles.form}`}>
+                                <Input
+                                    label="アクセス情報"
+                                    type="text"
+                                    name="access"
+                                    value={formValues.access}
+                                    onChange={(e) => handleInputChange(e.target.name as keyof ShopFormValues, e.target.value)}
+                                    classNames={{
+                                        inputWrapper: styles.formInput,
+                                        input: styles.formInputElement,
+                                    }}
                                 />
                             </div>
                         </div>
@@ -423,6 +496,22 @@ const ShopCreate = () => {
                                     <ChipSelected key={option.id}>{option.name}</ChipSelected>
                                 ))}
                             </div>
+                        </div>
+                        <div className={styles.confirmRow}>
+                            <p className={styles.confirmLabel}>支払方法</p>
+                            <div className={`${styles.confirmValue} ${styles.confirmChip}`}>
+                                {formValues.paymentMethods.map((method) => (
+                                    <ChipSelected key={method.id}>{method.name}</ChipSelected>
+                                ))}
+                            </div>
+                        </div>
+                        <div className={styles.confirmRow}>
+                            <p className={styles.confirmLabel}>電話番号</p>
+                            <p className={styles.confirmValue}>{formValues.phoneNumber || '未入力'}</p>
+                        </div>
+                        <div className={styles.confirmRow}>
+                            <p className={styles.confirmLabel}>アクセス</p>
+                            <p className={styles.confirmValue}>{formValues.access || '未入力'}</p>
                         </div>
                         <div className={styles.confirmRow}>
                             <p className={styles.confirmLabel}>席数</p>

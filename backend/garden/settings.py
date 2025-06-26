@@ -57,6 +57,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.js側
+    "http://localhost:3001",  # Next.js側（別ポート）
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [

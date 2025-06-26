@@ -10,11 +10,11 @@ from .models import (
     ShopUpdateLog, ShopUpdateReaction, ShopReview,
     ShopReviewReaction, RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
-    BusinessHour
+    BusinessHour, PaymentMethod
 )
 from .serializers import ShopCreateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, \
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, \
-    ShopImageSerializer
+    ShopImageSerializer, PaymentMethodSerializer
 from .utils.geocode import get_coordinates_from_address
 
 
@@ -22,6 +22,7 @@ class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get_queryset(self):
         return Shop.objects.all().prefetch_related(
@@ -47,7 +48,34 @@ class ShopViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         # リクエストオブジェクトをコンテキストに追加
         context['request'] = self.request
+        print(f"ShopViewSet.get_serializer_context: request={self.request}, authenticated={self.request.user.is_authenticated if hasattr(self.request, 'user') else 'No user'}")
         return context
+        
+    def retrieve(self, request, *args, **kwargs):
+        print(f"ShopViewSet.retrieve: request={request}, authenticated={request.user.is_authenticated if hasattr(request, 'user') else 'No user'}")
+        
+        # リクエストユーザーの詳細情報をログに出力
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            print(f"Authenticated user: id={request.user.id}, email={request.user.email}")
+            
+            # JWTトークンの確認
+            auth_header = request.headers.get('Authorization', '')
+            print(f"Authorization header: {auth_header}")
+            
+            # セッション情報の確認
+            print(f"Session: {request.session.items() if hasattr(request, 'session') else 'No session'}")
+        else:
+            print("User is not authenticated")
+            
+        response = super().retrieve(request, *args, **kwargs)
+        
+        # レスポンスデータのタグ情報をログに出力
+        if 'tags' in response.data:
+            print(f"Response contains {len(response.data['tags'])} tags")
+            for tag in response.data['tags']:
+                print(f"Tag in response: id={tag.get('id')}, value={tag.get('value')}, user_has_reacted={tag.get('user_has_reacted')}, is_creator={tag.get('is_creator')}")
+                
+        return response
 
 class ShopCreateViewSet(viewsets.GenericViewSet):
     """
@@ -93,6 +121,7 @@ class ShopCreateViewSet(viewsets.GenericViewSet):
                 shop_types = request.data.getlist('shop_types', [])
                 shop_layouts = request.data.getlist('shop_layouts', [])
                 shop_options = request.data.getlist('shop_options', [])
+                payment_methods = request.data.getlist('payment_methods', [])
 
                 try:
                     if shop_types:
@@ -121,6 +150,16 @@ class ShopCreateViewSet(viewsets.GenericViewSet):
                     return Response({
                         'success': False,
                         'message': f'shop_optionsの値が不正です: {e}',
+                        'error': str(e)
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                try:
+                    if payment_methods:
+                        shop.payment_methods.set([int(x) for x in payment_methods])
+                except ValueError as e:
+                    return Response({
+                        'success': False,
+                        'message': f'payment_methodsの値が不正です: {e}',
                         'error': str(e)
                     }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -240,6 +279,12 @@ class ShopOptionViewSet(viewsets.ModelViewSet):
     queryset = ShopOption.objects.all()
     serializer_class = ShopOptionSerializer
     permission_classes = [AllowAny]
+
+class PaymentMethodViewSet(viewsets.ModelViewSet):
+    queryset = PaymentMethod.objects.all()
+    serializer_class = PaymentMethodSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 class ShopUpdateLogViewSet(viewsets.ModelViewSet):
     queryset = ShopUpdateLog.objects.all()
@@ -519,12 +564,64 @@ class ShopImageViewSet(viewsets.ModelViewSet):
 class UserShopRelationViewSet(viewsets.ModelViewSet):
     serializer_class = UserShopRelationSerializer
     def get_permissions(self):
-        if self.action == 'shop_stats':
+        if self.action in ['shop_stats', 'list', 'retrieve']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
         return UserShopRelation.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def shop_stats(self, request):
+        """
+        店舗の統計情報を取得する
+        """
+        shop_id = request.query_params.get('shop_id')
+        if not shop_id:
+            return Response(
+                {"detail": "shop_id は必須です"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # 各リレーションタイプの数をカウント
+        relation_counts = UserShopRelation.objects.filter(
+            shop_id=shop_id
+        ).values('relation_type').annotate(
+            count=models.Count('id')
+        )
+        
+        # リレーションタイプの情報を取得
+        relation_types = RelationType.objects.all()
+        
+        # レスポンス用のデータを構築
+        counts = []
+        for relation_type in relation_types:
+            count = 0
+            for rel_count in relation_counts:
+                if rel_count['relation_type'] == relation_type.id:
+                    count = rel_count['count']
+                    break
+                    
+            counts.append({
+                'id': relation_type.id,
+                'name': relation_type.name,
+                'label': relation_type.label,
+                'count': count,
+                'color': relation_type.color
+            })
+        
+        # ユーザーのリレーション情報
+        user_relations = []
+        if request.user.is_authenticated:
+            user_relations = list(UserShopRelation.objects.filter(
+                user=request.user,
+                shop_id=shop_id
+            ).values_list('relation_type_id', flat=True))
+        
+        return Response({
+            'counts': counts,
+            'user_relations': user_relations
+        })
     
     @action(detail=False, methods=['post'])
     def toggle(self, request):
@@ -573,66 +670,3 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
                 {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-    @action(detail=False, methods=['get'])
-    def shop_stats(self, request):
-        """
-        特定の店舗に対する関係性の統計情報を取得
-        """
-        shop_id = request.query_params.get('shop_id')
-        if not shop_id:
-            return Response(
-                {"detail": "shop_id は必須です"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            # 各関係タイプのカウントを取得
-            relation_counts = UserShopRelation.objects.filter(
-                shop_id=shop_id
-            ).values('relation_type').annotate(
-                count=Count('id')
-            )
-
-            # カウント情報を整形
-            counts_by_type = {
-                str(count['relation_type']): count['count']
-                for count in relation_counts
-            }
-
-            # ログインユーザーの関係性を取得
-            user_relations = []
-            if request.user.is_authenticated:
-                user_relations = list(
-                    UserShopRelation.objects.filter(
-                        user=request.user,
-                        shop_id=shop_id
-                    ).values_list('relation_type_id', flat=True)
-                )
-
-            # 全ての関係タイプ情報を取得
-            relation_types = RelationType.objects.all()
-
-            response_data = {
-                "counts": [
-                    {
-                        "id": rt.id,
-                        "name": rt.name,
-                        "label": rt.label,
-                        "count": counts_by_type.get(str(rt.id), 0),
-                        "color": rt.color
-                    }
-                    for rt in relation_types
-                ],
-                "user_relations": user_relations
-            }
-
-            return Response(response_data)
-        except Exception as e:
-            return Response(
-                {"detail": f"統計情報の取得に失敗しました: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)

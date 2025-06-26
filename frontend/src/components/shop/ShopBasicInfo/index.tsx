@@ -12,14 +12,6 @@ interface ShopBasicInfoProps {
 }
 
 const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
-  // 設備・サービスのサンプルデータ
-  const facilities = [
-    { id: 1, name: 'Free WiFi' },
-    { id: 2, name: '喫煙可' },
-    { id: 3, name: 'カード決済' },
-    { id: 4, name: '貸切可' },
-  ];
-
   // ChipConditionを表示するための関数
   const renderChips = (items: any[], category: 'type' | 'layout' | 'option') => {
     return items.map((item) => (
@@ -28,6 +20,90 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
       </ChipCondition>
     ));
   };
+
+  // 営業時間を曜日ごとにグループ化する関数
+  const formatBusinessHours = () => {
+    if (!shop.business_hours || shop.business_hours.length === 0) {
+      return null;
+    }
+
+    // 曜日の表示順序を定義
+    const weekdayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'hol'];
+    
+    // 営業時間を曜日でソート
+    const sortedHours = [...shop.business_hours].sort((a, b) => {
+      return weekdayOrder.indexOf(a.weekday) - weekdayOrder.indexOf(b.weekday);
+    });
+
+    // 同じ営業時間のグループを作成
+    const hourGroups: { [key: string]: string[] } = {};
+    
+    sortedHours.forEach(hour => {
+      if (hour.is_closed) {
+        // 定休日の場合
+        const key = 'closed';
+        if (!hourGroups[key]) hourGroups[key] = [];
+        hourGroups[key].push(hour.weekday);
+      } else if (hour.open_time && hour.close_time) {
+        // 営業時間がある場合
+        const key = `${hour.open_time}-${hour.close_time}`;
+        if (!hourGroups[key]) hourGroups[key] = [];
+        hourGroups[key].push(hour.weekday);
+      }
+    });
+
+    // 曜日の表示名を取得
+    const getWeekdayDisplay = (weekday: string) => {
+      const weekdayMap: { [key: string]: string } = {
+        mon: '月', tue: '火', wed: '水', thu: '木', 
+        fri: '金', sat: '土', sun: '日', hol: '祝'
+      };
+      return weekdayMap[weekday] || weekday;
+    };
+
+    // 連続する曜日をまとめる
+    const formatWeekdays = (weekdays: string[]) => {
+      if (weekdays.length === 0) return '';
+      
+      // 曜日を表示順にソート
+      weekdays.sort((a, b) => weekdayOrder.indexOf(a) - weekdayOrder.indexOf(b));
+      
+      const result: string[] = [];
+      let start = 0;
+      
+      for (let i = 1; i <= weekdays.length; i++) {
+        // 連続していない場合またはループ終了時
+        if (i === weekdays.length || 
+            weekdayOrder.indexOf(weekdays[i]) !== weekdayOrder.indexOf(weekdays[i-1]) + 1) {
+          
+          if (start === i - 1) {
+            // 単一の曜日
+            result.push(getWeekdayDisplay(weekdays[start]));
+          } else {
+            // 連続した曜日
+            result.push(`${getWeekdayDisplay(weekdays[start])}〜${getWeekdayDisplay(weekdays[i-1])}`);
+          }
+          start = i;
+        }
+      }
+      
+      return result.join('・');
+    };
+
+    // 結果を表示用に整形
+    return Object.entries(hourGroups).map(([key, weekdays]) => {
+      const weekdayText = formatWeekdays(weekdays);
+      
+      if (key === 'closed') {
+        return { days: weekdayText, time: '定休日' };
+      } else {
+        const [open, close] = key.split('-');
+        return { days: weekdayText, time: `${open}-${close}` };
+      }
+    });
+  };
+
+  const businessHours = formatBusinessHours();
 
   return (
     <div className={styles.container}>
@@ -40,20 +116,14 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <h4>営業時間</h4>
           </div>
           <div className={styles.infoContent}>
-            {shop.business_hours ? (
+            {businessHours && businessHours.length > 0 ? (
               <div>
-                <div className={styles.businessHourRow}>
-                  <div className={styles.days}>月〜木:</div>
-                  <div className={styles.time}>18:00-02:00</div>
-                </div>
-                <div className={styles.businessHourRow}>
-                  <div className={styles.days}>金・土:</div>
-                  <div className={styles.time}>18:00-03:00</div>
-                </div>
-                <div className={styles.businessHourRow}>
-                  <div className={styles.days}>日:</div>
-                  <div className={styles.time}>18:00-00:00</div>
-                </div>
+                {businessHours.map((hour, index) => (
+                  <div key={index} className={styles.businessHourRow}>
+                    <div className={styles.days}>{hour.days}:</div>
+                    <div className={styles.time}>{hour.time}</div>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className={styles.noData}>営業時間情報がありません</p>
@@ -67,7 +137,7 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <h4>電話番号</h4>
           </div>
           <div className={styles.infoContent}>
-            <p>092-751-8888</p>
+            <p>{shop.phone_number || '情報がありません'}</p>
           </div>
         </div>
         
@@ -90,23 +160,23 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <h4>支払い方法</h4>
           </div>
           <div className={styles.infoContent}>
-            <p>
-              現金・クレジットカード<br />
-              PayPay・楽天Pay対応
-            </p>
+            {shop.payment_methods && shop.payment_methods.length > 0 ? (
+              <p>
+                {shop.payment_methods.map(method => method.name).join('・')}
+              </p>
+            ) : (
+              <p>情報がありません</p>
+            )}
           </div>
         </div>
         
         <div className={styles.infoItem}>
           <div className={styles.infoHeader}>
             <Users size={18} strokeWidth={1}/>
-            <h4>座数</h4>
+            <h4>座席数</h4>
           </div>
           <div className={styles.infoContent}>
-            <p>
-              カウンター: 8席<br />
-              テーブル: 2席（4名様）
-            </p>
+            <p>{shop.capacity ? `${shop.capacity}席` : '情報がありません'}</p>
           </div>
         </div>
         
@@ -116,10 +186,7 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <h4>アクセス</h4>
           </div>
           <div className={styles.infoContent}>
-            <p>
-              西鉄天神大牟田線<br />
-              西鉄福岡（天神）駅より徒歩5分
-            </p>
+            <p>{shop.access || '情報がありません'}</p>
           </div>
         </div>
       </div>

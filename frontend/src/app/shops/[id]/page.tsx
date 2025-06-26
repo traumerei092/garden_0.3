@@ -8,22 +8,23 @@ import { ChevronLeft, Plus, MapPin, Star, Heart, Info, MessageCircle, Wine, Divi
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
 import { Shop, ShopTag, ShopStats } from "@/types/shops";
-import Header from "@/components/Header/Header";
+import Header from "@/components/Layout/Header";
 import ChipCondition from "@/components/UI/ChipCondition";
-import ShopActionButton from '@/components/shop/ShopActionButton';
-import ShopImpressionTag from '@/components/shop/ShopImpressionTag';
-import ShopRatingBar from '@/components/shop/ShopRatingBar';
-import ShopMatchRate from '@/components/shop/ShopMatchRate';
-import ShopActionLink from '@/components/shop/ShopActionLink';
-import ShopTagModal from '@/components/shop/ShopTagModal';
-import { ShopImageModal } from '@/components/shop/ShopImageModal';
-import ShopBasicInfo from '@/components/shop/ShopBasicInfo';
-import ShopReviews from '@/components/shop/ShopReviews';
-import ShopDrinks from '@/components/shop/ShopDrinks';
+import ShopActionButton from '@/components/Shop/ShopActionButton';
+import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
+import ShopRatingBar from '@/components/Shop/ShopRatingBar';
+import ShopMatchRate from '@/components/Shop/ShopMatchRate';
+import ShopActionLink from '@/components/Shop/ShopActionLink';
+import ShopTagModal from '@/components/Shop/ShopTagModal';
+import { ShopImageModal } from '@/components/Shop/ShopImageModal';
+import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
+import ShopReviews from '@/components/Shop/ShopReviews';
+import ShopDrinks from '@/components/Shop/ShopDrinks';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
 import LinkDefault from '@/components/UI/LinkDefault';
+import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 
 // サンプルの雰囲気データ
 const SAMPLE_ATMOSPHERE_RATINGS = [
@@ -55,20 +56,40 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const loadShop = async () => {
     try {
       setLoading(true);
-      const [shopData, statsData] = await Promise.all([
-        fetchShopById(params.id),
-        fetchShopStats(params.id)
-      ]);
+      setError(null);
+      
+      // 店舗データを取得
+      const shopData = await fetchShopById(params.id);
       setShop(shopData);
-      setRelationStats(statsData);
+      
+      // デフォルトの統計データを設定
+      setRelationStats({
+        counts: [
+          { id: 1, name: 'visited', label: '行った', count: 0, color: 'primary' },
+          { id: 2, name: 'interested', label: '行きたい', count: 0, color: 'secondary' }
+        ],
+        user_relations: []
+      });
+      
+      try {
+        // 統計データを取得（失敗しても続行）
+        const statsData = await fetchShopStats(params.id);
+        setRelationStats(statsData);
+      } catch (statsErr) {
+        console.error('統計データの取得に失敗しましたが、処理を続行します:', statsErr);
+      }
       
       // 位置情報の取得を試みる
       if (shopData.latitude && shopData.longitude) {
-        await loadLocationData(shopData.latitude, shopData.longitude);
+        try {
+          await loadLocationData(shopData.latitude, shopData.longitude);
+        } catch (locErr) {
+          console.error('位置情報の取得に失敗しましたが、処理を続行します:', locErr);
+        }
       }
     } catch (err) {
+      console.error('店舗データ取得エラー:', err);
       setError('店舗情報の取得に失敗しました');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -84,8 +105,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     setIsActionLoading(true);
     try {
       await toggleShopRelation(params.id, relationTypeId);
-      const newStats = await fetchShopStats(params.id);
-      setRelationStats(newStats);
+      try {
+        const newStats = await fetchShopStats(params.id);
+        setRelationStats(newStats);
+      } catch (statsErr) {
+        console.error('統計データの更新に失敗:', statsErr);
+      }
     } catch (error) {
       console.error('リレーションの切り替えに失敗:', error);
     } finally {
@@ -125,59 +150,126 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   // デバッグ用のログ追加
   useEffect(() => {
     if (shop) {
-      console.log('Shop images:', shop.images);
+      console.log('Shop data loaded successfully:', shop);
     }
   }, [shop]);
 
   // タグに共感する
   const handleTagReaction = async (tagId: number) => {
+    console.log(`handleTagReaction called with tagId: ${tagId}`);
+    
     if (!isLoggedIn) {
+      console.log('User not logged in, showing login modal');
       setShowLoginModal(true);
       return;
     }
 
     try {
+      console.log('Processing tag reaction...');
       // タグに既に共感しているかどうかを確認
       const targetTag = shop?.tags.find(tag => tag.id === tagId);
+      console.log('Target tag:', targetTag);
       
-      if (targetTag?.user_has_reacted) {
-        // 共感を取り消す - APIエンドポイントを修正
-        // 注意: 実際のリアクションIDが必要ですが、現在のAPIレスポンスにはリアクションIDが含まれていません
-        // バックエンドでユーザーとタグIDで検索して削除する必要があります
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/by-tag/${tagId}/`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `JWT ${localStorage.getItem('access')}`
+      // 明示的にbooleanに変換して確実に比較する
+      const hasReacted = Boolean(targetTag?.user_has_reacted);
+      console.log(`User has reacted to tag ${tagId}: ${hasReacted}`);
+      
+      // ローカルでタグの状態を更新（即時フィードバック用）
+      if (shop && targetTag) {
+        // 新しい状態を計算
+        const newUserHasReacted = !hasReacted;
+        const newReactionCount = newUserHasReacted 
+          ? targetTag.reaction_count + 1 
+          : targetTag.reaction_count - 1;
+        
+        console.log(`Updating tag ${tagId} locally: user_has_reacted=${newUserHasReacted}, reaction_count=${newReactionCount}`);
+        
+        // 更新されたタグの配列を作成
+        const updatedTags = shop.tags.map(tag => {
+          if (tag.id === tagId) {
+            return {
+              ...tag,
+              user_has_reacted: newUserHasReacted,
+              reaction_count: newReactionCount >= 0 ? newReactionCount : 0
+            };
           }
+          return tag;
         });
         
-        if (!response.ok) {
-          throw new Error('共感の取り消しに失敗しました');
-        }
-      } else {
-        // 共感する
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `JWT ${localStorage.getItem('access')}`
-          },
-          body: JSON.stringify({
-            shop_tag: tagId
-          })
+        // ローカルの店舗データを更新（関数形式を使用して確実に最新の状態を反映）
+        setShop(prevShop => {
+          if (!prevShop) return null;
+          console.log('Updating shop data with new tags');
+          
+          // 更新後の状態をログに出力
+          const newShop = {...prevShop, tags: updatedTags};
+          console.log('Updated shop data:', newShop);
+          
+          return newShop;
         });
         
-        if (!response.ok) {
-          throw new Error('共感の追加に失敗しました');
-        }
+        // 更新後の状態を確認するためのタイムアウト
+        setTimeout(() => {
+          console.log('Current shop state after update:', shop);
+        }, 0);
       }
       
-      // 少し待ってから店舗情報を再取得して最新のタグ情報を表示
-      setTimeout(async () => {
+      // バックエンドへのリクエスト
+      try {
+        if (hasReacted) {
+          console.log('User already reacted, removing reaction');
+          // 共感を取り消す
+          const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/by-tag/${tagId}/`, {
+            method: 'DELETE',
+            cache: 'no-store', // キャッシュを無効化
+            headers: {
+              'Cache-Control': 'no-cache', // キャッシュを無効化
+              'Pragma': 'no-cache' // 古いブラウザ用
+            }
+          });
+          
+          console.log('Delete reaction response status:', response.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`共感の取り消しに失敗しました: ${response.status} ${errorText}`);
+          }
+        } else {
+          console.log('Adding new reaction');
+          // 共感する
+          const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/`, {
+            method: 'POST',
+            cache: 'no-store', // キャッシュを無効化
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache', // キャッシュを無効化
+              'Pragma': 'no-cache' // 古いブラウザ用
+            },
+            body: JSON.stringify({
+              shop_tag: tagId
+            })
+          });
+          
+          console.log('Add reaction response status:', response.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`共感の追加に失敗しました: ${response.status} ${errorText}`);
+          }
+        }
+        
+        console.log('Reaction processed successfully, reloading shop data');
+        // 店舗情報を再取得して最新のタグ情報を表示（キャッシュを無効化）
         await loadShop();
-      }, 500);
+      } catch (apiErr) {
+        console.error('API呼び出し中にエラーが発生しました:', apiErr);
+        // エラーが発生した場合も店舗情報を再取得
+        await loadShop();
+      }
     } catch (err) {
       console.error('タグ共感の処理中にエラーが発生しました:', err);
+      // エラーが発生した場合も店舗情報を再取得
+      await loadShop();
     }
   };
 
@@ -186,11 +278,8 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     if (!isLoggedIn) return;
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/${tagId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `JWT ${localStorage.getItem('access')}`
-        }
+      const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/${tagId}/`, {
+        method: 'DELETE'
       });
       
       if (!response.ok) {
@@ -233,10 +322,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           formData.append('caption', caption);
           formData.append('shop', params.id);
 
+          // fetchWithAuthは FormData には使えないので、通常のfetchを使用
+          const accessToken = localStorage.getItem('access');
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-images/`, {
               method: 'POST',
               headers: {
-                  'Authorization': `JWT ${localStorage.getItem('access')}`
+                  'Authorization': `JWT ${accessToken}`
               },
               body: formData
           });
@@ -251,15 +342,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           console.error('画像のアップロード中にエラーが発生しました:', error);
       }
   };
-
-  // サンプル画像配列（実際の実装では店舗の画像を使用）
-  const sampleImages = [
-    '/assets/picture/sample-restaurant-1.jpg',
-    '/assets/picture/sample-cafe-1.jpg',
-    '/assets/picture/sample-dining-1.jpg',
-    '/assets/picture/bar.jpg',
-    '/assets/picture/bar_people.jpg',
-  ];
 
   return (
     <div className={styles.container}>

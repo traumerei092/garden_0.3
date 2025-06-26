@@ -23,6 +23,8 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
         street: formValues.street,
         building: formValues.building,
         capacity: formValues.capacity,
+        phone_number: formValues.phoneNumber,
+        access: formValues.access,
     };
 
     // FormDataに追加
@@ -49,6 +51,10 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
     formValues.shopOptions.forEach(option => {
         const parsedId = parseInt(option.id, 10);
         formData.append('shop_options', String(isNaN(parsedId) ? option.id : parsedId));
+    });
+    formValues.paymentMethods.forEach(method => {
+        const parsedId = parseInt(String(method.id), 10);
+        formData.append('payment_methods', String(isNaN(parsedId) ? method.id : parsedId));
     });
 
     // 営業時間 - 個別のフィールドとして送信

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import InputDefault from "@/components/UI/InputDefault";
-import Header from "@/components/Header/Header";
+import Header from "@/components/Layout/Header";
 import { getCurrentPosition } from '@/utils/location';
 
 export default function Home() {

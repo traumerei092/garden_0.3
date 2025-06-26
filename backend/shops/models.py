@@ -43,6 +43,13 @@ class ShopDrink(models.Model):
     def __str__(self):
         return self.name
 
+# 支払方法モデル
+class PaymentMethod(models.Model):
+    name = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
+
 # 店舗モデル
 class Shop(models.Model):
 
@@ -57,6 +64,10 @@ class Shop(models.Model):
     capacity = models.IntegerField(null=True, blank=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     
+    # 新しいフィールド
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    access = models.TextField(blank=True, null=True)  # アクセス情報
+    
     # 位置情報フィールドを追加
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -64,6 +75,7 @@ class Shop(models.Model):
     shop_types = models.ManyToManyField(ShopType, blank=True)
     shop_layouts = models.ManyToManyField(ShopLayout, blank=True)
     shop_options = models.ManyToManyField(ShopOption, blank=True)
+    payment_methods = models.ManyToManyField(PaymentMethod, blank=True, related_name='shops')
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_shops"

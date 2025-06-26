@@ -85,7 +85,7 @@ const Header = () => {
                             </DropdownTrigger>
                             <DropdownMenu>
                                 <DropdownSection showDivider aria-label="Profile" className={styles.divider}>
-                                    <DropdownItem key="profile" className={styles.dropdownItem}>Profile</DropdownItem>
+                                    <DropdownItem key="profile" className={styles.dropdownItem} onPress={() => router.push('/profile')}>Profile</DropdownItem>
                                     <DropdownItem key="setting" className={styles.dropdownItem}>Setting</DropdownItem>
                                 </DropdownSection>
                                 <DropdownItem key="logout" className="text-danger" color="danger" onPress={() => setShowModal(true)}>

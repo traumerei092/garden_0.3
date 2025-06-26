@@ -5,13 +5,14 @@ import {Chip} from "@nextui-org/chip";
 
 type Props = {
     children: string;
+    styleName?: string;
 };
 
-const ChipSelected = ({ children }: Props) => {
+const ChipSelected = ({ children, styleName }: Props) => {
 
     return (
         <Chip
-            className={styles.selected}
+            className={`${styles.selected} ${styleName}`}
             radius={"sm"}
         >
             {children}

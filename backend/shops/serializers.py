@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, ShopTag, ShopTagReaction, UserShopRelation
+from .models import Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -11,12 +11,18 @@ class BusinessHourSerializer(serializers.ModelSerializer):
         model = BusinessHour
         fields = ['weekday', 'weekday_display', 'open_time', 'close_time', 'is_closed']
 
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        fields = ['id', 'name']
+
 class ShopSerializer(serializers.ModelSerializer):
     business_hours = BusinessHourSerializer(many=True, read_only=True)
     images = serializers.SerializerMethodField()
     shop_types = serializers.StringRelatedField(many=True)
     shop_layouts = serializers.StringRelatedField(many=True)
     shop_options = serializers.StringRelatedField(many=True)
+    payment_methods = PaymentMethodSerializer(many=True, read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
     tags = serializers.SerializerMethodField()
 
@@ -26,7 +32,8 @@ class ShopSerializer(serializers.ModelSerializer):
             'id', 'name', 'zip_code', 'address', 'prefecture', 'city',
             'street', 'building', 'capacity', 'shop_types',
             'shop_layouts', 'shop_options', 'business_hours',
-            'images', 'created_by', 'latitude', 'longitude', 'tags'
+            'images', 'created_by', 'latitude', 'longitude', 'tags',
+            'phone_number', 'access', 'payment_methods'
         ]
         
     def get_images(self, obj):
@@ -84,14 +91,16 @@ class ShopImageCreateSerializer(serializers.ModelSerializer):
 class ShopCreateSerializer(serializers.ModelSerializer):
     images = ShopImageCreateSerializer(many=True, required=False)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    payment_methods = serializers.PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all(), many=True, required=False)
 
     class Meta:
         model = Shop
         fields = [
             'name', 'zip_code', 'address', 'prefecture', 'city',
             'street', 'building', 'capacity', 'shop_types',
-            'shop_layouts', 'shop_options',
-            'images', 'created_by', 'latitude', 'longitude'
+            'shop_layouts', 'shop_options', 'payment_methods',
+            'images', 'created_by', 'latitude', 'longitude',
+            'phone_number', 'access'
         ]
 
     def create(self, validated_data):
@@ -99,6 +108,7 @@ class ShopCreateSerializer(serializers.ModelSerializer):
         shop_types = validated_data.pop('shop_types', [])
         shop_layouts = validated_data.pop('shop_layouts', [])
         shop_options = validated_data.pop('shop_options', [])
+        payment_methods = validated_data.pop('payment_methods', [])
         images_data = validated_data.pop('images', [])
 
         # 基本データで店舗を作成
@@ -111,6 +121,8 @@ class ShopCreateSerializer(serializers.ModelSerializer):
             shop.shop_layouts.set(shop_layouts)
         if shop_options:
             shop.shop_options.set(shop_options)
+        if payment_methods:
+            shop.payment_methods.set(payment_methods)
 
         # 画像を保存
         for image_data in images_data:
@@ -167,15 +179,57 @@ class ShopTagSerializer(serializers.ModelSerializer):
     
     def get_user_has_reacted(self, obj):
         request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return ShopTagReaction.objects.filter(shop_tag=obj, user=request.user).exists()
-        return False
+        print(f"get_user_has_reacted for tag {obj.id} (value={obj.value}): request={request is not None}")
+        
+        if not request:
+            print(f"No request in context for tag {obj.id}")
+            return False
+            
+        if not hasattr(request, 'user'):
+            print(f"Request has no user attribute for tag {obj.id}")
+            return False
+            
+        if not request.user.is_authenticated:
+            print(f"User not authenticated for tag {obj.id}")
+            return False
+            
+        # 明示的にクエリを実行して結果を取得
+        has_reacted = ShopTagReaction.objects.filter(shop_tag=obj, user=request.user).exists()
+        print(f"User {request.user.id} ({request.user.email}) has_reacted to tag {obj.id} ({obj.value}): {has_reacted}")
+        
+        # 明示的にbooleanを返す
+        result = bool(has_reacted)
+        print(f"Returning user_has_reacted={result} for tag {obj.id}")
+        return result
     
     def get_is_creator(self, obj):
         request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated and obj.created_by:
-            return obj.created_by.id == request.user.id
-        return False
+        print(f"get_is_creator for tag {obj.id} (value={obj.value}): request={request is not None}")
+        
+        if not request:
+            print(f"No request in context for tag {obj.id}")
+            return False
+            
+        if not hasattr(request, 'user'):
+            print(f"Request has no user attribute for tag {obj.id}")
+            return False
+            
+        if not request.user.is_authenticated:
+            print(f"User not authenticated for tag {obj.id}")
+            return False
+            
+        if not obj.created_by:
+            print(f"Tag {obj.id} has no created_by")
+            return False
+            
+        # 明示的に比較して結果を取得
+        is_creator = obj.created_by.id == request.user.id
+        print(f"User {request.user.id} ({request.user.email}) is_creator of tag {obj.id} ({obj.value}): {is_creator}, created_by={obj.created_by.id} ({obj.created_by.email})")
+        
+        # 明示的にbooleanを返す
+        result = bool(is_creator)
+        print(f"Returning is_creator={result} for tag {obj.id}")
+        return result
 
 class ShopTagCreateSerializer(serializers.ModelSerializer):
     class Meta:

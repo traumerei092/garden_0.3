@@ -26,7 +26,6 @@ const ChipCondition = ({ children, category }: Props) => {
     return (
         <Chip
             className={`${styles.wrapper} ${getColorClass()}`}
-            onClose={() => console.log("close")}
         >
             {children}
         </Chip>

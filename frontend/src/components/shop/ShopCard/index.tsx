@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/react";
 import styles from './style.module.scss';
 import ChipCondition from "@/components/UI/ChipCondition";
-import ShopImpressionTag from "@/components/shop/ShopImpressionTag";
+import ShopImpressionTag from "@/components/Shop/ShopImpressionTag";
 import { MapPin } from 'lucide-react';
 import { ShopImage, ShopTag } from '@/types/shops';
 

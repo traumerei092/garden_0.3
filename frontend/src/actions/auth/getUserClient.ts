@@ -28,7 +28,20 @@ export const getUserClient = async () => {
       return null;
     }
 
-    const user = await res.json();
+    const userData = await res.json();
+    
+    // UserAccountモデルに合わせてユーザー情報を整形
+    const user = {
+      id: userData.id,
+      uid: userData.uid || '',
+      email: userData.email || '',
+      name: userData.name || null,
+      avatar: userData.avatar || null,
+      introduction: userData.introduction || null,
+      gender: userData.gender || '',
+      birthdate: userData.birthdate || null
+    };
+    
     useAuthStore.getState().setUser(user); // Zustand に保存
     return user; // 呼び出し元で必要に応じて再利用できるよう返却
   } catch (error) {
