@@ -7,8 +7,14 @@ import styles from './style.module.scss';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import ChipSelected from '@/components/UI/ChipSelected';
+import { User as UserType } from '@/types/users';
 
-const DetailedProfile = () => {
+interface DetailedProfileProps {
+  userData: UserType;
+  profileOptions: any; // TODO: 型を正確に定義する
+}
+
+const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOptions }) => {
   // 公開設定の状態
   const [visibilitySettings, setVisibilitySettings] = useState({
     personality: true,
@@ -39,7 +45,7 @@ const DetailedProfile = () => {
         
         <div className={styles.progressContainer}>
           <Progress 
-            value={profileCompletion} 
+            value={profileCompletion}
             classNames={{
               base: styles.progressBase,
               indicator: styles.progressIndicator,
@@ -67,32 +73,43 @@ const DetailedProfile = () => {
           </div>
         </div>
         
-        <div className={styles.interestTags}>
-          <ChipSelected styleName={styles.interestTag}>
-            🍸カクテルバー
-          </ChipSelected>
-          <ChipSelected styleName={styles.interestTag}>
-            🍣立ち飲み屋
-          </ChipSelected>
-          <ChipSelected styleName={styles.interestTag}>
-            🎮オンラインゲーム
-          </ChipSelected>
-          <ChipSelected styleName={styles.interestTag}>
-            🎭アート
-          </ChipSelected>
-          <ChipSelected styleName={styles.interestTag}>
-            🏃ジム、ヨガ
-          </ChipSelected>
+        <div className={styles.interestCategories}>
+          {userData.interests && userData.interests.length > 0 ? (
+            (() => {
+              // 興味をカテゴリ別にグループ化
+              const groupedInterests = userData.interests.reduce((acc, interest) => {
+                const categoryName = interest.category.name;
+                if (!acc[categoryName]) {
+                  acc[categoryName] = [];
+                }
+                acc[categoryName].push(interest);
+                return acc;
+              }, {} as Record<string, typeof userData.interests>);
+
+              return Object.entries(groupedInterests).map(([categoryName, interests]) => (
+                <div key={categoryName} className={styles.interestCategory}>
+                  <h4 className={styles.categoryTitle}>{categoryName}</h4>
+                  <div className={styles.interestTags}>
+                    {interests.map((interest) => (
+                      <ChipSelected key={interest.id} styleName={styles.interestTag}>
+                        {interest.name}
+                      </ChipSelected>
+                    ))}
+                  </div>
+                </div>
+              ));
+            })()
+          ) : (
+            <div className={styles.noDataMessage}>
+              興味が設定されていません
+            </div>
+          )}
 
           <ButtonGradientWrapper anotherStyle={styles.addInterestButton} onClick={() => {}}>
             <Plus size={16} />
             興味を追加する
           </ButtonGradientWrapper>
         </div>
-        
-        <p className={styles.interestDescription}>
-          <span className={styles.infoIcon}>🎵</span> 共通の興味があると、相性の良い人を見つけやすくなります
-        </p>
       </div>
       
       {/* パーソナリティ */}
@@ -109,7 +126,9 @@ const DetailedProfile = () => {
         
         <div className={styles.personalityItem}>
           <div className={styles.personalityLabel}>血液型</div>
-          <div className={styles.personalityValue}>例: AB型</div>
+          <div className={styles.personalityValue}>
+            {userData.blood_type ? userData.blood_type.name : '未設定'}
+          </div>
           <div className={styles.personalityInfo}>
             <span className={styles.infoIcon}>💡</span>
             <span className={styles.infoText}>血液型を設定すると、相性診断が利用できます</span>
@@ -118,7 +137,9 @@ const DetailedProfile = () => {
         
         <div className={styles.personalityItem}>
           <div className={styles.personalityLabel}>MBTI</div>
-          <div className={styles.personalityValue}>例: ENFP</div>
+          <div className={styles.personalityValue}>
+            {userData.mbti ? userData.mbti.name : '未設定'}
+          </div>
           <div className={styles.personalityInfo}>
             <span className={styles.infoIcon}>💡</span>
             <span className={styles.infoText}>性格タイプを設定すると、相性の良い人を見つけやすくなります</span>
@@ -139,18 +160,10 @@ const DetailedProfile = () => {
         </div>
         
         <div className={styles.workItem}>
-          <div className={styles.workLabel}>職業</div>
-          <div className={styles.workValue}>例: エンジニア</div>
-        </div>
-        
-        <div className={styles.workItem}>
-          <div className={styles.workLabel}>業種</div>
-          <div className={styles.workValue}>例: IT・インターネット</div>
-        </div>
-        
-        <div className={styles.workItem}>
-          <div className={styles.workLabel}>役職</div>
-          <div className={styles.workValue}>例: マネージャー</div>
+          <div className={styles.workLabel}>仕事情報</div>
+          <div className={styles.workValue}>
+            {userData.work_info || '未設定'}
+          </div>
         </div>
       </div>
       
@@ -168,7 +181,11 @@ const DetailedProfile = () => {
         
         <div className={styles.lifestyleItem}>
           <div className={styles.lifestyleLabel}>好きなお酒</div>
-          <div className={styles.lifestyleValue}>例: ワイン、日本酒</div>
+          <div className={styles.lifestyleValue}>
+            {userData.alcohols && userData.alcohols.length > 0 
+              ? userData.alcohols.map(alcohol => alcohol.name).join('、') 
+              : '未設定'}
+          </div>
           <div className={styles.lifestyleInfo}>
             <span className={styles.infoIcon}>🍷</span>
             <span className={styles.infoText}>お酒の好みを設定すると、お店選びの参考になります</span>
@@ -177,12 +194,20 @@ const DetailedProfile = () => {
         
         <div className={styles.lifestyleItem}>
           <div className={styles.lifestyleLabel}>趣味</div>
-          <div className={styles.lifestyleValue}>例: 読書、映画鑑賞</div>
+          <div className={styles.lifestyleValue}>
+            {userData.hobbies && userData.hobbies.length > 0 
+              ? userData.hobbies.map(hobby => hobby.name).join('、') 
+              : '未設定'}
+          </div>
         </div>
         
         <div className={styles.lifestyleItem}>
           <div className={styles.lifestyleLabel}>運動</div>
-          <div className={styles.lifestyleValue}>例: ジム、ヨガ</div>
+          <div className={styles.lifestyleValue}>
+            {userData.exercise_habits && userData.exercise_habits.length > 0 
+              ? userData.exercise_habits.map(habit => habit.name).join('、') 
+              : '未設定'}
+          </div>
         </div>
       </div>
       
@@ -199,24 +224,17 @@ const DetailedProfile = () => {
         </div>
         
         <div className={styles.socialPreferences}>
-          <h4 className={styles.socialTitle}>交友関係で求めるもの</h4>
+          <h4 className={styles.socialTitle}>交友関係の好み</h4>
           <div className={styles.socialTags}>
-            <span className={styles.socialTag}>友達</span>
-            <span className={styles.socialTag}>恋人</span>
-            <span className={styles.socialTag}>趣味仲間</span>
-            <span className={styles.socialTag}>飲み友達</span>
-            <span className={styles.socialTag}>一緒に成長できる人</span>
-          </div>
-        </div>
-        
-        <div className={styles.socialPreferences}>
-          <h4 className={styles.socialTitle}>理想の関係</h4>
-          <div className={styles.socialTags}>
-            <span className={styles.socialTag}>お互いを尊重</span>
-            <span className={styles.socialTag}>二人に笑える</span>
-            <span className={styles.socialTag}>価値観が合う</span>
-            <span className={styles.socialTag}>刺激し合える</span>
-            <span className={styles.socialTag}>支え合える</span>
+            {userData.social_preferences && userData.social_preferences.length > 0 ? (
+              userData.social_preferences.map((pref) => (
+                <span key={pref.id} className={styles.socialTag}>{pref.name}</span>
+              ))
+            ) : (
+              <div className={styles.noDataMessage}>
+                交友関係の好みが設定されていません
+              </div>
+            )}
           </div>
         </div>
       </div>

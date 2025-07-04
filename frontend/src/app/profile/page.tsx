@@ -12,8 +12,17 @@ import styles from './style.module.scss';
 import Header from '@/components/Layout/Header';
 import LinkDefault from '@/components/UI/LinkDefault';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
+import useSWR from 'swr';
+import { User as UserType } from '@/types/users';
+import { fetchUserProfile, fetchProfileOptions } from '@/actions/profile/fetchProfile';
 
 const ProfilePage = () => {
+  const { data: userData, error: userError } = useSWR<UserType>('user-profile', fetchUserProfile);
+  const { data: profileOptions, error: optionsError } = useSWR('profile-options', fetchProfileOptions);
+
+  if (userError || optionsError) return <div>データの読み込みに失敗しました。</div>;
+  if (!userData || !profileOptions) return <div>データを読み込み中...</div>;
+
   const tabItems = [
     {
       key: 'basic',
@@ -55,7 +64,7 @@ const ProfilePage = () => {
       
       <Tabs items={tabItems} defaultActiveKey="basic">
         <BasicInfo />
-        <DetailedProfile />
+        <DetailedProfile userData={userData} profileOptions={profileOptions} />
         <VisitedShops />
         <WishlistShops />
         <Dashboard />

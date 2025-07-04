@@ -84,14 +84,103 @@ def generate_random_user_uid(sender, instance, created, **kwargs):
         instance.uid = hashids.encode(instance.id)
         instance.save()
 
-# ユーザータグ
-class UserTag(models.Model):
-    name = models.CharField(max_length=100)
-
-# ユーザーとユーザータグの紐付けテーブル
-class UserUserTag(models.Model):
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    user_tag = models.ForeignKey(UserTag, on_delete=models.CASCADE)
-
 # Create your models here.
+
+# --- Profile Models ---
+
+class BaseTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.name
+
+# --- Interest Models ---
+
+class InterestCategory(BaseTag):
+    class Meta:
+        verbose_name = "興味カテゴリ"
+        verbose_name_plural = "興味カテゴリ"
+
+class Interest(BaseTag):
+    category = models.ForeignKey(InterestCategory, on_delete=models.CASCADE, related_name='interests')
+
+    class Meta:
+        verbose_name = "興味"
+        verbose_name_plural = "興味"
+
+# --- Personality Models ---
+
+class BloodType(BaseTag):
+    class Meta:
+        verbose_name = "血液型"
+        verbose_name_plural = "血液型"
+
+class MBTI(BaseTag):
+    class Meta:
+        verbose_name = "MBTI"
+        verbose_name_plural = "MBTI"
+
+# --- Lifestyle Models ---
+
+class Alcohol(BaseTag):
+    class Meta:
+        verbose_name = "好きなお酒・ドリンク"
+        verbose_name_plural = "好きなお酒・ドリンク"
+
+class Hobby(BaseTag):
+    class Meta:
+        verbose_name = "趣味"
+        verbose_name_plural = "趣味"
+
+class ExerciseHabit(BaseTag):
+    class Meta:
+        verbose_name = "運動"
+        verbose_name_plural = "運動"
+
+# --- Social Models ---
+
+class SocialPreference(BaseTag):
+    class Meta:
+        verbose_name = "交友関係"
+        verbose_name_plural = "交友関係"
+
+
+# --- Update UserAccount Model ---
+
+UserAccount.add_to_class(
+    'work_info',
+    models.TextField("仕事情報", null=True, blank=True)
+)
+UserAccount.add_to_class(
+    'interests',
+    models.ManyToManyField(Interest, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'blood_type',
+    models.ForeignKey(BloodType, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'mbti',
+    models.ForeignKey(MBTI, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'alcohols',
+    models.ManyToManyField(Alcohol, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'hobbies',
+    models.ManyToManyField(Hobby, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'exercise_habits',
+    models.ManyToManyField(ExerciseHabit, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'social_preferences',
+    models.ManyToManyField(SocialPreference, blank=True, related_name='users')
+)
 

@@ -91,13 +91,35 @@
   background: rgba(0, 0, 0, 1) !important;
 }
 
+// 興味カテゴリ
+.interestCategories {
+  margin-bottom: 16px;
+}
+
+.interestCategory {
+  margin-bottom: 16px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.categoryTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 194, 255, 0.9);
+  margin: 0 0 8px 0;
+  border-radius: 6px;
+  display: inline-block;
+}
+
 // 興味タグ
 .interestTags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .interestTag {
@@ -107,7 +129,7 @@
   background: rgba(0, 194, 255, 0.1)!important;
   border: 1px solid rgba(0, 194, 255, 0.3)!important;
   border-radius: 30px;
-  padding: 8px 16px;
+  padding: 5px 10px;
   transition: all 0.2s ease;
 }
 
@@ -127,6 +149,7 @@
   font-size: 14px;
   padding: 8px 16px;
   border-radius: 30px;
+  max-width: 250px;
 }
 
 .interestDescription {
@@ -140,6 +163,17 @@
 
 .infoIcon {
   font-size: 16px;
+}
+
+// データがない場合のメッセージ
+.noDataMessage {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
 }
 
 // パーソナリティ項目
@@ -209,9 +243,9 @@
   background: rgba(255, 0, 229, 0.1);
   border: 1px solid rgba(255, 0, 229, 0.3);
   color: rgba(255, 255, 255, 0.9);
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   display: inline-block;
 }
 
