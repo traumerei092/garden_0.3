@@ -10,7 +10,7 @@ interface UserInfo {
   name: string | null;
   avatar: string | null;
   introduction: string | null;
-  gender: string;
+  gender: string | null;
   birthdate: string | null;
 }
 

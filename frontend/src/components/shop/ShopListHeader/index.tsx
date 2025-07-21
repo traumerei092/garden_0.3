@@ -38,7 +38,7 @@ const ShopListHeader = () => {
                         />}
                     />
                     <Tab
-                        key={"tab"}
+                        key={"grid"}
                         title={<LayoutGrid size={16} strokeWidth={1} />}
                     />
                     <Tab

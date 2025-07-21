@@ -1,0 +1,199 @@
+.modalBase {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(0, 198, 255, 0.3);
+  border-radius: 16px;
+}
+
+.modalBackdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.modalHeader {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalBody {
+  background: transparent;
+  max-height: 60vh;
+}
+
+.modalFooter {
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.closeButton {
+  color: rgba(255, 255, 255, 0.7);
+  
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.body {
+  padding: 0 1.5rem 1.5rem;
+  color: #fff;
+}
+
+.description {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.visibilitySection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.visibilityLabel {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.categoriesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.categorySection {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.categoryTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #00C2FF;
+  margin: 0 0 1rem 0;
+}
+
+.checkboxGroup {
+  width: 100%;
+}
+
+.checkboxWrapper {
+  width: 100%;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.checkboxBase {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: rgba(0, 198, 255, 0.5);
+    background: rgba(0, 198, 255, 0.1);
+  }
+  
+  &[data-selected="true"] {
+    border-color: #00C2FF;
+    background: rgba(0, 198, 255, 0.2);
+  }
+}
+
+.checkboxItemWrapper {
+  &:before {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &[data-selected="true"]:before {
+    background: linear-gradient(135deg, #00C2FF 0%, #EB0EF2 100%);
+    border-color: #00C2FF;
+  }
+}
+
+.checkboxIcon {
+  color: #fff;
+}
+
+.checkboxLabel {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+}
+
+.cancelButton {
+  color: rgba(255, 255, 255, 0.7);
+  
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #00C2FF 0%, #EB0EF2 100%);
+  color: #fff;
+  font-weight: 500;
+  
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkboxGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    padding: 1rem;
+  }
+  
+  .body {
+    padding: 0 1rem 1rem;
+  }
+  
+  .footer {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,154 @@
+.description {
+  color: #cccccc;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.visibilitySection {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.visibilityField {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.visibilityLabel {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.switchContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.switchText {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.visibilityDescription {
+  color: #888;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+// NextUI Input overrides
+.inputBase {
+  width: 100%;
+}
+
+.inputLabel {
+  font-weight: 500;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.inputWrapper {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  
+  &:focus-within {
+    border-color: rgba(102, 126, 234, 1);
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.input {
+  color: #ffffff;
+  background: transparent;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+// NextUI Select overrides
+.selectTrigger {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  
+  &:focus-within {
+    border-color: rgba(102, 126, 234, 1);
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.selectValue {
+  color: #ffffff;
+}
+
+.selectPopover {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+.selectItem {
+  color: #ffffff;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  &[data-selected="true"] {
+    background: rgba(102, 126, 234, 0.3);
+  }
+}
+
+// NextUI DatePicker overrides
+.datePickerWrapper {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  
+  &:focus-within {
+    border-color: rgba(102, 126, 234, 1);
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.datePickerPopover {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .visibilitySection {
+    padding: 1rem;
+  }
+  
+  .visibilityField {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

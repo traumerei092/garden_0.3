@@ -1,5 +1,3 @@
-'use client';
-
 import { refreshAccessToken } from '@/actions/auth/refreshToken';
 
 export const fetchWithAuth = async (
@@ -7,6 +5,12 @@ export const fetchWithAuth = async (
     init: RequestInit = {}
 ): Promise<Response> => {
   const accessToken = typeof window !== 'undefined' ? localStorage.getItem('access') : null;
+  
+  // 相対パスの場合はベースURLを追加
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  const url = typeof input === 'string' && input.startsWith('/') 
+    ? `${baseUrl}${input}` 
+    : input;
 
   const mergedInit: RequestInit = {
     ...init,
@@ -15,10 +19,10 @@ export const fetchWithAuth = async (
       'Content-Type': 'application/json',
       ...(accessToken ? { Authorization: `JWT ${accessToken}` } : {}),
     },
-    credentials: 'omit', // Cookieを送信しない
+    credentials: 'include', // Cookieを送信する
   };
 
-  let res = await fetch(input, mergedInit);
+  let res = await fetch(url, mergedInit);
 
   // アクセストークンが失効していたらリフレッシュして再試行
   if (res.status === 401) {
@@ -30,10 +34,10 @@ export const fetchWithAuth = async (
         Authorization: `JWT ${newAccessToken}`,
       };
 
-      res = await fetch(input, {
+      res = await fetch(url, {
         ...init,
         headers: retryHeaders,
-        credentials: 'omit', // Cookieを送信しない
+        credentials: 'include', // Cookieを送信する
       });
     }
   }

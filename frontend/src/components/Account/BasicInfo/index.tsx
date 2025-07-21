@@ -1,17 +1,45 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Input, Switch, Progress } from '@nextui-org/react';
-import { Eye, EyeOff, Camera, User, Mail, Lock, MapPin, Edit, Info } from 'lucide-react';
+import { Input, Button, Link, Textarea } from '@nextui-org/react';
+import { Camera, User, Mail, Lock, MapPin, Edit, Info, Pen, Eye, EyeOff } from 'lucide-react';
 import styles from './style.module.scss';
 import ButtonGradient from '@/components/UI/ButtonGradient';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
+import BasicInfoEditModal from '@/components/Account/BasicInfoEditModal';
+import PasswordChangeModal from '@/components/Account/PasswordChangeModal';
+import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
+import ImageEditModal from '@/components/Account/ImageEditModal';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getUserClient } from '@/actions/auth/getUserClient';
 
-const BasicInfo = () => {
+// UserInfo型をuseAuthStoreから取得
+interface UserInfo {
+  id: number;
+  uid: string;
+  email: string;
+  name: string | null;
+  avatar: string | null;
+  introduction: string | null;
+  gender: string | null;
+  birthdate: string | null;
+}
+
+interface BasicInfoProps {
+  onUserUpdate?: (updatedUser: any) => void;
+}
+
+const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
   // ユーザー情報をストアから取得
   const user = useAuthStore(state => state.user);
+  const setUser = useAuthStore(state => state.setUser);
+  
+  // モーダルの状態
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isIntroductionModalOpen, setIsIntroductionModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
   
   // ユーザー情報を取得
   useEffect(() => {
@@ -47,26 +75,56 @@ const BasicInfo = () => {
     if (!user) return 0;
     
     const fields = [
-      user.name,
+      user.uid,
       user.email,
-      user.avatar,
+      user.name,
       user.introduction,
       user.gender,
-      user.birthdate
+      user.birthdate,
+      user.avatar
     ];
     
-    const filledFields = fields.filter(field => field !== null && field !== '').length;
+    const filledFields = fields.filter(field => field !== null && field !== '' && field !== undefined).length;
     return Math.round((filledFields / fields.length) * 100);
   };
   
   const profileCompletion = user ? calculateProfileCompletion() : 0;
   
-  // ユーザー名を取得（uidをデフォルトとして使用）
-  const getUsername = () => {
+  // プロフィール画像のイニシャルを取得
+  const getInitials = () => {
     if (!user) return '';
-    return user.uid || '';
+    
+    if (user.name) {
+      const nameParts = user.name.split(' ');
+      if (nameParts.length >= 2) {
+        return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
+      } else {
+        return user.name.charAt(0).toUpperCase();
+      }
+    }
+    
+    return user.email.charAt(0).toUpperCase();
   };
-  
+
+  // ユーザー情報更新ハンドラー
+  const handleUserUpdate = (updatedUser: UserInfo) => {
+    setUser(updatedUser);
+  };
+
+  // 性別の表示名を取得
+  const getGenderDisplay = (gender?: string | null) => {
+    switch (gender) {
+      case 'male':
+        return '男性';
+      case 'female':
+        return '女性';
+      case 'other':
+        return 'その他';
+      default:
+        return '';
+    }
+  };
+
   // 名前を姓と名に分割
   const getNameParts = () => {
     if (!user || !user.name) return { lastName: '', firstName: '' };
@@ -84,22 +142,8 @@ const BasicInfo = () => {
       firstName: ''
     };
   };
-  
+
   const { lastName, firstName } = getNameParts();
-  
-  // プロフィール画像のイニシャルを取得
-  const getInitials = () => {
-    if (!user || !user.name) return '';
-    
-    const nameParts = user.name ? user.name.split(' ') : [];
-    if (nameParts.length >= 2) {
-      return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
-    } else if (nameParts.length === 1 && nameParts[0]) {
-      return nameParts[0].charAt(0).toUpperCase();
-    }
-    
-    return user.email.charAt(0).toUpperCase();
-  };
   
   return (
     <div className={styles.basicInfoContainer}>
@@ -111,7 +155,10 @@ const BasicInfo = () => {
             alt="ヘッダー画像"
             className={styles.headerImage}
           />
-          <button className={styles.editHeaderButton}>
+          <button 
+            className={styles.editHeaderButton}
+            onClick={() => setIsHeaderModalOpen(true)}
+          >
             <Camera size={20} />
           </button>
         </div>
@@ -125,7 +172,10 @@ const BasicInfo = () => {
                 <span className={styles.profileInitials}>{getInitials()}</span>
               )}
             </div>
-            <button className={styles.editProfileButton}>
+            <button 
+              className={styles.editProfileButton}
+              onClick={() => setIsAvatarModalOpen(true)}
+            >
               <Camera size={16} />
             </button>
           </div>
@@ -149,16 +199,50 @@ const BasicInfo = () => {
           <p className={styles.statLabel}>行きたいお店</p>
         </div>
       </div>
+
+      {/* 自己紹介 */}
+      <div className={styles.basicInfoForm}>
+        <div className={styles.introductionHeader}>
+          <h3 className={styles.formTitle}>自己紹介</h3>
+          <Link 
+            className={styles.editIntroductionLink}
+            onPress={() => setIsIntroductionModalOpen(true)}
+          >
+              <Edit size={16} strokeWidth={1} />
+              <span className={styles.editIntroduction}>編集する</span>
+          </Link>
+        </div>
+        <Textarea
+          value={user?.introduction || ''}
+          variant="bordered"
+          radius="sm"
+          classNames={{
+            base: styles.inputBase,
+            inputWrapper: styles.inputWrapper,
+            input: styles.input
+          }}
+          readOnly
+        />
+      </div>
       
       {/* 基本情報フォーム */}
       <div className={styles.basicInfoForm}>
-        <h3 className={styles.formTitle}>基本情報 <span className={styles.publicLabel}>(公開設定可能)</span></h3>
+        <div className={styles.basicInfoHeader}>
+          <h3 className={styles.formTitle}>基本情報</h3>
+          <Link 
+            className={styles.editBasicInfoLink}
+            onPress={() => setIsEditModalOpen(true)}
+          >
+            <Edit size={16} strokeWidth={1} />
+            <span className={styles.editBasicInfo}>編集する</span>
+          </Link>
+        </div>
         
         {/* ユーザー名 */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>ユーザー名</label>
           <Input
-            value={getUsername()}
+            value={user?.name || ''}
             variant="bordered"
             radius="sm"
             startContent={<User size={16} />}
@@ -175,10 +259,13 @@ const BasicInfo = () => {
         <div className={styles.formGroup}>
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>メールアドレス</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.email}
-              onValueChange={() => toggleVisibility('email')}
-            />
+            <div className={styles.visibilityIcon}>
+              {visibilitySettings.email ? (
+                <Eye size={16} className={styles.eyeIcon} />
+              ) : (
+                <EyeOff size={16} className={styles.eyeOffIcon} />
+              )}
+            </div>
           </div>
           <Input
             value={user?.email || ''}
@@ -197,94 +284,45 @@ const BasicInfo = () => {
         {/* パスワード */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel}>パスワード</label>
-          <Input
-            value="••••••••••"
-            type="password"
-            variant="bordered"
-            radius="sm"
-            startContent={<Lock size={16} />}
-            classNames={{
-              base: styles.inputBase,
-              inputWrapper: styles.inputWrapper,
-              input: styles.input
-            }}
-            readOnly
-          />
-        </div>
-        
-        {/* 氏名 */}
-        <div className={styles.formGroup}>
-          <div className={styles.formLabelWithVisibility}>
-            <label className={styles.formLabel}>氏名</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.name}
-              onValueChange={() => toggleVisibility('name')}
-            />
-          </div>
-          <div className={styles.nameInputs}>
+          <div className={styles.passwordGroup}>
             <Input
-              value={lastName}
+              value="••••••••••"
+              type="password"
               variant="bordered"
               radius="sm"
-              label="姓"
+              startContent={<Lock size={16} />}
               classNames={{
                 base: styles.inputBase,
                 inputWrapper: styles.inputWrapper,
-                input: styles.input,
-                label: styles.inputLabel
+                input: styles.input
               }}
               readOnly
             />
-            <Input
-              value={firstName}
-              variant="bordered"
-              radius="sm"
-              label="名"
-              classNames={{
-                base: styles.inputBase,
-                inputWrapper: styles.inputWrapper,
-                input: styles.input,
-                label: styles.inputLabel
-              }}
-              readOnly
-            />
+            <Button
+              size="sm"
+              variant="light"
+              onPress={() => setIsPasswordModalOpen(true)}
+              className={styles.changePasswordButton}
+            >
+              変更
+            </Button>
           </div>
-        </div>
-        
-        {/* 自己紹介 */}
-        <div className={styles.formGroup}>
-          <div className={styles.formLabelWithVisibility}>
-            <label className={styles.formLabel}>自己紹介</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.introduction}
-              onValueChange={() => toggleVisibility('introduction')}
-            />
-          </div>
-          <Input
-            value={user?.introduction || ''}
-            variant="bordered"
-            radius="sm"
-            startContent={<Info size={16} />}
-            classNames={{
-              base: styles.inputBase,
-              inputWrapper: styles.inputWrapper,
-              input: styles.input
-            }}
-            readOnly
-          />
         </div>
         
         {/* 性別 */}
         <div className={styles.formGroup}>
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>性別</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.gender}
-              onValueChange={() => toggleVisibility('gender')}
-            />
+            <div className={styles.visibilityIcon}>
+              {visibilitySettings.gender ? (
+                <Eye size={16} className={styles.eyeIcon} />
+              ) : (
+                <EyeOff size={16} className={styles.eyeOffIcon} />
+              )}
+            </div>
           </div>
           <Input
-            value={user?.gender || ''}
+            value={getGenderDisplay(user?.gender)}
             variant="bordered"
             radius="sm"
             classNames={{
@@ -300,10 +338,13 @@ const BasicInfo = () => {
         <div className={styles.formGroup}>
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>生年月日</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.birthdate}
-              onValueChange={() => toggleVisibility('birthdate')}
-            />
+            <div className={styles.visibilityIcon}>
+              {visibilitySettings.birthdate ? (
+                <Eye size={16} className={styles.eyeIcon} />
+              ) : (
+                <EyeOff size={16} className={styles.eyeOffIcon} />
+              )}
+            </div>
           </div>
           <Input
             value={user?.birthdate || ''}
@@ -322,10 +363,13 @@ const BasicInfo = () => {
         <div className={styles.formGroup}>
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>マイエリア</label>
-            <SwitchVisibility
-              isSelected={visibilitySettings.location}
-              onValueChange={() => toggleVisibility('location')}
-            />
+            <div className={styles.visibilityIcon}>
+              {visibilitySettings.location ? (
+                <Eye size={16} className={styles.eyeIcon} />
+              ) : (
+                <EyeOff size={16} className={styles.eyeOffIcon} />
+              )}
+            </div>
           </div>
           <Input
             value="東京都渋谷区渋谷1-1-1"
@@ -341,10 +385,57 @@ const BasicInfo = () => {
           />
         </div>
       </div>
-      <ButtonGradient anotherStyle={styles.editButton} onClick={() => {}}>
-        <Edit size={16} strokeWidth={1} />
-        編集する
-      </ButtonGradient>
+      
+      {/* 基本情報編集モーダル */}
+      {user && (
+        <BasicInfoEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          user={user}
+          onUpdate={handleUserUpdate}
+        />
+      )}
+
+      {/* 自己紹介編集モーダル */}
+      {user && (
+        <IntroductionEditModal
+          isOpen={isIntroductionModalOpen}
+          onClose={() => setIsIntroductionModalOpen(false)}
+          user={user}
+          onUpdate={handleUserUpdate}
+        />
+      )}
+
+      {/* パスワード変更モーダル */}
+      <PasswordChangeModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
+
+      {/* プロフィール画像編集モーダル */}
+      <ImageEditModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        type="avatar"
+        currentImage={user?.avatar}
+        onUpdate={(imageUrl) => {
+          if (user) {
+            handleUserUpdate({ ...user, avatar: imageUrl });
+          }
+        }}
+      />
+
+      {/* ヘッダー画像編集モーダル */}
+      <ImageEditModal
+        isOpen={isHeaderModalOpen}
+        onClose={() => setIsHeaderModalOpen(false)}
+        type="header"
+        currentImage="/assets/picture/beach.jpg"
+        onUpdate={(imageUrl) => {
+          // ヘッダー画像の更新処理
+          console.log('Header image updated:', imageUrl);
+        }}
+      />
     </div>
   );
 };

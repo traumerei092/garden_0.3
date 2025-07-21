@@ -1,0 +1,88 @@
+.modal {
+  @apply bg-gray-900 border border-gray-700;
+}
+
+.backdrop {
+  @apply bg-black/50 backdrop-blur-sm;
+}
+
+.header {
+  @apply border-b border-gray-700 pb-4;
+}
+
+.body {
+  @apply py-6;
+}
+
+.footer {
+  @apply border-t border-gray-700 pt-4;
+}
+
+.title {
+  @apply text-xl font-semibold text-white;
+}
+
+.uploadArea {
+  @apply flex flex-col items-center gap-6;
+}
+
+.imagePreview {
+  @apply flex flex-col items-center gap-4 w-full;
+}
+
+.imageContainer {
+  @apply relative overflow-hidden rounded-lg border-2 border-dashed border-gray-600;
+  
+  &.avatarContainer {
+    @apply w-48 h-48 rounded-full;
+  }
+  
+  &.headerContainer {
+    @apply w-full max-w-md;
+    aspect-ratio: 16/9;
+  }
+}
+
+.previewImage {
+  @apply w-full h-full object-cover;
+}
+
+.removeButton {
+  @apply absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors;
+}
+
+.aspectRatioText {
+  @apply text-sm text-gray-400;
+}
+
+.uploadPlaceholder {
+  @apply flex flex-col items-center gap-3 p-8 border-2 border-dashed border-gray-600 rounded-lg text-center;
+}
+
+.uploadIcon {
+  @apply text-gray-400;
+}
+
+.uploadText {
+  @apply text-lg font-medium text-white;
+}
+
+.uploadSubtext {
+  @apply text-sm text-gray-400;
+}
+
+.fileInput {
+  @apply hidden;
+}
+
+.uploadButton {
+  @apply inline-flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors cursor-pointer;
+}
+
+.cancelButton {
+  @apply text-gray-300 hover:text-white;
+}
+
+.saveButton {
+  @apply bg-cyan-500 hover:bg-cyan-600 text-white;
+}

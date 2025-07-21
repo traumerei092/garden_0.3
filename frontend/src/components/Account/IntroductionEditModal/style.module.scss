@@ -1,0 +1,181 @@
+.modalBase {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.modalBackdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modalHeader {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-bottom: 1px solid #333;
+  padding: 1.5rem;
+}
+
+.modalBody {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 2rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-top: 1px solid #333;
+  padding: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.closeButton {
+  color: #888;
+  background: transparent;
+  border: none;
+  min-width: auto;
+  width: 40px;
+  height: 40px;
+  
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.body {
+  color: #ffffff;
+}
+
+.description {
+  color: #cccccc;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.characterCount {
+  font-size: 0.8rem;
+  color: #888;
+  text-align: right;
+  margin-top: 0.25rem;
+  
+  &.warning {
+    color: #f59e0b;
+  }
+  
+  &.error {
+    color: #ef4444;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid #444;
+  color: #cccccc;
+  font-weight: 500;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #666;
+    color: #ffffff;
+  }
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// NextUI Textarea overrides
+.textareaBase {
+  width: 100%;
+}
+
+.textareaLabel {
+  font-weight: 500;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.textareaWrapper {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  
+  &:focus-within {
+    border-color: rgba(102, 126, 234, 1);
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.textarea {
+  color: #ffffff;
+  background: transparent;
+  min-height: 120px;
+  resize: vertical;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+@media (max-width: 768px) {
+  .modalHeader,
+  .modalBody,
+  .modalFooter {
+    padding: 1rem;
+  }
+  
+  .formContainer {
+    gap: 1rem;
+  }
+}

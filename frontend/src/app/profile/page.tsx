@@ -17,11 +17,15 @@ import { User as UserType } from '@/types/users';
 import { fetchUserProfile, fetchProfileOptions } from '@/actions/profile/fetchProfile';
 
 const ProfilePage = () => {
-  const { data: userData, error: userError } = useSWR<UserType>('user-profile', fetchUserProfile);
+  const { data: userData, error: userError, mutate: mutateUser } = useSWR<UserType>('user-profile', fetchUserProfile);
   const { data: profileOptions, error: optionsError } = useSWR('profile-options', fetchProfileOptions);
 
   if (userError || optionsError) return <div>データの読み込みに失敗しました。</div>;
   if (!userData || !profileOptions) return <div>データを読み込み中...</div>;
+
+  const handleUserUpdate = (updatedUser: UserType) => {
+    mutateUser(updatedUser, false);
+  };
 
   const tabItems = [
     {
@@ -63,8 +67,8 @@ const ProfilePage = () => {
       </div>
       
       <Tabs items={tabItems} defaultActiveKey="basic">
-        <BasicInfo />
-        <DetailedProfile userData={userData} profileOptions={profileOptions} />
+        <BasicInfo onUserUpdate={handleUserUpdate} />
+        <DetailedProfile userData={userData} profileOptions={profileOptions} onUserUpdate={handleUserUpdate} />
         <VisitedShops />
         <WishlistShops />
         <Dashboard />

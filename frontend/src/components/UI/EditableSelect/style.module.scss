@@ -1,0 +1,370 @@
+.editableSelect {
+  position: relative;
+  width: 100%;
+}
+
+.displayContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 56px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.15);
+  }
+}
+
+.displayValue {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+  
+  &.placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+  }
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(0, 255, 255, 1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: translateX(10px);
+
+  .displayContainer:hover & {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  &:hover {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 1);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.editingContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.selectBase {
+  flex: 1;
+}
+
+.selectTrigger {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 2px solid rgba(0, 255, 255, 0.5) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease !important;
+  min-height: 56px !important;
+  padding: 0 16px !important;
+
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.7) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+  }
+
+  &[data-focus="true"],
+  &[data-open="true"] {
+    border-color: rgba(0, 255, 255, 1) !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.1) !important;
+  }
+
+  &[data-invalid="true"] {
+    border-color: #FF4757 !important;
+    box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1) !important;
+  }
+}
+
+.selectValue {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+
+  &[data-placeholder="true"] {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+.selectListboxWrapper {
+  background: rgba(0, 0, 0, 0.95) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.selectListbox {
+  padding: 8px !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, 0.95) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.selectIcon {
+  color: rgba(255, 255, 255, 0.6) !important;
+  transition: transform 0.2s ease !important;
+
+  &[data-open="true"] {
+    transform: rotate(180deg) !important;
+  }
+}
+
+.selectContent {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%) !important;
+  border: 1px solid rgba(0, 194, 255, 0.4) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  z-index: 1000 !important;
+  overflow: hidden !important;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00C2FF 0%, #FF00E5 50%, #00C2FF 100%);
+    opacity: 0.8;
+  }
+}
+
+.selectViewport {
+  padding: 12px !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(0, 194, 255, 0.6) 0%, rgba(255, 0, 229, 0.6) 100%);
+    border-radius: 3px;
+    
+    &:hover {
+      background: linear-gradient(180deg, rgba(0, 194, 255, 0.8) 0%, rgba(255, 0, 229, 0.8) 100%);
+    }
+  }
+}
+
+.selectItem {
+  padding: 14px 18px !important;
+  border-radius: 12px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 4px !important;
+  position: relative !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid transparent !important;
+
+  &:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  &:hover,
+  &[data-highlighted="true"] {
+    background: linear-gradient(135deg, rgba(0, 194, 255, 0.15) 0%, rgba(255, 0, 229, 0.1) 100%) !important;
+    border-color: rgba(0, 194, 255, 0.3) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    transform: translateX(6px) scale(1.02) !important;
+    box-shadow: 
+      0 4px 20px rgba(0, 194, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  &[data-state="checked"] {
+    background: linear-gradient(135deg, rgba(0, 194, 255, 0.25) 0%, rgba(255, 0, 229, 0.15) 100%) !important;
+    border-color: rgba(0, 194, 255, 0.5) !important;
+    color: rgba(0, 194, 255, 1) !important;
+    font-weight: 600 !important;
+    box-shadow: 
+      0 0 20px rgba(0, 194, 255, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    
+    &::after {
+      content: '✓';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(0, 194, 255, 1);
+      font-weight: bold;
+      font-size: 16px;
+    }
+  }
+}
+
+.selectItemIndicator {
+  color: rgba(0, 194, 255, 1) !important;
+}
+
+.selectItemText {
+  color: inherit !important;
+}
+
+.editActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.saveButton,
+.cancelButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    transform: translateY(-2px);
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
+}
+
+.saveButton {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 1) 0%, rgb(13, 234, 234) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+    filter: brightness(1.1);
+  }
+}
+
+.cancelButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+
+// レスポンシブデザイン
+@media (max-width: 768px) {
+  .displayContainer {
+    padding: 14px 16px;
+    min-height: 52px;
+  }
+
+  .displayValue {
+    font-size: 15px;
+  }
+
+  .editButton {
+    width: 32px;
+    height: 32px;
+  }
+
+  .selectTrigger {
+    min-height: 52px !important;
+    padding: 0 14px !important;
+  }
+
+  .selectValue {
+    font-size: 15px !important;
+  }
+
+  .selectItem {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+
+  .saveButton,
+  .cancelButton {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+// アニメーション
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.editingContainer {
+  animation: fadeInUp 0.3s ease;
+}
+
+// フォーカス状態の改善
+.selectTrigger:focus-within {
+  border-color: rgba(0, 255, 255, 1) !important;
+  box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.15) !important;
+}
+
+// ドロップダウンアニメーション
+.selectContent {
+  animation: fadeInUp 0.2s ease;
+}

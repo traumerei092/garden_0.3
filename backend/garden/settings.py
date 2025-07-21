@@ -64,7 +64,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'Authorization',
 ]
 
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 
 # WSGI経由でAuthorizationヘッダーを正しく渡すための設定（特にローカルで重要）
 os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = "true"

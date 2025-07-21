@@ -89,7 +89,7 @@ def generate_random_user_uid(sender, instance, created, **kwargs):
 # --- Profile Models ---
 
 class BaseTag(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -101,6 +101,8 @@ class BaseTag(models.Model):
 # --- Interest Models ---
 
 class InterestCategory(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "興味カテゴリ"
         verbose_name_plural = "興味カテゴリ"
@@ -111,15 +113,20 @@ class Interest(BaseTag):
     class Meta:
         verbose_name = "興味"
         verbose_name_plural = "興味"
+        unique_together = ['name', 'category']
 
 # --- Personality Models ---
 
 class BloodType(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "血液型"
         verbose_name_plural = "血液型"
 
 class MBTI(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "MBTI"
         verbose_name_plural = "MBTI"
@@ -127,23 +134,92 @@ class MBTI(BaseTag):
 # --- Lifestyle Models ---
 
 class Alcohol(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "好きなお酒・ドリンク"
         verbose_name_plural = "好きなお酒・ドリンク"
 
+class AlcoholCategory(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
+    class Meta:
+        verbose_name = "お酒のジャンル"
+        verbose_name_plural = "お酒のジャンル"
+
+class AlcoholBrand(BaseTag):
+    category = models.ForeignKey(AlcoholCategory, on_delete=models.CASCADE, related_name='brands')
+
+    class Meta:
+        verbose_name = "お酒の銘柄"
+        verbose_name_plural = "お酒の銘柄"
+        unique_together = ['name', 'category']
+
+class DrinkStyle(BaseTag):
+    category = models.ForeignKey(AlcoholCategory, on_delete=models.CASCADE, related_name='drink_styles')
+
+    class Meta:
+        verbose_name = "カクテル・飲み方"
+        verbose_name_plural = "カクテル・飲み方"
+        unique_together = ['name', 'category']
+
 class Hobby(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "趣味"
         verbose_name_plural = "趣味"
 
 class ExerciseHabit(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "運動"
         verbose_name_plural = "運動"
 
+class ExerciseFrequency(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "運動頻度"
+        verbose_name_plural = "運動頻度"
+        ordering = ['order']
+
+class DietaryPreference(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = "食事制限・好み"
+        verbose_name_plural = "食事制限・好み"
+
+class BudgetRange(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    min_price = models.IntegerField(null=True, blank=True)
+    max_price = models.IntegerField(null=True, blank=True)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "希望予算"
+        verbose_name_plural = "希望予算"
+        ordering = ['order']
+
+class VisitPurpose(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "利用目的"
+        verbose_name_plural = "利用目的"
+        ordering = ['order']
+
 # --- Social Models ---
 
 class SocialPreference(BaseTag):
+    name = models.CharField(max_length=100, unique=True)
+    
     class Meta:
         verbose_name = "交友関係"
         verbose_name_plural = "交友関係"
@@ -154,6 +230,34 @@ class SocialPreference(BaseTag):
 UserAccount.add_to_class(
     'work_info',
     models.TextField("仕事情報", null=True, blank=True)
+)
+UserAccount.add_to_class(
+    'occupation',
+    models.CharField("職業", max_length=100, blank=True, null=True)
+)
+UserAccount.add_to_class(
+    'industry',
+    models.CharField("業種", max_length=100, blank=True, null=True)
+)
+UserAccount.add_to_class(
+    'position',
+    models.CharField("役職", max_length=100, blank=True, null=True)
+)
+UserAccount.add_to_class(
+    'exercise_frequency',
+    models.ForeignKey(ExerciseFrequency, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'dietary_preference',
+    models.ForeignKey(DietaryPreference, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'budget_range',
+    models.ForeignKey(BudgetRange, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'visit_purposes',
+    models.ManyToManyField(VisitPurpose, blank=True, related_name='users')
 )
 UserAccount.add_to_class(
     'interests',
@@ -172,6 +276,18 @@ UserAccount.add_to_class(
     models.ManyToManyField(Alcohol, blank=True, related_name='users')
 )
 UserAccount.add_to_class(
+    'alcohol_categories',
+    models.ManyToManyField(AlcoholCategory, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'alcohol_brands',
+    models.ManyToManyField(AlcoholBrand, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
+    'drink_styles',
+    models.ManyToManyField(DrinkStyle, blank=True, related_name='users')
+)
+UserAccount.add_to_class(
     'hobbies',
     models.ManyToManyField(Hobby, blank=True, related_name='users')
 )
@@ -184,3 +300,25 @@ UserAccount.add_to_class(
     models.ManyToManyField(SocialPreference, blank=True, related_name='users')
 )
 
+# --- Atmosphere Preference Models ---
+
+class UserAtmospherePreference(models.Model):
+    """
+    ユーザーが設定した雰囲気の「好み」を指標ごとに保存する中間テーブル
+    """
+    user_profile = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='atmosphere_preferences')
+    # 下の行は、shopsアプリのAtmosphereIndicatorモデルを参照します。
+    # 実際のコードでは、_上のコメントアウトを削除して有効にしてください。
+    indicator = models.ForeignKey('shops.AtmosphereIndicator', on_delete=models.CASCADE)
+    score = models.IntegerField(
+        "好みのスコア",
+        help_text="-2から+2の範囲で設定"
+    )
+    
+    class Meta:
+        unique_together = ('user_profile', 'indicator')
+        verbose_name = "ユーザー雰囲気好み"
+        verbose_name_plural = "ユーザー雰囲気好み"
+
+    def __str__(self):
+        return f"{self.user_profile.name} - {self.indicator.name}: {self.score}"

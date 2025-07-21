@@ -279,3 +279,44 @@ class ShopStaff(models.Model):
     role = models.CharField(max_length=100)
     message = models.TextField(blank=True)
     image = models.ImageField(upload_to='staff_photos/', null=True, blank=True)
+
+##############################################
+# 雰囲気マッピングの指標
+##############################################
+class AtmosphereIndicator(models.Model):
+    """
+    雰囲気マッピングの指標を管理するマスターモデル
+    例：「会話のスタイル」「お店の活気」など
+    """
+    name = models.CharField("指標名", max_length=100, unique=True)
+    description_left = models.CharField("左端の表現", max_length=100, help_text="スコア-2の表現 例：静かに過ごす")
+    description_right = models.CharField("右端の表現", max_length=100, help_text="スコア+2の表現 例：会話を楽しむ")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+##############################################
+# 店舗の雰囲気評価（ユーザーからの評価を集計）
+##############################################
+class ShopAtmosphereRating(models.Model):
+    """
+    店舗の雰囲気評価（ユーザーからの評価を集計）
+    """
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='atmosphere_ratings')
+    indicator = models.ForeignKey(AtmosphereIndicator, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    score = models.IntegerField(
+        "評価スコア",
+        help_text="-2から+2の範囲で評価"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('shop', 'indicator', 'user')
+        verbose_name = "店舗雰囲気評価"
+        verbose_name_plural = "店舗雰囲気評価"
+
+    def __str__(self):
+        return f"{self.shop.name} - {self.indicator.name}: {self.score}"
