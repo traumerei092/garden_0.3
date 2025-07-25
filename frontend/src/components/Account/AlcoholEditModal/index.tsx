@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Tabs, Tab } from '@nextui-org/react';
 import { Eye } from 'lucide-react';
 import styles from './style.module.scss';
 import Modal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
+import CustomTabs from '@/components/UI/CustomTabs';
 import { User as UserType, ProfileOptions, AlcoholCategory, AlcoholBrand, DrinkStyle } from '@/types/users';
 import { updateAlcoholCategories } from '@/actions/profile/updateAlcoholCategories';
 import { updateAlcoholBrands } from '@/actions/profile/updateAlcoholBrands';
@@ -48,7 +48,7 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
   // 選択されたカテゴリに基づいて銘柄とスタイルをフィルタリング
   const getFilteredBrands = () => {
     if (selectedCategories.length === 0) return profileOptions.alcohol_brands;
-    return profileOptions.alcohol_brands.filter(brand => 
+    return profileOptions.alcohol_brands.filter(brand =>
       selectedCategories.includes(String(brand.category.id))
     );
   };
@@ -102,81 +102,86 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
         </div>
       </div>
       <div className={styles.modalContent}>
-        {/* NextUI Tabsコンポーネント */}
-        <Tabs
+        <CustomTabs
           selectedKey={activeTab}
-          onSelectionChange={(key) => setActiveTab(String(key))}
-          classNames={{
-            tabList: styles.tabList,
-            cursor: styles.tabCursor,
-            tab: styles.tab,
-            tabContent: styles.tabContent,
-            panel: styles.tabPanel
-          }}
-        >
-          <Tab key="categories" title="お酒のジャンル">
-            <div className={styles.categorySection}>
-              <p className={styles.sectionDescription}>
-                好きなお酒のジャンルを選択してください（複数選択可）
-              </p>
-              <CustomCheckboxGroup
-                name="alcohol_categories"
-                values={selectedCategories}
-                onChange={setSelectedCategories}
-                options={profileOptions.alcohol_categories.map(category => ({
-                  label: category.name,
-                  value: String(category.id)
-                }))}
-              />
-            </div>
-          </Tab>
-
-          <Tab key="brands" title="銘柄">
-            <div className={styles.brandSection}>
-              <p className={styles.sectionDescription}>
-                好きな銘柄を選択してください（複数選択可）
-              </p>
-              {selectedCategories.length === 0 ? (
-                <div className={styles.noSelectionMessage}>
-                  まずお酒のジャンルを選択してください
+          onSelectionChange={setActiveTab}
+          variant="bordered"
+          size="md"
+          items={[
+            {
+              key: "categories",
+              title: "お酒のジャンル",
+              content: (
+                <div className={styles.categorySection}>
+                  <p className={styles.sectionDescription}>
+                    好きなお酒のジャンルを選択してください（複数選択可）
+                  </p>
+                  <CustomCheckboxGroup
+                    name="alcohol_categories"
+                    values={selectedCategories}
+                    onChange={setSelectedCategories}
+                    options={profileOptions.alcohol_categories.map(category => ({
+                      label: category.name,
+                      value: String(category.id)
+                    }))}
+                  />
                 </div>
-              ) : (
-                <CustomCheckboxGroup
-                  name="alcohol_brands"
-                  values={selectedBrands}
-                  onChange={setSelectedBrands}
-                  options={getFilteredBrands().map(brand => ({
-                    label: brand.name,
-                    value: String(brand.id)
-                  }))}
-                />
-              )}
-            </div>
-          </Tab>
-
-          <Tab key="styles" title="飲み方・カクテル">
-            <div className={styles.styleSection}>
-              <p className={styles.sectionDescription}>
-                好きな飲み方やカクテルを選択してください（複数選択可）
-              </p>
-              {selectedCategories.length === 0 ? (
-                <div className={styles.noSelectionMessage}>
-                  まずお酒のジャンルを選択してください
+              )
+            },
+            {
+              key: "brands",
+              title: "銘柄",
+              content: (
+                <div className={styles.brandSection}>
+                  <p className={styles.sectionDescription}>
+                    好きな銘柄を選択してください（複数選択可）
+                  </p>
+                  {selectedCategories.length === 0 ? (
+                    <div className={styles.noSelectionMessage}>
+                      まずお酒のジャンルを選択してください
+                    </div>
+                  ) : (
+                    <CustomCheckboxGroup
+                      name="alcohol_brands"
+                      values={selectedBrands}
+                      onChange={setSelectedBrands}
+                      options={getFilteredBrands().map(brand => ({
+                        label: brand.name,
+                        value: String(brand.id)
+                      }))}
+                    />
+                  )}
                 </div>
-              ) : (
-                <CustomCheckboxGroup
-                  name="drink_styles"
-                  values={selectedDrinkStyles}
-                  onChange={setSelectedDrinkStyles}
-                  options={getFilteredDrinkStyles().map(style => ({
-                    label: style.name,
-                    value: String(style.id)
-                  }))}
-                />
-              )}
-            </div>
-          </Tab>
-        </Tabs>
+              )
+            },
+            {
+              key: "styles",
+              title: "飲み方・カクテル",
+              content: (
+                <div className={styles.styleSection}>
+                  <p className={styles.sectionDescription}>
+                    好きな飲み方やカクテルを選択してください（複数選択可）
+                  </p>
+                  {selectedCategories.length === 0 ? (
+                    <div className={styles.noSelectionMessage}>
+                      まずお酒のジャンルを選択してください
+                    </div>
+                  ) : (
+                    <CustomCheckboxGroup
+                      name="drink_styles"
+                      values={selectedDrinkStyles}
+                      onChange={setSelectedDrinkStyles}
+                      options={getFilteredDrinkStyles().map(style => ({
+                        label: style.name,
+                        value: String(style.id)
+                      }))}
+                    />
+                  )}
+                </div>
+              )
+            }
+          ]}
+        />
       </div>
 
       <ModalButtons

@@ -1,52 +1,81 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Switch, Button } from '@nextui-org/react';
-import { Eye, EyeOff, MapPin, Plus } from 'lucide-react';
+import { Eye, EyeOff, MapPin, Plus, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import styles from './style.module.scss';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
+import ShopGridCard from '@/components/Shop/ShopGridCard';
+import LoadingSpinner from '@/components/UI/LoadingSpinner';
+import { fetchVisitedShops, UserShop } from '@/actions/shop/fetchUserShops';
 
 const VisitedShops = () => {
-  // 公開設定の状態
+  const router = useRouter();
   const [isPublic, setIsPublic] = useState(true);
-  
-  // サンプルデータ
-  const visitedShops = [
-    {
-      id: 1,
-      name: 'Bar Lupin',
-      area: '銀座',
-      tags: ['カクテルバー', '立ち飲み屋', 'フードあり'],
-      layouts: ['カウンター', 'テーブル席'],
-      options: ['フードあり'],
-      image: '/assets/picture/bar.jpg'
-    },
-    {
-      id: 2,
-      name: '鮨 次郎',
-      area: '築地',
-      tags: ['寿司屋', 'カウンター', '高級'],
-      layouts: ['カウンター'],
-      options: [],
-      image: '/assets/picture/sample-restaurant-1.jpg'
-    },
-    {
-      id: 3,
-      name: 'The SG Club',
-      area: '六本木',
-      tags: ['クラブ', 'ハイテーブル', 'フードあり'],
-      layouts: ['カウンター', 'ハイテーブル', 'オープンテラス'],
-      options: ['フードあり'],
-      image: '/assets/picture/bar_people.jpg'
-    }
-  ];
+  const [shops, setShops] = useState<UserShop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadVisitedShops = async () => {
+      try {
+        setLoading(true);
+        const visitedShops = await fetchVisitedShops();
+        setShops(visitedShops);
+      } catch (err) {
+        console.error('Error loading visited shops:', err);
+        setError('行った店舗の読み込みに失敗しました');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVisitedShops();
+  }, []);
+
+  const handleViewAll = () => {
+    router.push('/visited');
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()} className={styles.retryButton}>
+          再試行
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.visitedShopsContainer}>
       <div className={styles.headerSection}>
-        <h2 className={styles.sectionTitle}>行ったお店</h2>
-        <p className={styles.sectionDescription}>あなたが訪れたお店を管理できます</p>
+        <div className={styles.titleRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>行ったお店</h2>
+            <p className={styles.sectionDescription}>
+              あなたが訪れた{shops.length}件のお店
+            </p>
+          </div>
+          
+          {shops.length > 0 && (
+            <button onClick={handleViewAll} className={styles.viewAllButton}>
+              <ExternalLink size={16} />
+              すべて見る
+            </button>
+          )}
+        </div>
         
         <div className={styles.controlsRow}>
           <div className={styles.visibilityControl}>
@@ -57,68 +86,36 @@ const VisitedShops = () => {
             />
           </div>
           
-          <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={() => {}}>
+          <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={() => router.push('/shops')}>
             <Plus size={16} />
-            お店を追加
+            お店を探す
           </ButtonGradientWrapper>
         </div>
       </div>
       
       <div className={styles.shopsGrid}>
-        {visitedShops.map(shop => (
-          <div key={shop.id} className={styles.shopCard}>
-            <div className={styles.shopImageContainer}>
-              <img src={shop.image} alt={shop.name} className={styles.shopImage} />
-              <div className={styles.shopFavorite}>
-                <span className={styles.starIcon}>★</span>
-              </div>
-            </div>
-            
-            <div className={styles.shopInfo}>
-              <h3 className={styles.shopName}>{shop.name}</h3>
-              <p className={styles.shopArea}>
-                <MapPin size={14} />
-                {shop.area}
-              </p>
-              
-              <div className={styles.shopTags}>
-                {shop.tags.slice(0, 3).map((tag, index) => (
-                  <span key={index} className={styles.tag}>{tag}</span>
-                ))}
-              </div>
-              
-              <div className={styles.shopLayouts}>
-                <h4>レイアウト</h4>
-                <div className={styles.layoutTags}>
-                  {shop.layouts.map((layout, index) => (
-                    <span key={index} className={styles.layoutTag}>{layout}</span>
-                  ))}
-                </div>
-              </div>
-              
-              {shop.options.length > 0 && (
-                <div className={styles.shopOptions}>
-                  <h4>オプション</h4>
-                  <div className={styles.optionTags}>
-                    {shop.options.map((option, index) => (
-                      <span key={index} className={styles.optionTag}>{option}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+        {shops.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>🏪</div>
+            <h3>まだ行った店舗がありません</h3>
+            <p>気になる店舗を見つけて「行った」ボタンを押してみましょう</p>
+            <ButtonGradientWrapper anotherStyle={styles.exploreButton} onClick={() => router.push('/shops')}>
+              店舗を探す
+            </ButtonGradientWrapper>
           </div>
-        ))}
-        
-        <div className={styles.addShopCard}>
-          <div className={styles.addShopContent}>
-            <div className={styles.addIconContainer}>
-              <Plus size={32} />
-            </div>
-            <h3>新しいお店を追加</h3>
-            <p>行ったお店を追加して、プロフィールを充実させましょう</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            {shops.slice(0, 6).map((shop) => (
+              <ShopGridCard
+                key={shop.id}
+                id={shop.id}
+                name={shop.name}
+                area={shop.area}
+                imageUrl={shop.image_url}
+              />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

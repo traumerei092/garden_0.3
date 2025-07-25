@@ -52,10 +52,10 @@ const Header = () => {
                 {user ? (
                     <>
                         <NavbarItem>
-                            <LinkDefault href={"/"} styleName={"link"}>My Favorite</LinkDefault>
+                            <LinkDefault href={"/visited"} styleName={"link"}>My Favorite</LinkDefault>
                         </NavbarItem>
                         <NavbarItem>
-                            <LinkDefault href={"/"} styleName={"link"}>Interested</LinkDefault>
+                            <LinkDefault href={"/wishlist"} styleName={"link"}>Interested</LinkDefault>
                         </NavbarItem>
                         <NavbarItem>
                             <LinkDefault href={"/"} styleName={"link"}>Browsing</LinkDefault>

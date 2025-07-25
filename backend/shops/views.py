@@ -564,7 +564,7 @@ class ShopImageViewSet(viewsets.ModelViewSet):
 class UserShopRelationViewSet(viewsets.ModelViewSet):
     serializer_class = UserShopRelationSerializer
     def get_permissions(self):
-        if self.action in ['shop_stats', 'list', 'retrieve']:
+        if self.action in ['shop_stats', 'list', 'retrieve', 'visited_shops', 'wishlist_shops']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -665,6 +665,114 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
                     "data": serializer.data
                 })
 
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['get'])
+    def visited_shops(self, request):
+        """
+        ユーザーが行った店舗一覧を取得
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # "visited" タイプのRelationTypeを取得
+            visited_relation_type = RelationType.objects.filter(name='visited').first()
+            if not visited_relation_type:
+                return Response({"shops": []})
+            
+            # ユーザーが行った店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=visited_relation_type
+            ).select_related('shop').prefetch_related(
+                'shop__images',
+                'shop__shop_types',
+                'shop__shop_layouts',
+                'shop__shop_options'
+            ).order_by('-created_at')
+            
+            shops_data = []
+            for relation in relations:
+                shop = relation.shop
+                # アイコン画像を取得
+                icon_image = shop.images.filter(is_icon=True).first()
+                if not icon_image:
+                    icon_image = shop.images.first()
+                
+                shops_data.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
+                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
+                    'visited_at': relation.created_at
+                })
+            
+            return Response({"shops": shops_data})
+            
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['get'])
+    def wishlist_shops(self, request):
+        """
+        ユーザーが行きたい店舗一覧を取得
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # "interested" タイプのRelationTypeを取得
+            wishlist_relation_type = RelationType.objects.filter(name='interested').first()
+            if not wishlist_relation_type:
+                return Response({"shops": []})
+            
+            # ユーザーが行きたい店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=wishlist_relation_type
+            ).select_related('shop').prefetch_related(
+                'shop__images',
+                'shop__shop_types',
+                'shop__shop_layouts',
+                'shop__shop_options'
+            ).order_by('-created_at')
+            
+            shops_data = []
+            for relation in relations:
+                shop = relation.shop
+                # アイコン画像を取得
+                icon_image = shop.images.filter(is_icon=True).first()
+                if not icon_image:
+                    icon_image = shop.images.first()
+                
+                shops_data.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
+                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
+                    'added_at': relation.created_at
+                })
+            
+            return Response({"shops": shops_data})
+            
         except Exception as e:
             return Response(
                 {"detail": str(e)},

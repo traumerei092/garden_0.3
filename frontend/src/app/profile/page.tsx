@@ -1,12 +1,10 @@
 'use client'
 
 import React from 'react';
-import { User, FileText, MapPin, Heart, LayoutDashboard, View } from 'lucide-react';
+import { User, FileText, LayoutDashboard, View } from 'lucide-react';
 import Tabs from '@/components/UI/Tabs';
 import BasicInfo from '@/components/Account/BasicInfo';
 import DetailedProfile from '@/components/Account/DetailedProfile';
-import VisitedShops from '@/components/Account/VisitedShops';
-import WishlistShops from '@/components/Account/WishlistShops';
 import Dashboard from '@/components/Account/Dashboard';
 import styles from './style.module.scss';
 import Header from '@/components/Layout/Header';
@@ -39,16 +37,6 @@ const ProfilePage = () => {
       icon: <FileText size={18} strokeWidth={1} />
     },
     {
-      key: 'visited',
-      label: '行った',
-      icon: <MapPin size={18} strokeWidth={1} />
-    },
-    {
-      key: 'wishlist',
-      label: '行きたい',
-      icon: <Heart size={18} strokeWidth={1} />
-    },
-    {
       key: 'dashboard',
       label: 'Myダッシュボード',
       icon: <LayoutDashboard size={18} strokeWidth={1} />
@@ -69,8 +57,6 @@ const ProfilePage = () => {
       <Tabs items={tabItems} defaultActiveKey="basic">
         <BasicInfo onUserUpdate={handleUserUpdate} />
         <DetailedProfile userData={userData} profileOptions={profileOptions} onUserUpdate={handleUserUpdate} />
-        <VisitedShops />
-        <WishlistShops />
         <Dashboard />
       </Tabs>
     </div>

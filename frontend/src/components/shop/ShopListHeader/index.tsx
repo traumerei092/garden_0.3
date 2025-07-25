@@ -1,9 +1,10 @@
 'use client';
 
 import styles from './style.module.scss';
-import {Autocomplete, AutocompleteItem, Tabs, Tab, Tooltip} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, Tooltip} from "@nextui-org/react";
 import { HousePlus, AlignJustify, LayoutGrid, MapPinned } from 'lucide-react';
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
+import CustomTabs from "@/components/UI/CustomTabs";
 import {useRouter} from "next/navigation";
 import {useAuthStore} from "@/store/useAuthStore";
 
@@ -16,36 +17,33 @@ const ShopListHeader = () => {
             router.push(targetUrl); // ショップ詳細ページへ遷移
     };
 
+    const tabItems = [
+        {
+            key: "list",
+            title: <AlignJustify size={16} strokeWidth={1} />
+        },
+        {
+            key: "grid", 
+            title: <LayoutGrid size={16} strokeWidth={1} />
+        },
+        {
+            key: "map",
+            title: <MapPinned size={16} strokeWidth={1} />
+        }
+    ];
+
     return (
         <div className={styles.container}>
             <div className={styles.headerLeft}>
                 123,456 件
             </div>
             <div className={styles.headerCenter}>
-                <Tabs
+                <CustomTabs
+                    items={tabItems}
+                    variant="solid"
+                    size="md"
                     className={styles.tabs}
-                    classNames={{
-                        tabList: styles.tabList,
-                        cursor: styles.cursor,
-                        tabContent: styles.tabContent,
-                    }}
-                >
-                    <Tab
-                        key={"list"}
-                        title={<AlignJustify
-                            size={16} strokeWidth={1}
-                            className={styles.tabIcon}
-                        />}
-                    />
-                    <Tab
-                        key={"grid"}
-                        title={<LayoutGrid size={16} strokeWidth={1} />}
-                    />
-                    <Tab
-                        key={"map"}
-                        title={<MapPinned size={16} strokeWidth={1} />}
-                    />
-                </Tabs>
+                />
             </div>
             <div className={styles.headerRight}>
                 <Autocomplete

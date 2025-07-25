@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner, Tabs, Tab } from '@nextui-org/react'
+import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
 import { ChevronLeft, Plus, MapPin, Star, Heart, Info, MessageCircle, Wine, Divide } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
@@ -20,6 +20,7 @@ import { ShopImageModal } from '@/components/Shop/ShopImageModal';
 import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
 import ShopReviews from '@/components/Shop/ShopReviews';
 import ShopDrinks from '@/components/Shop/ShopDrinks';
+import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
@@ -491,53 +492,43 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       
       <div className={styles.shopDetailsSection}>
         <div className={styles.tabsContainer}>
-          <Tabs
-            aria-label="店舗詳細タブ"
-            className={styles.tabs}
+          <CustomTabs
             variant="underlined"
-            classNames={{
-              tabList: styles.tabList,
-              cursor: styles.tabCursor,
-              tabContent: styles.tabContent,
-            }}
-          >
-            <Tab
-              key="basic"
-              className={styles.tab}
-              title={
-                <div className={styles.tabTitle}>
-                  <Info size={18} strokeWidth={1}/>
-                  <span>基本情報</span>
-                </div>
+            size="md"
+            className={styles.tabs}
+            items={[
+              {
+                key: "basic",
+                title: (
+                  <div className={styles.tabTitle}>
+                    <Info size={18} strokeWidth={1}/>
+                    <span>基本情報</span>
+                  </div>
+                ),
+                content: <ShopBasicInfo shop={shop} />
+              },
+              {
+                key: "reviews",
+                title: (
+                  <div className={styles.tabTitle}>
+                    <MessageCircle size={18} strokeWidth={1}/>
+                    <span>口コミ</span>
+                  </div>
+                ),
+                content: <ShopReviews shop={shop} />
+              },
+              {
+                key: "drinks",
+                title: (
+                  <div className={styles.tabTitle}>
+                    <Wine size={18} strokeWidth={1}/>
+                    <span>お酒メニュー</span>
+                  </div>
+                ),
+                content: <ShopDrinks shop={shop} />
               }
-            >
-              <ShopBasicInfo shop={shop} />
-            </Tab>
-            <Tab
-              key="reviews"
-              className={styles.tab}
-              title={
-                <div className={styles.tabTitle}>
-                  <MessageCircle size={18} strokeWidth={1}/>
-                  <span>口コミ</span>
-                </div>
-              }
-            >
-              <ShopReviews shop={shop} />
-            </Tab>
-            <Tab
-              key="drinks"
-              className={styles.tab}
-              title={
-                <div className={styles.tabTitle}>
-                  <Wine size={18} strokeWidth={1}/>
-                  <span>お酒メニュー</span>
-                </div>
-              }
-            >
-              <ShopDrinks shop={shop} />
-            </Tab>
-          </Tabs>
+            ]}
+          />
         </div>
       </div>
       
