@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { ChevronLeft, Plus, MapPin, Star, Heart, Info, MessageCircle, Wine, Divide } from 'lucide-react';
+import { ChevronLeft, Plus, MapPin, MapPinPlusInside, Heart, Info, MessageCircle, Wine, Divide, DoorOpen, DoorClosed } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
-import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
+import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
 import { Shop, ShopTag, ShopStats } from "@/types/shops";
 import Header from "@/components/Layout/Header";
 import ChipCondition from "@/components/UI/ChipCondition";
@@ -26,6 +26,9 @@ import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
 import LinkDefault from '@/components/UI/LinkDefault';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import ShopEditModal from '@/components/Shop/ShopEditModal';
+import ShopHistoryModal from '@/components/Shop/ShopHistoryModal';
+import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 
 // サンプルの雰囲気データ
 const SAMPLE_ATMOSPHERE_RATINGS = [
@@ -157,127 +160,74 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
   // タグに共感する
   const handleTagReaction = async (tagId: number) => {
-    console.log(`handleTagReaction called with tagId: ${tagId}`);
-    
     if (!isLoggedIn) {
-      console.log('User not logged in, showing login modal');
       setShowLoginModal(true);
       return;
     }
 
+    const originalTags = shop?.tags;
+    if (!shop || !originalTags) return;
+
+    const targetTag = originalTags.find(tag => tag.id === tagId);
+    if (!targetTag) return;
+
+    // 自分が共感済みで、共感数が1の場合、削除フローに移行
+    if (targetTag.user_has_reacted && targetTag.reaction_count === 1) {
+      if (window.confirm('このタグを削除しますか？')) {
+        await handleTagDelete(tagId);
+      }
+      return;
+    }
+
+    // 通常の共感・共感取り消し処理（楽観的更新）
+    const updatedTags = originalTags.map(tag => {
+      if (tag.id === tagId) {
+        const newUserHasReacted = !tag.user_has_reacted;
+        const newReactionCount = newUserHasReacted
+          ? tag.reaction_count + 1
+          : tag.reaction_count - 1;
+        return {
+          ...tag,
+          user_has_reacted: newUserHasReacted,
+          reaction_count: newReactionCount >= 0 ? newReactionCount : 0,
+        };
+      }
+      return tag;
+    });
+
+    setShop(prevShop => {
+      if (!prevShop) return null;
+      return { ...prevShop, tags: updatedTags };
+    });
+
+    // バックエンドと同期
     try {
-      console.log('Processing tag reaction...');
-      // タグに既に共感しているかどうかを確認
-      const targetTag = shop?.tags.find(tag => tag.id === tagId);
-      console.log('Target tag:', targetTag);
-      
-      // 明示的にbooleanに変換して確実に比較する
-      const hasReacted = Boolean(targetTag?.user_has_reacted);
-      console.log(`User has reacted to tag ${tagId}: ${hasReacted}`);
-      
-      // ローカルでタグの状態を更新（即時フィードバック用）
-      if (shop && targetTag) {
-        // 新しい状態を計算
-        const newUserHasReacted = !hasReacted;
-        const newReactionCount = newUserHasReacted 
-          ? targetTag.reaction_count + 1 
-          : targetTag.reaction_count - 1;
-        
-        console.log(`Updating tag ${tagId} locally: user_has_reacted=${newUserHasReacted}, reaction_count=${newReactionCount}`);
-        
-        // 更新されたタグの配列を作成
-        const updatedTags = shop.tags.map(tag => {
-          if (tag.id === tagId) {
-            return {
-              ...tag,
-              user_has_reacted: newUserHasReacted,
-              reaction_count: newReactionCount >= 0 ? newReactionCount : 0
-            };
-          }
-          return tag;
-        });
-        
-        // ローカルの店舗データを更新（関数形式を使用して確実に最新の状態を反映）
-        setShop(prevShop => {
-          if (!prevShop) return null;
-          console.log('Updating shop data with new tags');
-          
-          // 更新後の状態をログに出力
-          const newShop = {...prevShop, tags: updatedTags};
-          console.log('Updated shop data:', newShop);
-          
-          return newShop;
-        });
-        
-        // 更新後の状態を確認するためのタイムアウト
-        setTimeout(() => {
-          console.log('Current shop state after update:', shop);
-        }, 0);
-      }
-      
-      // バックエンドへのリクエスト
-      try {
-        if (hasReacted) {
-          console.log('User already reacted, removing reaction');
-          // 共感を取り消す
-          const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/by-tag/${tagId}/`, {
-            method: 'DELETE',
-            cache: 'no-store', // キャッシュを無効化
-            headers: {
-              'Cache-Control': 'no-cache', // キャッシュを無効化
-              'Pragma': 'no-cache' // 古いブラウザ用
-            }
-          });
-          
-          console.log('Delete reaction response status:', response.status);
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error(`共感の取り消しに失敗しました: ${response.status} ${errorText}`);
-          }
-        } else {
-          console.log('Adding new reaction');
-          // 共感する
-          const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/`, {
-            method: 'POST',
-            cache: 'no-store', // キャッシュを無効化
-            headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-cache', // キャッシュを無効化
-              'Pragma': 'no-cache' // 古いブラウザ用
-            },
-            body: JSON.stringify({
-              shop_tag: tagId
-            })
-          });
-          
-          console.log('Add reaction response status:', response.status);
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error(`共感の追加に失敗しました: ${response.status} ${errorText}`);
-          }
-        }
-        
-        console.log('Reaction processed successfully, reloading shop data');
-        // 店舗情報を再取得して最新のタグ情報を表示（キャッシュを無効化）
-        await loadShop();
-      } catch (apiErr) {
-        console.error('API呼び出し中にエラーが発生しました:', apiErr);
-        // エラーが発生した場合も店舗情報を再取得
-        await loadShop();
-      }
+      await toggleTagReaction(tagId);
     } catch (err) {
-      console.error('タグ共感の処理中にエラーが発生しました:', err);
-      // エラーが発生した場合も店舗情報を再取得
-      await loadShop();
+      console.error('タグ共感のAPI連携に失敗しました:', err);
+      // エラー時は元の状態に戻す
+      setShop(prevShop => {
+        if (!prevShop) return null;
+        return { ...prevShop, tags: originalTags };
+      });
     }
   };
 
   // タグを削除
   const handleTagDelete = async (tagId: number) => {
     if (!isLoggedIn) return;
-    
+
+    const originalTags = shop?.tags;
+    if (!shop || !originalTags) return;
+
+    // 楽観的更新: UIから即座にタグを削除
+    const updatedTags = originalTags.filter(tag => tag.id !== tagId);
+    setShop(prevShop => {
+      if (!prevShop) return null;
+      return { ...prevShop, tags: updatedTags };
+    });
+
+    // バックエンドと同期
     try {
       const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/${tagId}/`, {
         method: 'DELETE'
@@ -286,11 +236,13 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       if (!response.ok) {
         throw new Error('タグの削除に失敗しました');
       }
-      
-      // 店舗情報を再取得して最新のタグ情報を表示
-      await loadShop();
     } catch (err) {
       console.error('タグ削除中にエラーが発生しました:', err);
+      // エラー時は元の状態に戻す
+      setShop(prevShop => {
+        if (!prevShop) return null;
+        return { ...prevShop, tags: originalTags };
+      });
     }
   };
 
@@ -364,6 +316,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
               loading={isActionLoading}
             />
           ))}
+          <DoorClosed size={16} strokeWidth={0} fill='rgba(0, 198, 255, 1)' />
         </div>
       </div>
 
@@ -415,50 +368,62 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         </div>
 
         <div className={styles.shopInfoContainer}>
-          <h1 className={styles.shopName}>{shop.name}</h1>
-          <div className={styles.locationInfo}>
-            {distance !== null && (
-              <div className={styles.distance}>
-                <MapPin size={16} />
-                現在地から {formatDistance(distance)}
+          <div className={styles.shopNameAndMatch}>
+            <div>
+              <h1 className={styles.shopName}>{shop.name}</h1>
+              <div className={styles.locationInfo}>
+                {distance !== null && (
+                  <div className={styles.distance}>
+                    <MapPin size={16} />
+                    現在地から {formatDistance(distance)}
+                  </div>
+                )}
+                <div className={styles.address}>
+                  {shop.prefecture} {shop.city} {shop.area && `${shop.area}`} {shop.street} {shop.building}
+                </div>
               </div>
-            )}
-            <div className={styles.address}>
-              {shop.prefecture} {shop.city} {shop.area && `${shop.area}`} {shop.street} {shop.building}
             </div>
-          </div>
-
-          <div className={styles.matchSection}>
             <div className={styles.matchRateSection}>
               <ShopMatchRate rate={70} />
             </div>
-            <div className={styles.atmosphereSection}>
-              <div className={styles.sectionTitle}>雰囲気</div>
-              <div className={styles.ratingBars}>
-                {SAMPLE_ATMOSPHERE_RATINGS.map((rating) => (
-                  <ShopRatingBar
-                    key={rating.id}
-                    label={rating.label}
-                    value={rating.value}
-                  />
-                ))}
-              </div>
+          </div>
+          
+
+          <div className={styles.atmosphereSection}>
+            <div className={styles.sectionTitle}>
+              雰囲気
+              <ButtonGradientWrapper
+                type='button'
+                anotherStyle={styles.addTagButton}
+                onClick={() => setShowAddTagModal(true)}
+              >
+                <Plus size={16} />
+                お店に行った方はこちら
+              </ButtonGradientWrapper>
+            </div>
+            
+            <div className={styles.ratingBars}>
+              {SAMPLE_ATMOSPHERE_RATINGS.map((rating) => (
+                <ShopRatingBar
+                  key={rating.id}
+                  label={rating.label}
+                  value={rating.value}
+                />
+              ))}
             </div>
           </div>
 
           <div className={styles.tagSection}>
             <div className={styles.sectionTitle}>
               雰囲気・印象
-              <Button
+              <ButtonGradientWrapper
                 type='button'
-                className={styles.addTagButton}
-                color='primary'
-                size="sm"
+                anotherStyle={styles.addTagButton}
                 onClick={() => setShowAddTagModal(true)}
               >
                 <Plus size={16} />
                 印象タグを追加する
-              </Button>
+              </ButtonGradientWrapper>
             </div>
             <div className={styles.impressionTags}>
               {shop.tags && Array.isArray(shop.tags) && shop.tags.length > 0 ? (
@@ -481,9 +446,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           </div>
 
           <div className={styles.actionSection}>
-            <ShopActionLink label="お店からのメッセージを見る" />
-            <ShopActionLink label="紹介動画" />
-            <ShopActionLink label="スタッフ紹介" />
+            
           </div>
         </div>
       </div>
@@ -575,6 +538,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           )}
         </ModalContent>
       </Modal>
+
+      {/* 店舗情報編集モーダル */}
+      <ShopEditModal shop={shop} onUpdate={loadShop} />
+
+      {/* 編集履歴モーダル */}
+      <ShopHistoryModal shop={shop} />
     </div>
   );
 };
