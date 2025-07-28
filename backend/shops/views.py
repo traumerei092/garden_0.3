@@ -12,7 +12,7 @@ from .models import (
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation
 )
 from .serializers import (
-    ShopCreateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
+    ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
     ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer
 )
@@ -21,7 +21,7 @@ from .utils.geocode import get_coordinates_from_address
 
 class ShopUpdateAPIView(generics.UpdateAPIView):
     queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
+    serializer_class = ShopUpdateSerializer
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):

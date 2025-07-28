@@ -4,7 +4,8 @@ import React from 'react';
 import { Shop } from '@/types/shops';
 import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins, Edit, FileClock } from 'lucide-react';
 import ChipCondition from '@/components/UI/ChipCondition';
-import { ScrollShadow, Link, Button } from '@nextui-org/react';
+import { ScrollShadow, Link } from '@nextui-org/react';
+import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
 import { useShopModalStore } from '@/store/useShopModalStore';
 
@@ -16,11 +17,19 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
   const { openEditModal, openHistoryModal } = useShopModalStore();
   // ChipConditionを表示するための関数
   const renderChips = (items: any[], category: 'type' | 'layout' | 'option') => {
-    return items.map((item) => (
-      <ChipCondition key={`${category}-${item.id}`} category={category}>
-        {item.name}
-      </ChipCondition>
-    ));
+    if (!items || items.length === 0) return null;
+    
+    // データが文字列の配列の場合とオブジェクトの配列の場合を両方対応
+    return items.map((item, index) => {
+      const displayName = typeof item === 'string' ? item : item.name;
+      const key = typeof item === 'string' ? `${category}-${index}` : `${category}-${item.id}`;
+      
+      return (
+        <ChipCondition key={key} category={category}>
+          {displayName}
+        </ChipCondition>
+      );
+    });
   };
 
   // 営業時間を曜日ごとにグループ化する関数
@@ -119,14 +128,13 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <FileClock size={16} strokeWidth={1} />
             <span className={styles.editBasicInfo}>編集履歴</span>
           </Link>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            onPress={openEditModal}
-            startContent={<Edit size={16} />}
+          <ButtonGradientWrapper
+            onClick={openEditModal}
+            anotherStyle={styles.editButton}
           >
+            <Edit size={16} />
             基本情報を修正する
-          </Button>
+          </ButtonGradientWrapper>
         </div>
       </div>
       
@@ -169,7 +177,7 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
           </div>
           <div className={styles.infoContent}>
             <div>
-              〒810-0021<br />
+              {shop.zip_code && `〒${shop.zip_code}`}<br />
               {shop.prefecture} {shop.city} {shop.area} {shop.street} {shop.building}
             </div>
           </div>
@@ -262,15 +270,27 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
         <div className={styles.budgetContent}>
           <div className={styles.budgetRow}>
             <div className={styles.budgetLabel}>平日</div>
-            <div className={styles.budgetValue}>¥3,000 - ¥5,000</div>
+            <div className={styles.budgetValue}>
+              {shop.budget_weekday_min && shop.budget_weekday_max 
+                ? `¥${shop.budget_weekday_min.toLocaleString()} - ¥${shop.budget_weekday_max.toLocaleString()}`
+                : '情報がありません'
+              }
+            </div>
           </div>
           <div className={styles.budgetRow}>
             <div className={styles.budgetLabel}>週末</div>
-            <div className={styles.budgetValue}>¥4,000 - ¥6,000</div>
+            <div className={styles.budgetValue}>
+              {shop.budget_weekend_min && shop.budget_weekend_max 
+                ? `¥${shop.budget_weekend_min.toLocaleString()} - ¥${shop.budget_weekend_max.toLocaleString()}`
+                : '情報がありません'
+              }
+            </div>
           </div>
-          <div className={styles.budgetNote}>
-            ※お一人様あたりの目安料金（お酒3-4杯程度）
-          </div>
+          {shop.budget_note && (
+            <div className={styles.budgetNote}>
+              {shop.budget_note}
+            </div>
+          )}
         </div>
       </div>
     </div>

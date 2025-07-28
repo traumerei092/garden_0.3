@@ -137,6 +137,65 @@ class ShopCreateSerializer(serializers.ModelSerializer):
 
         return shop
 
+
+class ShopUpdateSerializer(serializers.ModelSerializer):
+    shop_types = serializers.PrimaryKeyRelatedField(queryset=ShopType.objects.all(), many=True, required=False)
+    shop_layouts = serializers.PrimaryKeyRelatedField(queryset=ShopLayout.objects.all(), many=True, required=False)
+    shop_options = serializers.PrimaryKeyRelatedField(queryset=ShopOption.objects.all(), many=True, required=False)
+    payment_methods = serializers.PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all(), many=True, required=False)
+    business_hours = serializers.ListField(child=serializers.DictField(), required=False, write_only=True)
+
+    class Meta:
+        model = Shop
+        fields = [
+            'name', 'zip_code', 'address', 'prefecture', 'city',
+            'street', 'building', 'capacity', 'shop_types',
+            'shop_layouts', 'shop_options', 'payment_methods',
+            'phone_number', 'access', 'business_hours',
+            'budget_weekday_min', 'budget_weekday_max', 
+            'budget_weekend_min', 'budget_weekend_max', 'budget_note'
+        ]
+
+    def update(self, instance, validated_data):
+        # ManyToManyフィールドのデータを取り出す
+        shop_types = validated_data.pop('shop_types', None)
+        shop_layouts = validated_data.pop('shop_layouts', None)
+        shop_options = validated_data.pop('shop_options', None)
+        payment_methods = validated_data.pop('payment_methods', None)
+        business_hours_data = validated_data.pop('business_hours', None)
+
+        # 基本フィールドを更新
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # ManyToManyフィールドを更新
+        if shop_types is not None:
+            instance.shop_types.set(shop_types)
+        if shop_layouts is not None:
+            instance.shop_layouts.set(shop_layouts)
+        if shop_options is not None:
+            instance.shop_options.set(shop_options)
+        if payment_methods is not None:
+            instance.payment_methods.set(payment_methods)
+
+        # 営業時間を更新
+        if business_hours_data is not None:
+            # 既存の営業時間を削除
+            instance.business_hours.all().delete()
+            
+            # 新しい営業時間を作成
+            for hour_data in business_hours_data:
+                BusinessHour.objects.create(
+                    shop=instance,
+                    weekday=hour_data.get('weekday'),
+                    open_time=hour_data.get('open_time'),
+                    close_time=hour_data.get('close_time'),
+                    is_closed=hour_data.get('is_closed', False)
+                )
+
+        return instance
+
 # ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer
 class ShopTypeSerializer(serializers.ModelSerializer):
     class Meta:

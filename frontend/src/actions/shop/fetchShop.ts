@@ -29,6 +29,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
         const shops: Shop[] = data.map((shop: any) => ({
             id: shop.id,
             name: shop.name,
+            zip_code: shop.zip_code || null,
             address: shop.address,
             prefecture: shop.prefecture,
             city: shop.city,
@@ -37,21 +38,12 @@ export const fetchShops = async (): Promise<Shop[]> => {
             building: shop.building,
             capacity: shop.capacity,
             images: shop.images || null,
-            // shop_typesが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_types: Array.isArray(shop.shop_types) 
-                ? shop.shop_types.map((type: any) => 
-                    typeof type === 'string' ? { id: 0, name: type } : type)
-                : [],
-            // shop_layoutsが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_layouts: Array.isArray(shop.shop_layouts) 
-                ? shop.shop_layouts.map((layout: any) => 
-                    typeof layout === 'string' ? { id: 0, name: layout } : layout)
-                : [],
-            // shop_optionsが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_options: Array.isArray(shop.shop_options) 
-                ? shop.shop_options.map((option: any) => 
-                    typeof option === 'string' ? { id: 0, name: option } : option)
-                : [],
+            // shop_typesは既にオブジェクトの配列として返される
+            shop_types: Array.isArray(shop.shop_types) ? shop.shop_types : [],
+            // shop_layoutsは既にオブジェクトの配列として返される
+            shop_layouts: Array.isArray(shop.shop_layouts) ? shop.shop_layouts : [],
+            // shop_optionsは既にオブジェクトの配列として返される
+            shop_options: Array.isArray(shop.shop_options) ? shop.shop_options : [],
             business_hours: shop.business_hours || [],
             latitude: shop.latitude,
             longitude: shop.longitude,
@@ -119,6 +111,7 @@ export async function fetchShopById(id: string): Promise<Shop> {
         const formattedShop = {
             id: shop.id,
             name: shop.name,
+            zip_code: shop.zip_code || null,
             address: shop.address,
             prefecture: shop.prefecture,
             city: shop.city,
@@ -127,21 +120,12 @@ export async function fetchShopById(id: string): Promise<Shop> {
             building: shop.building,
             capacity: shop.capacity,
             images: shop.images || null,
-            // shop_typesが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_types: Array.isArray(shop.shop_types) 
-                ? shop.shop_types.map((type: any) => 
-                    typeof type === 'string' ? { id: 0, name: type } : type)
-                : [],
-            // shop_layoutsが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_layouts: Array.isArray(shop.shop_layouts) 
-                ? shop.shop_layouts.map((layout: any) => 
-                    typeof layout === 'string' ? { id: 0, name: layout } : layout)
-                : [],
-            // shop_optionsが文字列の配列の場合はオブジェクトの配列に変換、既にオブジェクトの配列の場合はそのまま使用
-            shop_options: Array.isArray(shop.shop_options) 
-                ? shop.shop_options.map((option: any) => 
-                    typeof option === 'string' ? { id: 0, name: option } : option)
-                : [],
+            // shop_typesは既にオブジェクトの配列として返される
+            shop_types: Array.isArray(shop.shop_types) ? shop.shop_types : [],
+            // shop_layoutsは既にオブジェクトの配列として返される
+            shop_layouts: Array.isArray(shop.shop_layouts) ? shop.shop_layouts : [],
+            // shop_optionsは既にオブジェクトの配列として返される
+            shop_options: Array.isArray(shop.shop_options) ? shop.shop_options : [],
             business_hours: shop.business_hours || [],
             latitude: shop.latitude,
             longitude: shop.longitude,
@@ -161,7 +145,13 @@ export async function fetchShopById(id: string): Promise<Shop> {
             phone_number: shop.phone_number || null,
             access: shop.access || null,
             // payment_methodsが既にオブジェクトの配列であることを確認
-            payment_methods: Array.isArray(shop.payment_methods) ? shop.payment_methods : []
+            payment_methods: Array.isArray(shop.payment_methods) ? shop.payment_methods : [],
+            // 予算関連のフィールドを追加
+            budget_weekday_min: shop.budget_weekday_min || null,
+            budget_weekday_max: shop.budget_weekday_max || null,
+            budget_weekend_min: shop.budget_weekend_min || null,
+            budget_weekend_max: shop.budget_weekend_max || null,
+            budget_note: shop.budget_note || null
         };
         
         console.log('変換後の店舗データ:', formattedShop);

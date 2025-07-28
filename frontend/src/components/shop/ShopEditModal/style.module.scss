@@ -1,138 +1,504 @@
-
-.modalBody {
-  padding: 1rem;
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0;
 }
 
+.stepsWrapper {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.contentWrapper {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+// フォームセクション
 .formSection {
-  padding: 1rem;
+  padding: 0 1rem;
+}
+
+.formHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  
+  .headerIcon {
+    color: #6366f1;
+    margin-bottom: 1rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .formTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .formSubtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+.formGrid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+.formCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  .cardIcon {
+    color: #6366f1;
+    flex-shrink: 0;
+  }
+  
+  .cardTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+  }
 }
 
-.formTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 1rem;
+.inputGroup {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.inputField {
-  margin-bottom: 1rem;
-}
-
+.inputField,
 .textareaField {
-  margin-bottom: 1rem;
-}
-
-.checkboxGroup {
-  margin-bottom: 1rem;
-}
-
-.businessHoursSection {
-  margin-bottom: 1rem;
-}
-
-.businessHoursTitle {
-  font-size: 1.125rem;
-  font-weight: 500;
-  color: #ffffff;
-  margin-bottom: 0.5rem;
-}
-
-.businessHoursNote {
-  font-size: 0.875rem;
-  color: #9ca3af;
+  :global(.nextui-input) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    
+    &:hover {
+      border-color: rgba(99, 102, 241, 0.4) !important;
+    }
+    
+    &:focus-within {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+    }
+  }
+  
+  :global(.nextui-input-wrapper) {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    
+    &:hover {
+      border-color: rgba(99, 102, 241, 0.4) !important;
+    }
+  }
+  
+  :global(.nextui-input-label) {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  :global(.nextui-input input) {
+    color: #ffffff !important;
+  }
 }
 
 .budgetGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
   margin-bottom: 1rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-.confirmSection {
+.businessHoursNote {
   padding: 1rem;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 0.5rem;
+  text-align: center;
+  
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    font-size: 0.9rem;
+  }
 }
 
-.confirmTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 1rem;
+// 確認画面
+.confirmSection {
+  padding: 0 1rem;
 }
 
-.confirmNote {
-  color: #9ca3af;
-  margin-bottom: 1.5rem;
+.confirmHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  
+  .confirmIcon {
+    color: #22c55e;
+    margin-bottom: 1rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .confirmTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .confirmNote {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+.confirmGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
 }
 
 .confirmField {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #374151;
+  align-items: flex-start;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  
+  .confirmLabel {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+  
+  .confirmValueContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    flex: 1;
+    text-align: right;
+  }
+  
+  .originalValue {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    text-decoration: line-through;
+  }
+  
+  .newValue {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .newValueChanged {
+    color: #3b82f6;
+    font-weight: 600;
+  }
+  
+  .confirmValue {
+    flex: 1;
+    text-align: right;
+  }
 }
 
-.confirmLabel {
-  color: #9ca3af;
+// 営業時間テーブル
+.hourTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  
+  th, td {
+    padding: 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  th {
+    background: rgba(99, 102, 241, 0.1);
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+  }
+  
+  td {
+    font-size: 0.85rem;
+  }
+  
+  tr:last-child {
+    th, td {
+      border-bottom: none;
+    }
+  }
+  
+  tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
 }
 
-.confirmValueContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.originalValue {
-  font-size: 0.875rem;
-  color: #6b7280;
-  text-decoration: line-through;
-}
-
-.newValueChanged {
-  color: #60a5fa;
-  font-weight: 600;
-}
-
-.newValue {
-  color: #ffffff;
-}
-
+// 完了画面
 .completeSection {
+  padding: 0 1rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 16rem; /* h-64 */
-  padding: 1rem;
+  align-items: center;
+  min-height: 300px;
+}
+
+.completeHeader {
   text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(10px);
+  
+  .completeIcon {
+    color: #22c55e;
+    margin-bottom: 1.5rem;
+    animation: bounce 2s infinite;
+  }
+  
+  .completeTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .completeMessage {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.6;
+  }
 }
 
-.completeIcon {
-  margin-bottom: 1rem;
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
 }
 
-.completeTitle {
-  font-size: 1.5rem; /* text-2xl */
-  font-weight: 700; /* font-bold */
-  color: #ffffff;
-  margin-bottom: 0.5rem;
-}
-
-.completeMessage {
-  color: #9ca3af;
-}
-
-.apiError {
-  color: #ef4444; /* text-danger */
-  padding: 1rem;
-  text-align: center;
-}
-
+// フッター
 .footerContainer {
   display: flex;
   justify-content: space-between;
-  width: 100%;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.footerLeft {
+  flex: 1;
+}
+
+.footerRight {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+  }
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 2rem !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3) !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, #5b5bd6 0%, #7c3aed 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &[data-loading="true"] {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    opacity: 0.8;
+  }
+}
+
+// エラーメッセージ
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  
+  .errorIcon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .modalContent {
+    gap: 1rem;
+  }
+  
+  .formGrid {
+    gap: 1.5rem;
+  }
+  
+  .formCard {
+    padding: 1rem;
+  }
+  
+  .inputGroup {
+    grid-template-columns: 1fr;
+  }
+  
+  .budgetGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .confirmField {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    
+    .confirmValueContainer {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+  
+  .footerContainer {
+    flex-direction: column;
+    gap: 1rem;
+    
+    .footerLeft,
+    .footerRight {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+// ダークテーマ対応
+@media (prefers-color-scheme: dark) {
+  .formCard {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+  
+  .confirmField {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
 }

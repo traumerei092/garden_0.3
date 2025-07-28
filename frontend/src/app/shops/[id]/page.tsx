@@ -316,7 +316,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
               loading={isActionLoading}
             />
           ))}
-          <DoorClosed size={16} strokeWidth={0} fill='rgba(0, 198, 255, 1)' />
         </div>
       </div>
 
