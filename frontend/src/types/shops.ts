@@ -37,6 +37,7 @@ export interface ShopImage {
 export interface Shop {
   id: number;
   name: string;
+  zip_code: string | null; // Added zip_code
   address: string;
   prefecture: string | null;
   city: string | null;
@@ -56,20 +57,46 @@ export interface Shop {
   phone_number: string | null;
   access: string | null;
   payment_methods: PaymentMethod[];
+  // 予算
+  budget_weekday_min: number | null;
+  budget_weekday_max: number | null;
+  budget_weekend_min: number | null;
+  budget_weekend_max: number | null;
+  budget_note: string | null;
+}
+
+export interface ShopEditHistory {
+  id: number;
+  shop: number;
+  user: { id: number; name: string; } | null;
+  field_name: string;
+  old_value: string;
+  new_value: string;
+  edited_at: string;
+  good_count: number;
+  bad_count: number;
+}
+
+export interface HistoryEvaluation {
+  id: number;
+  history: number;
+  user: { id: number; name: string; };
+  evaluation: 'GOOD' | 'BAD';
+  created_at: string;
 }
 
 export interface ShopType {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface ShopLayout {
-  id: string;
+  id: number;
   name: string;
 }
 
 export interface ShopOption {
-  id: string;
+  id: number;
   name: string;
 }
 

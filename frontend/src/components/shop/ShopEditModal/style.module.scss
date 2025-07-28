@@ -1,0 +1,138 @@
+
+.modalBody {
+  padding: 1rem;
+}
+
+.formSection {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.formTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.inputField {
+  margin-bottom: 1rem;
+}
+
+.textareaField {
+  margin-bottom: 1rem;
+}
+
+.checkboxGroup {
+  margin-bottom: 1rem;
+}
+
+.businessHoursSection {
+  margin-bottom: 1rem;
+}
+
+.businessHoursTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.businessHoursNote {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.budgetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.confirmSection {
+  padding: 1rem;
+}
+
+.confirmTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.confirmNote {
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+}
+
+.confirmField {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #374151;
+}
+
+.confirmLabel {
+  color: #9ca3af;
+}
+
+.confirmValueContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.originalValue {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+.newValueChanged {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.newValue {
+  color: #ffffff;
+}
+
+.completeSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 16rem; /* h-64 */
+  padding: 1rem;
+  text-align: center;
+}
+
+.completeIcon {
+  margin-bottom: 1rem;
+}
+
+.completeTitle {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700; /* font-bold */
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.completeMessage {
+  color: #9ca3af;
+}
+
+.apiError {
+  color: #ef4444; /* text-danger */
+  padding: 1rem;
+  text-align: center;
+}
+
+.footerContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}

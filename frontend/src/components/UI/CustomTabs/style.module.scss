@@ -1,375 +1,376 @@
 .customTabs {
-  width: 100%;
+    width: 100%;
 }
 
 // Base styles for all variants
 .tabList {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border-radius: 12px;
-  padding: 4px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  
-  // Solid variant (for icon tabs like ShopListHeader)
-  &--solid {
-    background: rgba(53, 131, 200, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-  
-  // Underlined variant (for text tabs like ShopDetailPage)
-  &--underlined {
-    background: transparent;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0;
-    padding: 0;
-    gap: 2rem;
-  }
-  
-  // Bordered variant
-  &--bordered {
-    background: rgba(10, 11, 28, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  // Light variant
-  &--light {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 12px;
+    padding: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+
+    // Solid variant (for icon tabs like ShopListHeader)
+    &--solid {
+        background: rgba(53, 131, 200, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow:
+            0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    // Underlined variant (for text tabs like ShopDetailPage)
+    &--underlined {
+        background: transparent;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0;
+        padding: 0;
+        gap: 2rem;
+    }
+
+    // Bordered variant
+    &--bordered {
+        background: rgba(10, 11, 28, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    // Light variant
+    &--light {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 }
 
 .cursor {
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  &--solid {
-    background: linear-gradient(
-      135deg,
-      rgba(0, 255, 255, 0.2) 0%,
-      rgba(0, 255, 255, 0.15) 50%,
-      rgba(0, 255, 255, 0.1) 100%
-    );
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    box-shadow: 
-      0 0 20px rgba(0, 255, 255, 0.15),
-      0 4px 8px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-  
-  &--underlined {
-    background: linear-gradient(
-      90deg,
-      rgba(0, 255, 255, 0.8) 0%,
-      rgba(0, 255, 255, 1) 50%,
-      rgba(0, 255, 255, 0.8) 100%
-    );
-    height: 2px;
-    border-radius: 1px;
-    box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
-  }
-  
-  &--bordered {
-    background: rgba(0, 255, 255, 0.15);
-    border: 1px solid rgba(0, 255, 255, 0.4);
-  }
-  
-  &--light {
-    background: rgba(0, 255, 255, 0.1);
-    border: 1px solid rgba(0, 255, 255, 0.2);
-  }
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &--solid {
+        background: linear-gradient(135deg,
+                rgba(0, 255, 255, 0.2) 0%,
+                rgba(0, 255, 255, 0.15) 50%,
+                rgba(0, 255, 255, 0.1) 100%);
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        box-shadow:
+            0 0 20px rgba(0, 255, 255, 0.15),
+            0 4px 8px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    &--underlined {
+        background: linear-gradient(90deg,
+                rgba(0, 255, 255, 0.8) 0%,
+                rgba(0, 255, 255, 1) 50%,
+                rgba(0, 255, 255, 0.8) 100%);
+        height: 2px;
+        border-radius: 1px;
+        box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+    }
+
+    &--bordered {
+        background: rgba(0, 255, 255, 0.15);
+        border: 1px solid rgba(0, 255, 255, 0.4);
+    }
+
+    &--light {
+        background: rgba(0, 255, 255, 0.1);
+        border: 1px solid rgba(0, 255, 255, 0.2);
+    }
 }
 
 .tab {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  z-index: 1;
-  
-  // Size variants
-  &--sm {
-    min-height: 32px;
-    padding: 6px 12px;
-    font-size: 0.875rem;
-  }
-  
-  &--md {
-    min-height: 40px;
-    padding: 8px 16px;
-    font-size: 1rem;
-  }
-  
-  &--lg {
-    min-height: 48px;
-    padding: 12px 20px;
-    font-size: 1.125rem;
-  }
-  
-  // Variant styles
-  &--solid {
-    &:hover:not([data-selected="true"]) {
-      background: rgba(255, 255, 255, 0.05);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    z-index: 1;
+
+    // Size variants
+    &--sm {
+        min-height: 32px;
+        padding: 6px 12px;
+        font-size: 0.875rem;
     }
-    
-    &[data-selected="true"] {
-      transform: translateY(-1px);
+
+    &--md {
+        min-height: 40px;
+        padding: 8px 16px;
+        font-size: 1rem;
     }
-  }
-  
-  &--underlined {
-    border-radius: 0;
-    padding-bottom: 12px;
-    
-    &:hover:not([data-selected="true"]) {
-      color: rgba(0, 255, 255, 0.7);
+
+    &--lg {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 1.125rem;
     }
-  }
-  
-  &--bordered {
-    &:hover:not([data-selected="true"]) {
-      background: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.15);
+
+    // Variant styles
+    &--solid {
+        &:hover:not([data-selected="true"]) {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        &[data-selected="true"] {
+            transform: translateY(-1px);
+        }
     }
-  }
-  
-  &--light {
-    &:hover:not([data-selected="true"]) {
-      background: rgba(255, 255, 255, 0.08);
+
+    &--underlined {
+        border-radius: 0;
+        padding-bottom: 12px;
+
+        &:hover:not([data-selected="true"]) {
+            color: rgba(0, 255, 255, 0.7);
+        }
     }
-  }
-  
-  // Focus states
-  &:focus-visible {
-    outline: none;
-  }
-  
-  // Disabled state
-  &[data-disabled="true"] {
-    opacity: 0.4;
-    cursor: not-allowed;
-    
-    &:hover {
-      transform: none;
-      background: transparent;
+
+    &--bordered {
+        &:hover:not([data-selected="true"]) {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
     }
-  }
+
+    &--light {
+        &:hover:not([data-selected="true"]) {
+            background: rgba(255, 255, 255, 0.08);
+        }
+    }
+
+    // Focus states
+    &:focus-visible {
+        outline: none;
+    }
+
+    // Disabled state
+    &[data-disabled="true"] {
+        opacity: 0.4;
+        cursor: not-allowed;
+
+        &:hover {
+            transform: none;
+            background: transparent;
+        }
+    }
 }
 
 .tabContent {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  // Icon styling
-  svg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: rgba(255, 255, 255, 0.7);
-  }
-  
-  // Text styling
-  span {
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  // Variant-specific content styles
-  &--solid {
-    .tab[data-selected="true"] & {
-      svg {
-        color: rgba(0, 255, 255, 1);
-        filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.3));
-      }
-      
-      span {
-        color: rgba(0, 255, 255, 1);
-        text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
-      }
+
+    // Icon styling
+    svg {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: rgba(255, 255, 255, 0.7);
     }
-    
-    .tab:hover:not([data-selected="true"]) & {
-      svg {
-        color: rgba(255, 255, 255, 0.9);
-      }
-      
-      span {
-        color: rgba(255, 255, 255, 0.95);
-      }
+
+    // Text styling
+    span {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-  }
-  
-  &--underlined {
-    .tab[data-selected="true"] & {
-      svg {
-        color: rgba(0, 255, 255, 1);
-      }
-      
-      span {
-        color: rgba(0, 255, 255, 1);
-        font-weight: 600;
-      }
+
+    // Variant-specific content styles
+    &--solid {
+        .tab[data-selected="true"] & {
+            svg {
+                color: rgba(0, 255, 255, 1);
+                filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.3));
+            }
+
+            span {
+                color: rgba(0, 255, 255, 1);
+                text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+            }
+        }
+
+        .tab:hover:not([data-selected="true"]) & {
+            svg {
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            span {
+                color: rgba(255, 255, 255, 0.95);
+            }
+        }
     }
-    
-    .tab:hover:not([data-selected="true"]) & {
-      svg {
-        color: rgba(0, 255, 255, 0.7);
-      }
-      
-      span {
-        color: rgba(0, 255, 255, 0.7);
-      }
+
+    &--underlined {
+        .tab[data-selected="true"] & {
+            svg {
+                color: rgba(0, 255, 255, 1);
+            }
+
+            span {
+                color: rgba(0, 255, 255, 1);
+                font-weight: 600;
+            }
+        }
+
+        .tab:hover:not([data-selected="true"]) & {
+            svg {
+                color: rgba(0, 255, 255, 0.7);
+            }
+
+            span {
+                color: rgba(0, 255, 255, 0.7);
+            }
+        }
     }
-  }
-  
-  &--bordered,
-  &--light {
-    .tab[data-selected="true"] & {
-      svg {
-        color: rgba(0, 255, 255, 1);
-      }
-      
-      span {
-        color: rgba(0, 255, 255, 1) !important;
-        font-weight: 600 !important;
-      }
+
+    &--bordered,
+    &--light {
+        .tab[data-selected="true"] & {
+            svg {
+                color: rgba(0, 255, 255, 1);
+            }
+
+            span {
+                color: rgba(0, 255, 255, 1) !important;
+                font-weight: 600 !important;
+            }
+        }
     }
-  }
 }
 
 .panel {
-  padding: 1rem 0;
-  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1rem 0;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 // Responsive design
 @media (max-width: 768px) {
-  .tabList {
-    &--underlined {
-      gap: 1rem;
+    .tabList {
+        &--underlined {
+            gap: 1rem;
+        }
     }
-  }
-  
-  .tab {
-    &--sm {
-      min-height: 28px;
-      padding: 4px 8px;
-      font-size: 0.8rem;
+
+    .tab {
+        &--sm {
+            min-height: 28px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+
+        &--md {
+            min-height: 36px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        &--lg {
+            min-height: 44px;
+            padding: 10px 16px;
+            font-size: 1rem;
+        }
     }
-    
-    &--md {
-      min-height: 36px;
-      padding: 6px 12px;
-      font-size: 0.9rem;
+
+    .tabContent {
+        gap: 6px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        span {
+            font-size: 0.875rem;
+        }
     }
-    
-    &--lg {
-      min-height: 44px;
-      padding: 10px 16px;
-      font-size: 1rem;
-    }
-  }
-  
-  .tabContent {
-    gap: 6px;
-    
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-    
-    span {
-      font-size: 0.875rem;
-    }
-  }
 }
 
 // Dark mode enhancements
 @media (prefers-color-scheme: dark) {
-  .tabList {
-    &--solid {
-      background: rgba(53, 131, 200, 0.12);
-      border-color: rgba(255, 255, 255, 0.08);
+    .tabList {
+        &--solid {
+            background: rgba(53, 131, 200, 0.12);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        &--underlined {
+            border-bottom-color: rgba(255, 255, 255, 0.15);
+        }
+
+        &--bordered {
+            background: rgba(10, 11, 28, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        &--light {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
     }
-    
-    &--underlined {
-      border-bottom-color: rgba(255, 255, 255, 0.15);
-    }
-    
-    &--bordered {
-      background: rgba(10, 11, 28, 0.8);
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-    
-    &--light {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-  }
 }
 
 // High contrast mode support
 @media (prefers-contrast: high) {
-  .tabContent {
-    svg,
-    span {
-      color: rgba(255, 255, 255, 0.95);
+    .tabContent {
+
+        svg,
+        span {
+            color: rgba(255, 255, 255, 0.95);
+        }
     }
-  }
-  
-  .tab[data-selected="true"] .tabContent {
-    svg,
-    span {
-      color: rgba(0, 255, 255, 1);
+
+    .tab[data-selected="true"] .tabContent {
+
+        svg,
+        span {
+            color: rgba(0, 255, 255, 1);
+        }
     }
-  }
-  
-  .cursor {
-    &--solid,
-    &--bordered,
-    &--light {
-      border-width: 2px;
+
+    .cursor {
+
+        &--solid,
+        &--bordered,
+        &--light {
+            border-width: 2px;
+        }
     }
-  }
 }
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
-  .tab,
-  .tabContent,
-  .cursor,
-  .tabList {
-    transition: none;
-  }
-  
-  .panel {
-    animation: none;
-  }
-  
-  .tab:hover {
-    transform: none;
-  }
+
+    .tab,
+    .tabContent,
+    .cursor,
+    .tabList {
+        transition: none;
+    }
+
+    .panel {
+        animation: none;
+    }
+
+    .tab:hover {
+        transform: none;
+    }
 }

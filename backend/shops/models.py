@@ -81,6 +81,13 @@ class Shop(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_shops"
     )
 
+    # 予算関連フィールド
+    budget_weekday_min = models.IntegerField(null=True, blank=True, help_text="平日の最低予算")
+    budget_weekday_max = models.IntegerField(null=True, blank=True, help_text="平日の最高予算")
+    budget_weekend_min = models.IntegerField(null=True, blank=True, help_text="週末の最低予算")
+    budget_weekend_max = models.IntegerField(null=True, blank=True, help_text="週末の最高予算")
+    budget_note = models.TextField(blank=True, null=True, help_text="予算に関する補足情報")
+
     class Meta:
         db_table = 'shops'
         ordering = ['created_at']
@@ -164,24 +171,42 @@ class ShopImage(models.Model):
         return f"{self.shop.name} - {self.caption or 'No Caption'}"
 
 ##############################################
-# 店舗データの履歴管理
+# 店舗編集履歴
 ##############################################
-class ShopUpdateLog(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    updated_column = models.CharField(max_length=100)
-    old_value = models.TextField()
-    new_value = models.TextField()
-    updated_at = models.DateTimeField(auto_now=True)
+class ShopEditHistory(models.Model):
+    """店舗情報の編集履歴を記録するモデル"""
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='edit_histories')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='shop_edit_histories')
+    field_name = models.CharField(max_length=100, help_text="編集されたフィールド名")
+    old_value = models.TextField(blank=True, null=True, help_text="変更前の値")
+    new_value = models.TextField(blank=True, null=True, help_text="変更後の値")
+    edited_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-edited_at']
+
+    def __str__(self):
+        return f"{self.shop.name} - {self.field_name} edited by {self.user.email if self.user else 'Unknown'}"
 
 ##############################################
-# 店舗履歴データに対するリアクション
+# 編集履歴への評価
 ##############################################
-class ShopUpdateReaction(models.Model):
-    shop_update_log = models.ForeignKey(ShopUpdateLog, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    reaction_type = models.CharField(max_length=10)  # GOOD or BAD
-    reacted_at = models
+class HistoryEvaluation(models.Model):
+    """編集履歴に対する評価を記録するモデル"""
+    class EvaluationType(models.TextChoices):
+        GOOD = 'GOOD', 'Good'
+        BAD = 'BAD', 'Bad'
+
+    history = models.ForeignKey(ShopEditHistory, on_delete=models.CASCADE, related_name='evaluations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='history_evaluations')
+    evaluation = models.CharField(max_length=4, choices=EvaluationType.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('history', 'user') # 1ユーザー1評価
+
+    def __str__(self):
+        return f"{self.user.email} evaluated {self.history_id} as {self.evaluation}"
 
 ##############################################
 # 店舗口コミ

@@ -2,37 +2,65 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(0, 255, 255, 0.1));
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  min-width: 100px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
 }
 
 .title {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(0, 255, 255, 1);
+  text-align: center;
+  letter-spacing: 0.5px;
+  margin: 0;
 }
 
 .rateContainer {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
+  position: relative;
 }
 
 .circleSvg {
   width: 100%;
   height: 100%;
-}
-
-.circleIndicator {
-  stroke: linear-gradient(90deg, #4cc9f0, #f72585);
-  stroke-width: 5px;
+  transform: rotate(-90deg);
 }
 
 .circleTrack {
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 5px;
+  stroke: rgba(0, 255, 255, 0.1);
+  stroke-width: 3px;
+  fill: none;
+}
+
+.circleIndicator {
+  stroke: rgba(0, 255, 255, 1);
+  stroke-width: 3px;
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(0, 255, 255, 0.5));
+  transition: stroke-dasharray 0.6s ease-in-out;
 }
 
 .circleValue {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: rgba(0, 255, 255, 1);
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }

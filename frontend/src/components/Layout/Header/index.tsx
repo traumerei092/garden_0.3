@@ -51,13 +51,16 @@ const Header = () => {
             <NavbarContent justify="center" className={styles.headerCenter}>
                 {user ? (
                     <>
-                        <NavbarItem>
-                            <LinkDefault href={"/visited"} styleName={"link"}>My Favorite</LinkDefault>
+                        <NavbarItem className={styles.navbarItem}>
+                            <LinkDefault href={"/profile"} styleName={"link"}>プロフィール</LinkDefault>
                         </NavbarItem>
-                        <NavbarItem>
-                            <LinkDefault href={"/wishlist"} styleName={"link"}>Interested</LinkDefault>
+                        <NavbarItem className={styles.navbarItem}>
+                            <LinkDefault href={"/visited"} styleName={"link"}>行ったお店</LinkDefault>
                         </NavbarItem>
-                        <NavbarItem>
+                        <NavbarItem className={styles.navbarItem}>
+                            <LinkDefault href={"/wishlist"} styleName={"link"}>行きたいお店</LinkDefault>
+                        </NavbarItem>
+                        <NavbarItem className={styles.navbarItem}>
                             <LinkDefault href={"/"} styleName={"link"}>Browsing</LinkDefault>
                         </NavbarItem>
                     </>

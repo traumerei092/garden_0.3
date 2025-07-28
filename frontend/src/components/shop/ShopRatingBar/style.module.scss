@@ -1,31 +1,164 @@
-.ratingItem {
-    display: flex;
+.atmosphereSlider {
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.currentValue {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(0, 255, 255, 1);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  padding: 1px 4px;
+  border-radius: 6px;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
+}
+
+.sliderContainer {
+  position: relative;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.leftLabel,
+.rightLabel {
+  font-weight: 500;
+  max-width: 60px;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.leftLabel {
+  text-align: left;
+}
+
+.rightLabel {
+  text-align: right;
+}
+
+.sliderWrapper {
+  position: relative;
+  margin: 0 4px;
+}
+
+.sliderTrack {
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 255, 255, 1) 0%,
+    rgba(125, 227, 255, 1) 25%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(250, 130, 254, 1) 75%,
+    rgba(235, 14, 242, 1) 100%
+  );
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  filter: drop-shadow(0 0 2px rgba(0, 255, 255, 0.2));
+}
+
+.sliderFill {
+  height: 100%;
+  background: transparent;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.sliderThumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid rgba(0, 255, 255, 1);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.3));
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 3px 12px rgba(0, 255, 255, 0.6);
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .atmosphereSlider {
+    padding: 6px 10px;
+    margin-bottom: 8px;
+  }
+
+  .header {
+    flex-direction: row;
     align-items: center;
-    width: 100%;
-    }
+    gap: 4px;
+    margin-bottom: 6px;
+  }
 
-.ratingLabel {
-    width: 150px;
-    font-size: 0.7rem;
-    color: #cccccc;
-    margin-right: 5px;
-}
+  .title {
+    font-size: 9px;
+  }
 
-.ratingBar {
-    flex: 1;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-}
+  .currentValue {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
 
-.ratingFill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #4cc9f0, #f72585);
-    border-radius: 4px;
-    transition: width 0.3s ease;
+  .labels {
+    font-size: 7px;
+    margin-bottom: 3px;
+  }
+
+  .leftLabel,
+  .rightLabel {
+    max-width: 50px;
+    font-size: 7px;
+  }
+
+  .sliderThumb {
+    width: 12px;
+    height: 12px;
+  }
+
+  .sliderTrack {
+    height: 3px;
+  }
 }

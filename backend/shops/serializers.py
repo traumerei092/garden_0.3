@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from .models import Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod
+from .models import (
+    Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
+    ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
+    ShopEditHistory, HistoryEvaluation
+)
 from django.contrib.auth import get_user_model
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -33,7 +38,9 @@ class ShopSerializer(serializers.ModelSerializer):
             'street', 'building', 'capacity', 'shop_types',
             'shop_layouts', 'shop_options', 'business_hours',
             'images', 'created_by', 'latitude', 'longitude', 'tags',
-            'phone_number', 'access', 'payment_methods'
+            'phone_number', 'access', 'payment_methods',
+            'budget_weekday_min', 'budget_weekday_max', 'budget_weekend_min', 
+            'budget_weekend_max', 'budget_note'
         ]
         
     def get_images(self, obj):
@@ -235,6 +242,32 @@ class ShopTagCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopTag
         fields = ['shop', 'value']
+
+
+class ShopEditHistorySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    good_count = serializers.SerializerMethodField()
+    bad_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShopEditHistory
+        fields = ('id', 'shop', 'user', 'field_name', 'old_value', 'new_value', 'edited_at', 'good_count', 'bad_count')
+
+    def get_good_count(self, obj):
+        return obj.evaluations.filter(evaluation=HistoryEvaluation.EvaluationType.GOOD).count()
+
+    def get_bad_count(self, obj):
+        return obj.evaluations.filter(evaluation=HistoryEvaluation.EvaluationType.BAD).count()
+
+
+class HistoryEvaluationSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = HistoryEvaluation
+        fields = ('id', 'history', 'user', 'evaluation', 'created_at')
+        read_only_fields = ('user', 'created_at')
+
 
 # UserShopRelationSerializer
 class UserShopRelationSerializer(serializers.ModelSerializer):

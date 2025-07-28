@@ -2,16 +2,18 @@
 
 import React from 'react';
 import { Shop } from '@/types/shops';
-import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins } from 'lucide-react';
+import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins, Edit, FileClock } from 'lucide-react';
 import ChipCondition from '@/components/UI/ChipCondition';
-import { ScrollShadow } from '@nextui-org/react';
+import { ScrollShadow, Link, Button } from '@nextui-org/react';
 import styles from './style.module.scss';
+import { useShopModalStore } from '@/store/useShopModalStore';
 
 interface ShopBasicInfoProps {
   shop: Shop;
 }
 
 const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
+  const { openEditModal, openHistoryModal } = useShopModalStore();
   // ChipConditionを表示するための関数
   const renderChips = (items: any[], category: 'type' | 'layout' | 'option') => {
     return items.map((item) => (
@@ -107,7 +109,26 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.sectionTitle}>基本情報</div>
+      <div className={styles.sectionTitle}>
+        基本情報
+        <div className={styles.editActions}>
+          <Link 
+            className={styles.editBasicInfoLink}
+            onPress={openHistoryModal}
+          >
+            <FileClock size={16} strokeWidth={1} />
+            <span className={styles.editBasicInfo}>編集履歴</span>
+          </Link>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            onPress={openEditModal}
+            startContent={<Edit size={16} />}
+          >
+            基本情報を修正する
+          </Button>
+        </div>
+      </div>
       
       <div className={styles.infoGrid}>
         <div className={styles.infoItem}>

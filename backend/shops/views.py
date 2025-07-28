@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -6,23 +6,81 @@ from rest_framework.decorators import action
 from django.db import transaction, models
 from django.db.models import Count
 from .models import (
-    Shop, ShopType, ShopLayout, ShopOption,
-    ShopUpdateLog, ShopUpdateReaction, ShopReview,
+    Shop, ShopType, ShopLayout, ShopOption, ShopReview,
     ShopReviewReaction, RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
-    BusinessHour, PaymentMethod
+    BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation
 )
-from .serializers import ShopCreateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, \
-    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, \
-    ShopImageSerializer, PaymentMethodSerializer
+from .serializers import (
+    ShopCreateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
+    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
+    ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer
+)
 from .utils.geocode import get_coordinates_from_address
+
+
+class ShopUpdateAPIView(generics.UpdateAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # 変更前のインスタンスの状態を保持
+        old_instance_dict = {field.name: str(getattr(instance, field.name)) for field in instance._meta.fields}
+
+        response = super().update(request, *args, **kwargs)
+
+        # 変更後のインスタンス
+        instance.refresh_from_db()
+        new_instance_dict = {field.name: str(getattr(instance, field.name)) for field in instance._meta.fields}
+
+        # 変更点を履歴に保存
+        for field_name, old_value in old_instance_dict.items():
+            new_value = new_instance_dict.get(field_name)
+            if old_value != new_value:
+                ShopEditHistory.objects.create(
+                    shop=instance,
+                    user=request.user,
+                    field_name=field_name,
+                    old_value=old_value,
+                    new_value=new_value
+                )
+        return response
+
+
+class ShopEditHistoryListAPIView(generics.ListAPIView):
+    serializer_class = ShopEditHistorySerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        shop_id = self.kwargs.get('pk')
+        return ShopEditHistory.objects.filter(shop_id=shop_id)
+
+
+class HistoryEvaluationAPIView(generics.CreateAPIView):
+    serializer_class = HistoryEvaluationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        history_id = self.kwargs.get('pk')
+        history = ShopEditHistory.objects.get(id=history_id)
+        evaluation_type = serializer.validated_data.get('evaluation')
+
+        # ユーザーが既に評価しているか確認
+        evaluation, created = HistoryEvaluation.objects.update_or_create(
+            history=history,
+            user=self.request.user,
+            defaults={'evaluation': evaluation_type}
+        )
+        serializer.instance = evaluation
 
 
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
     permission_classes = [AllowAny]
-    authentication_classes = []
+    # authentication_classes = [] を削除して、デフォルトの認証クラスを使用
 
     def get_queryset(self):
         return Shop.objects.all().prefetch_related(
@@ -284,15 +342,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     queryset = PaymentMethod.objects.all()
     serializer_class = PaymentMethodSerializer
     permission_classes = [AllowAny]
-    authentication_classes = []
 
-class ShopUpdateLogViewSet(viewsets.ModelViewSet):
-    queryset = ShopUpdateLog.objects.all()
-    permission_classes = [IsAuthenticated]
 
-class ShopUpdateReactionViewSet(viewsets.ModelViewSet):
-    queryset = ShopUpdateReaction.objects.all()
-    permission_classes = [IsAuthenticated]
 
 class ShopReviewViewSet(viewsets.ModelViewSet):
     queryset = ShopReview.objects.all()
@@ -539,6 +590,62 @@ class ShopTagReactionViewSet(viewsets.ModelViewSet):
                 {"detail": "指定されたタグに対する共感が見つかりません。"},
                 status=status.HTTP_404_NOT_FOUND
             )
+    
+    # タグの反応を切り替えるためのカスタムエンドポイント
+    @action(detail=False, methods=['post'], url_path='toggle/(?P<tag_id>[^/.]+)')
+    def toggle_reaction(self, request, tag_id=None):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です。"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+        try:
+            shop_tag = ShopTag.objects.get(id=tag_id)
+        except ShopTag.DoesNotExist:
+            return Response(
+                {"detail": "指定されたタグが見つかりません。"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # 既存の反応を確認
+        reaction = ShopTagReaction.objects.filter(
+            shop_tag=shop_tag,
+            user=request.user
+        ).first()
+        
+        if reaction:
+            # 反応が存在する場合は削除
+            is_creator = shop_tag.created_by == request.user
+            reaction_count = shop_tag.reactions.count()
+            
+            reaction.delete()
+            
+            # 作成者の反応が削除され、反応数が0になった場合、タグも削除
+            if is_creator and reaction_count == 1:
+                shop_tag.delete()
+                return Response({
+                    "action": "removed",
+                    "tag_deleted": True,
+                    "detail": "タグと反応が削除されました。"
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "action": "removed",
+                    "tag_deleted": False,
+                    "detail": "反応が削除されました。"
+                }, status=status.HTTP_200_OK)
+        else:
+            # 反応が存在しない場合は作成
+            ShopTagReaction.objects.create(
+                shop_tag=shop_tag,
+                user=request.user
+            )
+            return Response({
+                "action": "added",
+                "tag_deleted": False,
+                "detail": "反応が追加されました。"
+            }, status=status.HTTP_200_OK)
 
 class ShopMessageViewSet(viewsets.ModelViewSet):
     queryset = ShopMessage.objects.all()

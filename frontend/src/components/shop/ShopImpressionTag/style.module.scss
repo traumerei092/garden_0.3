@@ -1,83 +1,66 @@
 .tag {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    cursor: default;
-    transition: all 0.2s ease;
-    position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 
-    &:hover {
-        background-color: rgba(255, 255, 255, 0.15);
-    }
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.02);
+  }
 
-    &.active {
-        background-color: rgba(76, 201, 240, 0.2);
-        border: 1px solid #4cc9f0;
-        
-        &:hover {
-            background-color: rgba(76, 201, 240, 0.3);
-        }
-        
-        .count {
-            background-color: #4cc9f0;
-        }
+  &.active {
+    background-color: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    
+    .label {
+      color: rgb(255, 255, 255);
     }
     
-    &.creator {
-        background-color: rgba(76, 201, 240, 0.2);
-        border: 1px solid #4cc9f0;
-        
-        &:hover {
-            background-color: rgba(76, 201, 240, 0.3);
-        }
-        
-        .count {
-            background-color: #4cc9f0;
-        }
+    .count {
+      background-color: rgba(0, 255, 255, 1);
+      color: #000000;
     }
+  }
+
+  &.creator {
+    background-color: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    
+    .label {
+      color: rgb(255, 255, 255);
+    }
+    
+    .count {
+      background-color: rgba(0, 255, 255, 1);
+      color: #000000;
+    }
+  }
 }
 
 .label {
-    color: white;
+  color: white;
 }
 
 .count {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
-}
-
-.deleteButton {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: rgba(243, 18, 96, 0.9);
-    color: white;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-        background-color: #f31260;
-        transform: scale(1.1);
-    }
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
 }

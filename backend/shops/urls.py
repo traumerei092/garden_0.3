@@ -8,8 +8,7 @@ router.register(r'shop-types', ShopTypeViewSet)
 router.register(r'shop-layouts', ShopLayoutViewSet)
 router.register(r'shop-options', ShopOptionViewSet)
 router.register(r'payment-methods', PaymentMethodViewSet)
-router.register(r'shop-update-logs', ShopUpdateLogViewSet)
-router.register(r'shop-update-reactions', ShopUpdateReactionViewSet)
+
 router.register(r'shop-reviews', ShopReviewViewSet)
 router.register(r'shop-review-reactions', ShopReviewReactionViewSet)
 router.register(r'relation-types', RelationTypeViewSet)
@@ -21,4 +20,7 @@ router.register(r'shop-images', ShopImageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('shops/<int:pk>/update/', ShopUpdateAPIView.as_view(), name='shop-update'),
+    path('shops/<int:pk>/history/', ShopEditHistoryListAPIView.as_view(), name='shop-history-list'),
+    path('history/<int:pk>/evaluate/', HistoryEvaluationAPIView.as_view(), name='history-evaluate'),
 ]

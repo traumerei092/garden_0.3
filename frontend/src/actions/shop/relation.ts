@@ -50,3 +50,36 @@ export const fetchShopStats = async (shopId: string): Promise<ShopStats> => {
         throw error;
     }
 };
+
+/**
+ * タグの反応を切り替える
+ */
+export const toggleTagReaction = async (tagId: number): Promise<any> => {
+    try {
+        console.log(`toggleTagReaction called with tagId: ${tagId}`);
+        const response = await fetchWithAuth(
+            `${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/toggle/${tagId}/`,
+            {
+                method: 'POST',
+            }
+        );
+
+        console.log(`toggleTagReaction response status: ${response.status}`);
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('認証の有効期限が切れています。再度ログインしてください。');
+            }
+            const errorText = await response.text();
+            console.error(`toggleTagReaction error response: ${errorText}`);
+            throw new Error('タグの反応切り替えに失敗しました');
+        }
+
+        const result = await response.json();
+        console.log(`toggleTagReaction result:`, result);
+        return result;
+    } catch (error) {
+        console.error('タグ反応切り替えエラー:', error);
+        throw error;
+    }
+};
