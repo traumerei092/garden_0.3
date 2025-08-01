@@ -64,3 +64,17 @@
   color: rgba(255, 255, 255, 1);
   text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
 }
+
+.compact {
+  padding: 4px;
+  min-width: auto;
+  
+  .rateContainer {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .circleValue {
+    font-size: 0.7rem;
+  }
+}

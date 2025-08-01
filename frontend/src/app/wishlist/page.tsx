@@ -6,6 +6,8 @@ import { ArrowLeft, Heart, Calendar } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchWishlistShops, UserShop } from '@/actions/shop/fetchUserShops';
+import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
+import { ShopStats, RelationType } from '@/types/shops';
 import { useAuthStore } from '@/store/useAuthStore';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
@@ -16,6 +18,24 @@ const WishlistPage: React.FC = () => {
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shopStats, setShopStats] = useState<{ [key: number]: ShopStats }>({});
+
+  // デフォルトのリレーションタイプ
+  const visitedRelation: RelationType = {
+    id: 1,
+    name: 'visited',
+    label: '行った',
+    count: 0,
+    color: '#22c55e'
+  };
+
+  const interestedRelation: RelationType = {
+    id: 2,
+    name: 'interested',
+    label: '行きたい',
+    count: 0,
+    color: '#ef4444'
+  };
 
   useEffect(() => {
     if (!user) {
@@ -107,6 +127,14 @@ const WishlistPage: React.FC = () => {
                   name={shop.name}
                   area={shop.area}
                   imageUrl={shop.image_url}
+                  distance="1.2km"
+                  matchRate={75}
+                  visitedRelation={visitedRelation}
+                  interestedRelation={interestedRelation}
+                  userRelations={{
+                    [visitedRelation.id]: false,
+                    [interestedRelation.id]: true // wishlistページなので行きたいはtrue
+                  }}
                 />
                 {shop.added_at && (
                   <div className={styles.addedDate}>

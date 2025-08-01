@@ -9,6 +9,10 @@ export interface UserShop {
   image_url: string | null;
   visited_at?: string;
   added_at?: string;
+  relations?: {
+    visited: boolean;
+    interested: boolean;
+  };
 }
 
 export interface UserShopsResponse {

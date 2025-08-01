@@ -13,22 +13,54 @@
 }
 
 .button {
-  border-radius: 50%;
+  border-radius: 8px;
   transition: all 0.2s ease;
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(1.05);
+  }
+  
+  &.visited {
+    &.active {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.8) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+    }
+  }
+  
+  &.interested {
+    &.active {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.8) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+    }
   }
 }
 
 .icon {
   transition: all 0.2s ease;
   color: white;
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .countDisplay {

@@ -2,22 +2,29 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shop } from "@/types/shops";
+import { Shop, ShopStats } from "@/types/shops";
 import { fetchShops } from "@/actions/shop/fetchShop";
+import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import styles from './style.module.scss';
 import LinkDefault from "@/components/UI/LinkDefault";
 import { useAuthStore } from "@/store/useAuthStore";
 import ShopCard from "../ShopCard";
+import ShopGridCard from "../ShopGridCard";
 import { Button, Spinner } from "@nextui-org/react";
 
-const ShopList = () => {
+interface ShopListProps {
+    viewMode?: string;
+}
+
+const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
 
     const [shops, setShops] = useState<Shop[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isLocationLoading, setIsLocationLoading] = useState(false);
     const [distances, setDistances] = useState<{ [key: number]: string | null }>({});
+    const [shopStats, setShopStats] = useState<{ [key: number]: ShopStats }>({});
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
     const targetUrl = user ? '/shops/create' : '/login';
@@ -47,14 +54,54 @@ const ShopList = () => {
         loadShops();
     }, []);
 
-    // 店舗データが更新されたら距離を計算する
+    // 店舗データが更新されたら距離を計算し、統計データを取得する
     useEffect(() => {
         console.log('shops state更新:', shops);
         if (shops && shops.length > 0) {
-            console.log('店舗データが存在するため、距離計算を実行します');
+            console.log('店舗データが存在するため、距離計算と統計データ取得を実行します');
             loadLocationData();
+            loadShopStats();
         }
     }, [shops]); // shopsの変更を監視
+
+    // 各店舗の統計データを取得
+    const loadShopStats = async () => {
+        const newShopStats: { [key: number]: ShopStats } = {};
+        
+        for (const shop of shops) {
+            try {
+                const stats = await fetchShopStats(shop.id.toString());
+                newShopStats[shop.id] = stats;
+            } catch (error) {
+                console.error(`店舗${shop.id}の統計データ取得に失敗:`, error);
+                // デフォルトの統計データを設定
+                newShopStats[shop.id] = {
+                    counts: [
+                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#22c55e' },
+                        { id: 2, name: 'interested', label: '行きたい', count: 0, color: '#ef4444' }
+                    ],
+                    user_relations: []
+                };
+            }
+        }
+        
+        setShopStats(newShopStats);
+    };
+
+    // リレーションの切り替え処理
+    const handleRelationToggle = async (shopId: number, relationTypeId: number) => {
+        try {
+            await toggleShopRelation(shopId.toString(), relationTypeId);
+            // 統計データを更新
+            const updatedStats = await fetchShopStats(shopId.toString());
+            setShopStats(prev => ({
+                ...prev,
+                [shopId]: updatedStats
+            }));
+        } catch (error) {
+            console.error('リレーションの切り替えに失敗:', error);
+        }
+    };
 
     // 位置情報を取得して距離を計算
     const loadLocationData = async () => {
@@ -128,24 +175,79 @@ const ShopList = () => {
         return <div>登録された店舗がありません</div>;
     }
 
+    // デフォルトのリレーションタイプ
+    const visitedRelation = {
+        id: 1,
+        name: 'visited',
+        label: '行った',
+        count: 0,
+        color: '#22c55e'
+    };
+
+    const interestedRelation = {
+        id: 2,
+        name: 'interested',
+        label: '行きたい',
+        count: 0,
+        color: '#ef4444'
+    };
+
     return (
-        <div className={styles.container}>
-            {shops.map((shop) => (
-                <ShopCard
-                    key={shop.id}
-                    name={shop.name}
-                    prefecture={shop.prefecture}
-                    city={shop.city}
-                    images={shop.images}
-                    shop_types={Array.isArray(shop.shop_types) ? shop.shop_types.map((type) => type.name) : []}
-                    shop_layouts={Array.isArray(shop.shop_layouts) ? shop.shop_layouts.map((layout) => layout.name) : []}
-                    shop_options={Array.isArray(shop.shop_options) ? shop.shop_options.map((option) => option.name) : []}
-                    onPress={() => router.push(`/shops/${shop.id}`)}
-                    shopDetail={`/shops/${shop.id}`}
-                    distance={distances[shop.id]}
-                    tags={shop.tags || []}
-                />
-            ))}
+        <div className={`${styles.container} ${viewMode === 'grid' ? styles.gridContainer : ''}`}>
+            {shops.map((shop) => {
+                const stats = shopStats[shop.id] || {
+                    counts: [
+                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#22c55e' },
+                        { id: 2, name: 'interested', label: '行きたい', count: 0, color: '#ef4444' }
+                    ],
+                    user_relations: []
+                };
+
+                const userRelations: { [key: number]: boolean } = {};
+                if (stats?.user_relations) {
+                    stats.user_relations.forEach((relation: any) => {
+                        userRelations[relation.relation_type_id] = true;
+                    });
+                }
+
+                if (viewMode === 'grid') {
+                    return (
+                        <ShopGridCard
+                            key={shop.id}
+                            id={shop.id}
+                            name={shop.name}
+                            area={`${shop.prefecture} ${shop.city}`}
+                            imageUrl={shop.images && shop.images.length > 0 ? shop.images[0].image_url : null}
+                            distance={distances[shop.id] || undefined}
+                            matchRate={75}
+                            visitedRelation={visitedRelation}
+                            interestedRelation={interestedRelation}
+                            userRelations={userRelations}
+                            onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
+                        />
+                    );
+                } else {
+                    return (
+                        <ShopCard
+                            key={shop.id}
+                            name={shop.name}
+                            prefecture={shop.prefecture}
+                            city={shop.city}
+                            images={shop.images}
+                            shop_types={shop.shop_types}
+                            shop_layouts={shop.shop_layouts}
+                            shop_options={shop.shop_options}
+                            onPress={() => router.push(`/shops/${shop.id}`)}
+                            shopDetail={`/shops/${shop.id}`}
+                            distance={distances[shop.id]}
+                            tags={shop.tags}
+                            matchRate={75}
+                            shopStats={stats}
+                            onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
+                        />
+                    );
+                }
+            })}
             <LinkDefault href={targetUrl} styleName={"link"}>
                 お店が見つからない場合はこちら
             </LinkDefault>

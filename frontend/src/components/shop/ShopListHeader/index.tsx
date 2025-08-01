@@ -8,7 +8,12 @@ import CustomTabs from "@/components/UI/CustomTabs";
 import {useRouter} from "next/navigation";
 import {useAuthStore} from "@/store/useAuthStore";
 
-const ShopListHeader = () => {
+interface ShopListHeaderProps {
+    selectedTab?: string;
+    onTabChange?: (tab: string) => void;
+}
+
+const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange }) => {
 
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
@@ -43,6 +48,8 @@ const ShopListHeader = () => {
                     variant="solid"
                     size="md"
                     className={styles.tabs}
+                    selectedKey={selectedTab}
+                    onSelectionChange={onTabChange}
                 />
             </div>
             <div className={styles.headerRight}>

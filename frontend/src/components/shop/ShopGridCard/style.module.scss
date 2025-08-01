@@ -1,12 +1,11 @@
 .shopGridCard {
   position: relative;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-radius: 12px;
+  background: transparent;
+  border: none;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   aspect-ratio: 16/9;
   min-height: 200px;
   width: 100%;
@@ -15,23 +14,6 @@
   &:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-    border-color: rgba(255, 255, 255, 0.2);
-
-    .imageContainer {
-      .overlay {
-        opacity: 0.3;
-      }
-
-      .shopImage {
-        transform: scale(1.1);
-      }
-    }
-
-    .content {
-      .shopName {
-        color: #ffffff;
-      }
-    }
   }
 
   &:active {
@@ -39,11 +21,21 @@
   }
 }
 
+.cardBody {
+  position: relative;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 65%;
+  height: 100%;
   overflow: hidden;
+  border-radius: 12px;
 
   .shopImage {
     width: 100%;
@@ -67,73 +59,206 @@
       filter: grayscale(1);
     }
   }
+}
 
-  .overlay {
+.actionButtons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  z-index: 10;
+  
+  // ShopActionButtonのクリックイベントを有効にする
+  pointer-events: auto;
+  
+  // 各ボタンコンテナ
+  .shop-action-button,
+  :global(.shop-action-button) {
+    pointer-events: auto;
+  }
+}
+
+.footer {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 9px;
+  padding: 6px 10px;
+  
+  // Liquid Glass スタイル
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  
+  // 液体のような光沢効果
+  &::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      180deg,
+    height: 1px;
+    background: linear-gradient(90deg, 
       transparent 0%,
-      rgba(0, 0, 0, 0.3) 50%,
-      rgba(0, 0, 0, 0.8) 100%
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%
     );
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  // ホバー時の効果
+  transition: all 0.3s ease;
+}
+
+.shopInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.shopName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.locationInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.areaInfo {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+
+  .locationIcon {
+    color: #ffffff;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  }
+
+  .areaText {
+    line-height: 1.1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
   }
 }
 
-.content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
-  z-index: 2;
-  pointer-events: none;
+.distanceInfo {
+  .distanceText {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+  }
+}
 
-  .shopName {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #e2e8f0;
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-    transition: color 0.3s ease;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+.matchRateContainer {
+  flex-shrink: 0;
+}
+
+.compactMatchRate {
+  // Liquid Glass スタイルでマッチ率を表示
+  background: linear-gradient(135deg, 
+    rgba(0, 255, 255, 0.15) 0%,
+    rgba(0, 255, 255, 0.08) 50%,
+    rgba(0, 255, 255, 0.05) 100%
+  );
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 4px;
+  min-width: auto;
+  box-shadow: 
+    0 4px 16px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(0, 255, 255, 0.2);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(0, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    border-radius: 12px 12px 0 0;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, 
+      rgba(0, 255, 255, 0.2) 0%,
+      rgba(0, 255, 255, 0.12) 50%,
+      rgba(0, 255, 255, 0.08) 100%
+    );
+    border-color: rgba(0, 255, 255, 0.5);
+    transform: none;
+    box-shadow: 
+      0 6px 20px rgba(0, 255, 255, 0.15),
+      inset 0 1px 0 rgba(0, 255, 255, 0.3);
+  }
+}
+
+// ホバー効果
+.shopGridCard:hover {
+  .imageContainer {
+    .shopImage {
+      transform: scale(1.05);
+    }
   }
 
-  .areaInfo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #a0aec0;
-    font-size: 0.85rem;
+  .footer {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  }
 
-    .locationIcon {
-      color: #ffffff;
-      flex-shrink: 0;
-      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-    }
-
-    .areaText {
-      line-height: 1.2;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-      display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  .shopName {
+    color: #ffffff;
   }
 }
 
@@ -147,15 +272,26 @@
     }
   }
 
-  .content {
-    padding: 12px;
+  .footer {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
 
-    .shopName {
-      font-size: 1rem;
-    }
+  .shopName {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
 
-    .areaInfo {
-      font-size: 0.8rem;
+  .areaInfo {
+    font-size: 0.7rem;
+    gap: 2px;
+
+    .locationIcon {
+      width: 9px;
+      height: 9px;
     }
   }
 }
@@ -165,39 +301,43 @@
     min-height: 160px;
   }
 
-  .content {
-    padding: 10px;
+  .footer {
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+    padding: 5px 8px;
+    border-radius: 12px;
+  }
 
-    .shopName {
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-    }
+  .shopName {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
 
-    .areaInfo {
-      font-size: 0.75rem;
-      gap: 4px;
+  .areaInfo {
+    font-size: 0.65rem;
+    gap: 2px;
 
-      .locationIcon {
-        width: 12px;
-        height: 12px;
-      }
+    .locationIcon {
+      width: 8px;
+      height: 8px;
     }
   }
 }
 
 // ダークモード対応
 @media (prefers-color-scheme: dark) {
-  .shopGridCard {
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-    border-color: rgba(255, 255, 255, 0.08);
-
-    &:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-  }
-
   .placeholderImage {
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  }
+
+  .footer {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -215,6 +355,10 @@
         transition: none;
       }
     }
+  }
+
+  .footer {
+    transition: none;
   }
 }
 

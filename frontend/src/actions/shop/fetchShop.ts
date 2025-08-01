@@ -38,12 +38,19 @@ export const fetchShops = async (): Promise<Shop[]> => {
             building: shop.building,
             capacity: shop.capacity,
             images: shop.images || null,
-            // shop_typesは既にオブジェクトの配列として返される
-            shop_types: Array.isArray(shop.shop_types) ? shop.shop_types : [],
-            // shop_layoutsは既にオブジェクトの配列として返される
-            shop_layouts: Array.isArray(shop.shop_layouts) ? shop.shop_layouts : [],
-            // shop_optionsは既にオブジェクトの配列として返される
-            shop_options: Array.isArray(shop.shop_options) ? shop.shop_options : [],
+            // StringRelatedFieldから返される文字列配列を{id, name}形式に変換
+            shop_types: Array.isArray(shop.shop_types) ? shop.shop_types.map((name: string, index: number) => ({
+                id: index + 1,
+                name: name
+            })) : [],
+            shop_layouts: Array.isArray(shop.shop_layouts) ? shop.shop_layouts.map((name: string, index: number) => ({
+                id: index + 1,
+                name: name
+            })) : [],
+            shop_options: Array.isArray(shop.shop_options) ? shop.shop_options.map((name: string, index: number) => ({
+                id: index + 1,
+                name: name
+            })) : [],
             business_hours: shop.business_hours || [],
             latitude: shop.latitude,
             longitude: shop.longitude,

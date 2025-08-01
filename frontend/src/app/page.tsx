@@ -6,15 +6,13 @@ import React from 'react';
 import { useRouter } from "next/navigation";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
-import InputDefault from "@/components/UI/InputDefault";
 import Header from "@/components/Layout/Header";
-import { getCurrentPosition } from '@/utils/location';
+import { Card, CardBody, Input } from '@nextui-org/react';
 
 export default function Home() {
 
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
-
 
     const handleLocationClick = async () => {
         try {
@@ -63,32 +61,39 @@ export default function Home() {
                 <div className={styles.container}>
                     <div className={styles.firstView}>
                         <HeroText/>
-                        <ButtonGradient anotherStyle={styles.anotherStyle}>
-                            あなたにマッチするお店を探す（Coming soon）
-                        </ButtonGradient>
-                        <div className={styles.firstViewUnder}>
-                            <ButtonGradientWrapper
-                                anotherStyle={styles.anotherStyle}
-
-                            >
-                                条件で探す
-                            </ButtonGradientWrapper>
-                            <ButtonGradientWrapper
-                                anotherStyle={styles.anotherStyle}
-                                onClick={handleLocationClick}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? '位置情報を取得中...' : '現在地から探す'}
-                            </ButtonGradientWrapper>
-                        </div>
-                        <InputDefault
-                            label="キーワードで探す"
-                            type="text"
-                            name={""}
-                            value={""}
-                            onChange={handleLocationClick}
-                            anotherStyle={""}
-                        />
+                        <Card className={styles.searchCard} radius="lg">
+                            <CardBody className={styles.searchCardBody}>
+                                <ButtonGradient anotherStyle={styles.anotherStyle}>
+                                    あなたにマッチするお店を探す（Coming soon）
+                                </ButtonGradient>
+                                <div className={styles.firstViewUnder}>
+                                    <ButtonGradientWrapper
+                                        anotherStyle={styles.buttonStyle}
+                                    >
+                                        こだわり条件で探す
+                                    </ButtonGradientWrapper>
+                                    <ButtonGradientWrapper
+                                        anotherStyle={styles.buttonStyle}
+                                        onClick={handleLocationClick}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? '位置情報を取得中...' : '現在地から探す'}
+                                    </ButtonGradientWrapper>
+                                </div>
+                                <Input
+                                    placeholder="キーワードで探す"
+                                    className={styles.searchInput}
+                                    classNames={{
+                                        base: styles.searchInputBase,
+                                        mainWrapper: styles.searchInputMainWrapper,
+                                        input: styles.searchInputField,
+                                        inputWrapper: styles.searchInputWrapper,
+                                    }}
+                                    variant="bordered"
+                                    size="lg"
+                                />
+                            </CardBody>
+                        </Card>
                     </div>
                 </div>
             </div>

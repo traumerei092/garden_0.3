@@ -4,7 +4,7 @@
   letter-spacing: 0.2em;
 
   p {
-    font-size: 3.5rem;
+    font-size: 3.5em;
     margin: 0;
   }
 
@@ -16,6 +16,35 @@
 }
 
 .barHub {
-  font-size: 2rem!important;
+  font-size: 2em!important;
   letter-spacing: 1px;
+}
+
+//レスポンシブ対応
+@media (max-width: 768px) {
+  .hero {
+    p {
+      font-size: 2.5em;
+    }
+    h1 {
+      font-size: 3.5em;
+    }
+  }
+  .barHub {
+    font-size: 1.5em!important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    p {
+      font-size: 2em;
+    }
+    h1 {
+      font-size: 3em;
+    }
+  }
+  .barHub {
+    font-size: 1.2em!important;
+  }
 }

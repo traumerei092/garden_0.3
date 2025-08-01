@@ -12,6 +12,7 @@ type ShopActionButtonProps = {
     isActive?: boolean;
     onClick?: () => void;
     loading?: boolean;
+    showCount?: boolean;
 };
 
 const ShopActionButton: React.FC<ShopActionButtonProps> = ({
@@ -19,22 +20,25 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
     count,
     isActive = false,
     onClick,
-    loading = false
+    loading = false,
+    showCount = true
 }) => {
     const getIcon = () => {
         switch (type.name) {
             case 'visited':
                 return <Star
-                    size={24}
-                    strokeWidth={isActive ? 0 : 1}
-                    fill={isActive ? type.color : 'none'}
+                    size={16}
+                    strokeWidth={isActive ? 0 : 1.5}
+                    fill={isActive ? '#ffc107' : 'none'}
+                    color={isActive ? '#ffc107' : 'white'}
                     className={styles.icon}
                 />;
             case 'interested':
                 return <Heart
-                    size={24}
-                    strokeWidth={isActive ? 0 : 1}
-                    fill={isActive ? type.color : 'none'}
+                    size={16}
+                    strokeWidth={isActive ? 0 : 1.5}
+                    fill={isActive ? '#ef4444' : 'none'}
+                    color={isActive ? '#ef4444' : 'white'}
                     className={styles.icon}
                 />;
             default:
@@ -54,7 +58,7 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
         <div className={styles.buttonContainer}>
             <Tooltip content={tooltipContent()} placement="bottom" className={styles.tooltip}>
                 <Button
-                    className={`${styles.button} ${isActive ? styles.active : ''}`}
+                    className={`${styles.button} ${styles[type.name]} ${isActive ? styles.active : ''}`}
                     isIconOnly
                     variant="light"
                     onPress={onClick}
@@ -64,7 +68,7 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
                     {getIcon()}
                 </Button>
             </Tooltip>
-            <span className={styles.countDisplay}>{count}</span>
+            {showCount && <span className={styles.countDisplay}>{count}</span>}
         </div>
     );
 };

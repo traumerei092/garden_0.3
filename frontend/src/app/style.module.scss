@@ -23,6 +23,92 @@
   align-items: center;
   flex-direction: column;
   gap: 2.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// Enhanced Liquid Glass Card
+.searchCard {
+  width: 100%;
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.02) 75%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  
+  // Multi-layer liquid effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(255, 255, 255, 0.6) 20%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0.6) 80%,
+      transparent 100%
+    );
+    border-radius: 16px 16px 0 0;
+    z-index: 1;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%
+    );
+    z-index: 1;
+  }
+  
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.12) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 75%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+.searchCardBody {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .backgroundImage {
@@ -57,15 +143,24 @@
 }
 
 .anotherStyle {
-  min-width: 300px;
+  min-width: 280px;
   text-align: center;
+  flex: 1;
+  width: 100%;
+}
+
+.buttonStyle {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
 }
 
 .firstViewUnder {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 4em;
+  gap: 1rem;
+  width: 100%;
 }
 
 .about {
@@ -97,4 +192,171 @@
 
 .loading {
   color: rgba(0, 255, 255, 1);
+}
+
+// NextUI Input Styling
+.searchInput {
+  width: 100%;
+}
+
+.searchInputBase {
+  width: 100%;
+}
+
+.searchInputMainWrapper {
+  width: 100%;
+}
+
+.searchInputWrapper {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  ) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 100%
+    ) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  &[data-focus="true"] {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    ) !important;
+    border-color: rgba(0, 255, 255, 0.4) !important;
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 2px 8px rgba(0, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+.searchInputField {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1rem !important;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+}
+
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding-top: 8rem;
+  }
+
+  .firstView {
+    gap: 2rem;
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .searchCard {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .searchCardBody {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .firstViewUnder {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .buttonStyle {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .anotherStyle {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: 100%;
+    padding-top: 6rem;
+  }
+
+  .firstView {
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .searchCard {
+    margin: 0 0.5rem;
+  }
+
+  .searchCardBody {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .firstViewUnder {
+    gap: 0.75rem;
+  }
+
+  .buttonStyle {
+    min-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .anotherStyle {
+    min-width: 100%;
+    font-size: 0.9rem;
+  }
+}
+
+// ダークモード対応
+@media (prefers-color-scheme: dark) {
+  .searchCard {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+// アクセシビリティ対応
+@media (prefers-reduced-motion: reduce) {
+  .searchCard {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// フォーカス対応
+.searchCard:focus-within {
+  outline: 2px solid #4fd1c7;
+  outline-offset: 2px;
 }

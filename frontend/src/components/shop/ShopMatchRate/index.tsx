@@ -6,12 +6,26 @@ import styles from './style.module.scss';
 
 type ShopMatchRateProps = {
   rate: number;
+  showTitle?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 };
 
-const ShopMatchRate: React.FC<ShopMatchRateProps> = ({ rate }) => {
+const ShopMatchRate: React.FC<ShopMatchRateProps> = ({ 
+  rate, 
+  showTitle = true, 
+  size = 'lg',
+  className 
+}) => {
+  const containerClass = className ? `${styles.container} ${className}` : styles.container;
+  const compactClass = !showTitle ? styles.compact : '';
+  const finalContainerClass = compactClass ? `${containerClass} ${compactClass}` : containerClass;
+
   return (
-    <div className={styles.container}>
-      <div className={styles.title}>あなたとのマッチ率</div>
+    <div className={finalContainerClass}>
+      {showTitle && (
+        <div className={styles.title}>あなたとのマッチ率</div>
+      )}
       <div className={styles.rateContainer}>
         <CircularProgress
           classNames={{
@@ -24,7 +38,7 @@ const ShopMatchRate: React.FC<ShopMatchRateProps> = ({ rate }) => {
           color="secondary"
           showValueLabel={true}
           aria-label="マッチ率"
-          size="lg"
+          size={size}
         />
       </div>
     </div>
