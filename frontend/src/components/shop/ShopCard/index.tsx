@@ -78,23 +78,34 @@ const ShopCard = ({
         displayImage = images;
     }
 
-    // 行った数と行きたい数を取得
+    // 各リレーションタイプのデータを取得
+    const favoriteRelation = shopStats?.counts.find(c => c.name === 'favorite');
     const visitedRelation = shopStats?.counts.find(c => c.name === 'visited');
     const interestedRelation = shopStats?.counts.find(c => c.name === 'interested');
     
+    const favoriteCount = favoriteRelation?.count || 0;
     const visitedCount = visitedRelation?.count || 0;
     const interestedCount = interestedRelation?.count || 0;
     
+    const isFavorite = shopStats?.user_relations.includes(favoriteRelation?.id || 0) || false;
     const isVisited = shopStats?.user_relations.includes(visitedRelation?.id || 0) || false;
     const isInterested = shopStats?.user_relations.includes(interestedRelation?.id || 0) || false;
 
     // RelationType用のデータを作成
+    const favoriteType: RelationType = {
+        id: favoriteRelation?.id || 3,
+        name: 'favorite',
+        label: '行きつけ',
+        count: favoriteCount,
+        color: '#00ffff'
+    };
+
     const visitedType: RelationType = {
         id: visitedRelation?.id || 1,
         name: 'visited',
         label: '行った',
         count: visitedCount,
-        color: '#22c55e'
+        color: '#ffc107'
     };
 
     const interestedType: RelationType = {
@@ -134,6 +145,12 @@ const ShopCard = ({
                             <div className={styles.titleRow}>
                                 <Link className={styles.title} href={shopDetail}>{name}</Link>
                                 <div className={styles.actionButtons}>
+                                    <ShopActionButton
+                                        type={favoriteType}
+                                        count={favoriteCount}
+                                        isActive={isFavorite}
+                                        onClick={() => onRelationToggle?.(favoriteType.id)}
+                                    />
                                     <ShopActionButton
                                         type={visitedType}
                                         count={visitedCount}

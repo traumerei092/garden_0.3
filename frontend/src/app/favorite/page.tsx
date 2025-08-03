@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MapPin, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Crown, Calendar } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
-import { fetchVisitedShops, UserShop } from '@/actions/shop/fetchUserShops';
+import { fetchFavoriteShops, UserShop } from '@/actions/shop/fetchUserShops';
 import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
 import { ShopStats, RelationType } from '@/types/shops';
 import { useAuthStore } from '@/store/useAuthStore';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
 
-const VisitedPage: React.FC = () => {
+const FavoritePage: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
   const [shops, setShops] = useState<UserShop[]>([]);
@@ -51,15 +51,15 @@ const VisitedPage: React.FC = () => {
       return;
     }
 
-    const loadVisitedShops = async () => {
+    const loadFavoriteShops = async () => {
       try {
         setLoading(true);
-        const visitedShops = await fetchVisitedShops();
-        setShops(visitedShops);
+        const favoriteShops = await fetchFavoriteShops();
+        setShops(favoriteShops);
         
         // 各店舗の統計データを取得
         const newShopStats: { [key: number]: ShopStats } = {};
-        for (const shop of visitedShops) {
+        for (const shop of favoriteShops) {
           try {
             const stats = await fetchShopStats(shop.id.toString());
             newShopStats[shop.id] = stats;
@@ -69,14 +69,14 @@ const VisitedPage: React.FC = () => {
         }
         setShopStats(newShopStats);
       } catch (err) {
-        console.error('Error loading visited shops:', err);
-        setError('行った店舗の読み込みに失敗しました');
+        console.error('Error loading favorite shops:', err);
+        setError('行きつけ店舗の読み込みに失敗しました');
       } finally {
         setLoading(false);
       }
     };
 
-    loadVisitedShops();
+    loadFavoriteShops();
   }, [user, router]);
 
   const handleBackClick = () => {
@@ -105,7 +105,7 @@ const VisitedPage: React.FC = () => {
   }
 
   return (
-    <div className={styles.visitedPage}>
+    <div className={styles.favoritePage}>
       <Header />
       <div className={styles.header}>
         <button onClick={handleBackClick} className={styles.backButton}>
@@ -114,11 +114,11 @@ const VisitedPage: React.FC = () => {
         </button>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
-            <Star className={styles.titleIcon} />
-            行った店舗
+            <Crown className={styles.titleIcon} />
+            行きつけの店舗
           </h1>
           <p className={styles.subtitle}>
-            あなたが訪れた{shops.length}件の店舗
+            あなたの行きつけ{shops.length}件の店舗
           </p>
         </div>
       </div>
@@ -126,10 +126,10 @@ const VisitedPage: React.FC = () => {
       <div className={styles.content}>
         {shops.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>🏪</div>
-            <h3 className={styles.emptyTitle}>まだ行った店舗がありません</h3>
+            <div className={styles.emptyIcon}>👑</div>
+            <h3 className={styles.emptyTitle}>まだ行きつけの店舗がありません</h3>
             <p className={styles.emptyDescription}>
-              気になる店舗を見つけて「行った」ボタンを押してみましょう
+              気に入った店舗を見つけて「行きつけ」ボタンを押してみましょう
             </p>
             <button 
               onClick={() => router.push('/shops')} 
@@ -164,11 +164,11 @@ const VisitedPage: React.FC = () => {
                   interestedRelation={interestedRelation}
                   userRelations={userRelations}
                 />
-                {shop.visited_at && (
-                  <div className={styles.visitedDate}>
+                {shop.added_at && (
+                  <div className={styles.addedDate}>
                     <Calendar size={14} />
                     <span>
-                      {new Date(shop.visited_at).toLocaleDateString('ja-JP', {
+                      {new Date(shop.added_at).toLocaleDateString('ja-JP', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
@@ -186,4 +186,4 @@ const VisitedPage: React.FC = () => {
   );
 };
 
-export default VisitedPage;
+export default FavoritePage;

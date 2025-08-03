@@ -77,7 +77,8 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
                 // デフォルトの統計データを設定
                 newShopStats[shop.id] = {
                     counts: [
-                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#22c55e' },
+                        { id: 3, name: 'favorite', label: '行きつけ', count: 0, color: '#00ffff' },
+                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#ffc107' },
                         { id: 2, name: 'interested', label: '行きたい', count: 0, color: '#ef4444' }
                     ],
                     user_relations: []
@@ -176,12 +177,20 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
     }
 
     // デフォルトのリレーションタイプ
+    const favoriteRelation = {
+        id: 3,
+        name: 'favorite',
+        label: '行きつけ',
+        count: 0,
+        color: '#00ffff'
+    };
+
     const visitedRelation = {
         id: 1,
         name: 'visited',
         label: '行った',
         count: 0,
-        color: '#22c55e'
+        color: '#ffc107'
     };
 
     const interestedRelation = {
@@ -197,7 +206,8 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
             {shops.map((shop) => {
                 const stats = shopStats[shop.id] || {
                     counts: [
-                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#22c55e' },
+                        { id: 3, name: 'favorite', label: '行きつけ', count: 0, color: '#00ffff' },
+                        { id: 1, name: 'visited', label: '行った', count: 0, color: '#ffc107' },
                         { id: 2, name: 'interested', label: '行きたい', count: 0, color: '#ef4444' }
                     ],
                     user_relations: []
@@ -205,8 +215,8 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
 
                 const userRelations: { [key: number]: boolean } = {};
                 if (stats?.user_relations) {
-                    stats.user_relations.forEach((relation: any) => {
-                        userRelations[relation.relation_type_id] = true;
+                    stats.user_relations.forEach((relationTypeId: number) => {
+                        userRelations[relationTypeId] = true;
                     });
                 }
 
@@ -220,6 +230,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
                             imageUrl={shop.images && shop.images.length > 0 ? shop.images[0].image_url : null}
                             distance={distances[shop.id] || undefined}
                             matchRate={75}
+                            favoriteRelation={favoriteRelation}
                             visitedRelation={visitedRelation}
                             interestedRelation={interestedRelation}
                             userRelations={userRelations}

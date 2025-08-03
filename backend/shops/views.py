@@ -728,7 +728,7 @@ class ShopImageViewSet(viewsets.ModelViewSet):
 class UserShopRelationViewSet(viewsets.ModelViewSet):
     serializer_class = UserShopRelationSerializer
     def get_permissions(self):
-        if self.action in ['shop_stats', 'list', 'retrieve', 'visited_shops', 'wishlist_shops']:
+        if self.action in ['shop_stats', 'list', 'retrieve', 'visited_shops', 'wishlist_shops', 'favorite_shops']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -754,8 +754,16 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
             count=models.Count('id')
         )
         
-        # リレーションタイプの情報を取得
-        relation_types = RelationType.objects.all()
+        # リレーションタイプの情報を取得（favorite → visited → interested の順）
+        relation_types = RelationType.objects.all().order_by(
+            models.Case(
+                models.When(name='favorite', then=models.Value(1)),
+                models.When(name='visited', then=models.Value(2)),
+                models.When(name='interested', then=models.Value(3)),
+                default=models.Value(4),
+                output_field=models.IntegerField()
+            )
+        )
         
         # レスポンス用のデータを構築
         counts = []
@@ -910,6 +918,60 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
             relations = UserShopRelation.objects.filter(
                 user=request.user,
                 relation_type=wishlist_relation_type
+            ).select_related('shop').prefetch_related(
+                'shop__images',
+                'shop__shop_types',
+                'shop__shop_layouts',
+                'shop__shop_options'
+            ).order_by('-created_at')
+            
+            shops_data = []
+            for relation in relations:
+                shop = relation.shop
+                # アイコン画像を取得
+                icon_image = shop.images.filter(is_icon=True).first()
+                if not icon_image:
+                    icon_image = shop.images.first()
+                
+                shops_data.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
+                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
+                    'added_at': relation.created_at
+                })
+            
+            return Response({"shops": shops_data})
+            
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['get'])
+    def favorite_shops(self, request):
+        """
+        ユーザーの行きつけ店舗一覧を取得
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # "favorite" タイプのRelationTypeを取得
+            favorite_relation_type = RelationType.objects.filter(name='favorite').first()
+            if not favorite_relation_type:
+                return Response({"shops": []})
+            
+            # ユーザーの行きつけ店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=favorite_relation_type
             ).select_related('shop').prefetch_related(
                 'shop__images',
                 'shop__shop_types',

@@ -52,13 +52,16 @@ const Header = () => {
                 {user ? (
                     <>
                         <NavbarItem className={styles.navbarItem}>
-                            <LinkDefault href={"/profile"} styleName={"link"}>プロフィール</LinkDefault>
+                            <LinkDefault href={"/favorite"} styleName={"link"}>行きつけのお店</LinkDefault>
                         </NavbarItem>
                         <NavbarItem className={styles.navbarItem}>
                             <LinkDefault href={"/visited"} styleName={"link"}>行ったお店</LinkDefault>
                         </NavbarItem>
                         <NavbarItem className={styles.navbarItem}>
-                            <LinkDefault href={"/wishlist"} styleName={"link"}>行きたいお店</LinkDefault>
+                            <LinkDefault href={"/wishlist"} styleName={"link"}>気になるお店</LinkDefault>
+                        </NavbarItem>
+                        <NavbarItem className={styles.navbarItem}>
+                            <LinkDefault href={"/profile"} styleName={"link"}>プロフィール</LinkDefault>
                         </NavbarItem>
                         <NavbarItem className={styles.navbarItem}>
                             <LinkDefault href={"/"} styleName={"link"}>Browsing</LinkDefault>

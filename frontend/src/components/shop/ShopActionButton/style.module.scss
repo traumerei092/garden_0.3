@@ -54,6 +54,20 @@
       }
     }
   }
+  
+  &.favorite {
+    &.active {
+      background: rgba(0, 255, 255, 0.1) !important;
+      border-color: rgba(0, 255, 255, 0.3) !important;
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
+      
+      &:hover {
+        background: rgba(0, 255, 255, 0.15) !important;
+        border-color: rgba(0, 255, 255, 0.5) !important;
+        box-shadow: 0 0 16px rgba(0, 255, 255, 0.3);
+      }
+    }
+  }
 }
 
 .icon {

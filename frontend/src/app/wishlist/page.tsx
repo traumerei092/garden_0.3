@@ -21,18 +21,26 @@ const WishlistPage: React.FC = () => {
   const [shopStats, setShopStats] = useState<{ [key: number]: ShopStats }>({});
 
   // デフォルトのリレーションタイプ
+  const favoriteRelation: RelationType = {
+    id: 3,
+    name: 'favorite',
+    label: '行きつけ',
+    count: 0,
+    color: '#00ffff'
+  };
+
   const visitedRelation: RelationType = {
     id: 1,
     name: 'visited',
     label: '行った',
     count: 0,
-    color: '#22c55e'
+    color: '#ffc107'
   };
 
   const interestedRelation: RelationType = {
     id: 2,
     name: 'interested',
-    label: '行きたい',
+    label: '気になる',
     count: 0,
     color: '#ef4444'
   };
@@ -48,6 +56,18 @@ const WishlistPage: React.FC = () => {
         setLoading(true);
         const wishlistShops = await fetchWishlistShops();
         setShops(wishlistShops);
+        
+        // 各店舗の統計データを取得
+        const newShopStats: { [key: number]: ShopStats } = {};
+        for (const shop of wishlistShops) {
+          try {
+            const stats = await fetchShopStats(shop.id.toString());
+            newShopStats[shop.id] = stats;
+          } catch (error) {
+            console.error(`店舗${shop.id}の統計データ取得に失敗:`, error);
+          }
+        }
+        setShopStats(newShopStats);
       } catch (err) {
         console.error('Error loading wishlist shops:', err);
         setError('行きたい店舗の読み込みに失敗しました');
@@ -120,7 +140,17 @@ const WishlistPage: React.FC = () => {
           </div>
         ) : (
           <div className={styles.shopsGrid}>
-            {shops.map((shop) => (
+            {shops.map((shop) => {
+              const stats = shopStats[shop.id];
+              const userRelations: { [key: number]: boolean } = {};
+              
+              if (stats?.user_relations) {
+                stats.user_relations.forEach((relationTypeId: number) => {
+                  userRelations[relationTypeId] = true;
+                });
+              }
+
+              return (
               <div key={shop.id} className={styles.shopCardWrapper}>
                 <ShopGridCard
                   id={shop.id}
@@ -129,12 +159,10 @@ const WishlistPage: React.FC = () => {
                   imageUrl={shop.image_url}
                   distance="1.2km"
                   matchRate={75}
+                  favoriteRelation={favoriteRelation}
                   visitedRelation={visitedRelation}
                   interestedRelation={interestedRelation}
-                  userRelations={{
-                    [visitedRelation.id]: false,
-                    [interestedRelation.id]: true // wishlistページなので行きたいはtrue
-                  }}
+                  userRelations={userRelations}
                 />
                 {shop.added_at && (
                   <div className={styles.addedDate}>
@@ -149,7 +177,8 @@ const WishlistPage: React.FC = () => {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

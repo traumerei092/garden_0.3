@@ -50,3 +50,19 @@ export const fetchWishlistShops = async (): Promise<UserShop[]> => {
     throw error;
   }
 };
+
+export const fetchFavoriteShops = async (): Promise<UserShop[]> => {
+  try {
+    const response = await fetchWithAuth('/user-shop-relations/favorite_shops/');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data: UserShopsResponse = await response.json();
+    return data.shops;
+  } catch (error) {
+    console.error('Error fetching favorite shops:', error);
+    throw error;
+  }
+};

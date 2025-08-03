@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button, Tooltip } from '@nextui-org/react';
-import { Star, Heart } from 'lucide-react';
+import { Star, Heart, Crown } from 'lucide-react';
 import { RelationType } from '@/types/shops';
 import styles from './style.module.scss';
 
@@ -25,6 +25,14 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
 }) => {
     const getIcon = () => {
         switch (type.name) {
+            case 'favorite':
+                return <Crown
+                    size={16}
+                    strokeWidth={isActive ? 0 : 1.5}
+                    fill={isActive ? '#00ffff' : 'none'}
+                    color={isActive ? '#00ffff' : 'white'}
+                    className={styles.icon}
+                />;
             case 'visited':
                 return <Star
                     size={16}

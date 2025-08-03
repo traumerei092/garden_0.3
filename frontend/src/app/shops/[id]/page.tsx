@@ -69,6 +69,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       // デフォルトの統計データを設定
       setRelationStats({
         counts: [
+          { id: 3, name: 'favorite', label: '行きつけ', count: 0, color: 'success' },
           { id: 1, name: 'visited', label: '行った', count: 0, color: 'primary' },
           { id: 2, name: 'interested', label: '行きたい', count: 0, color: 'secondary' }
         ],

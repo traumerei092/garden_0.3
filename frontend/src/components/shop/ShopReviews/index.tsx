@@ -147,7 +147,7 @@ const ShopReviews: React.FC<ShopReviewsProps> = ({ shopId }) => {
               {hasMultipleReviews && (
                 <div className={styles.reviewSequence}>
                   <Link2 size={12} />
-                  <span>{isFirstReview ? '初来店' : `${reviewIndex + 1}回目の口コミ`}</span>
+                  <span>{isFirstReview ? '初回' : `${reviewIndex + 1}回目の口コミ`}</span>
                 </div>
               )}
             </div>
@@ -165,7 +165,7 @@ const ShopReviews: React.FC<ShopReviewsProps> = ({ shopId }) => {
                 onPress={() => toggleReviewExpansion(review.id)}
               >
                 <ArrowUpDown size={14} />
-                {isExpanded ? '折りたたむ' : '関連する口コミ'}
+                {isExpanded ? '折りたたむ' : 'このユーザーの他の口コミ'}
               </Button>
             )}
           </div>

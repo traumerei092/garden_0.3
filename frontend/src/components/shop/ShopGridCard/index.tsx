@@ -18,6 +18,7 @@ interface ShopGridCardProps {
   distance?: string;
   matchRate?: number;
   onClick?: () => void;
+  favoriteRelation?: RelationType;
   visitedRelation?: RelationType;
   interestedRelation?: RelationType;
   userRelations?: { [key: number]: boolean };
@@ -32,6 +33,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
   distance,
   matchRate = 75,
   onClick,
+  favoriteRelation,
   visitedRelation,
   interestedRelation,
   userRelations = {},
@@ -45,6 +47,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
   console.log(`ShopGridCard ${name} (ID: ${id}):`, {
     userRelations,
     currentUserRelations,
+    favoriteRelation,
     visitedRelation,
     interestedRelation
   });
@@ -102,6 +105,18 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
           
           {/* ShopActionButtons - 右上に配置 */}
           <div className={styles.actionButtons}>
+            {favoriteRelation && (
+              <div className="shop-action-button">
+                <ShopActionButton
+                  type={favoriteRelation}
+                  count={0}
+                  isActive={currentUserRelations[favoriteRelation.id] || false}
+                  onClick={() => handleRelationToggle(favoriteRelation)}
+                  loading={loadingRelations[favoriteRelation.id] || false}
+                  showCount={false}
+                />
+              </div>
+            )}
             {visitedRelation && (
               <div className="shop-action-button">
                 <ShopActionButton

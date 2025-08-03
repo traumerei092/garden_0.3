@@ -1,4 +1,4 @@
-.visitedPage {
+.favoritePage {
   min-height: 100vh;
   background: rgb(10, 11, 28);
   color: #ffffff;
@@ -44,14 +44,14 @@
       font-size: 2rem;
       font-weight: 700;
       margin: 0 0 8px 0;
-      background: linear-gradient(135deg, #ffc107 0%, #f59e0b 100%);
+      background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
 
       .titleIcon {
-        color: #ffc107;
-        filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
+        color: #00ffff;
+        filter: drop-shadow(0 2px 4px rgba(0, 255, 255, 0.3));
       }
     }
 
@@ -147,7 +147,7 @@
   }
 
   .exploreButton {
-    background: linear-gradient(135deg, #ffc107 0%, #f59e0b 100%);
+    background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
     color: #1a202c;
     border: none;
     padding: 14px 28px;
@@ -156,11 +156,11 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+      box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
     }
   }
 }
@@ -174,16 +174,16 @@
   .shopCardWrapper {
     position: relative;
 
-    .visitedDate {
+    .addedDate {
       display: flex;
       align-items: center;
       gap: 6px;
       margin-top: 12px;
       padding: 8px 12px;
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.3);
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 255, 0.3);
       border-radius: 8px;
-      color: #ffc107;
+      color: #00ffff;
       font-size: 0.85rem;
       font-weight: 500;
 
@@ -277,7 +277,7 @@
 
 // ダークモード対応
 @media (prefers-color-scheme: dark) {
-  .visitedPage {
+  .favoritePage {
     background: linear-gradient(135deg, #000000 0%, #0f0f23 50%, #1a1a2e 100%);
   }
 
@@ -303,6 +303,6 @@
 .backButton:focus-visible,
 .exploreButton:focus-visible,
 .retryButton:focus-visible {
-  outline: 2px solid #ffc107;
+  outline: 2px solid #00ffff;
   outline-offset: 2px;
 }
