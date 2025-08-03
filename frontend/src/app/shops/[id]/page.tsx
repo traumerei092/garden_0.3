@@ -477,7 +477,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                     <span>口コミ</span>
                   </div>
                 ),
-                content: <ShopReviews shop={shop} />
+                content: <ShopReviews shopId={shop.id} />
               },
               {
                 key: "drinks",

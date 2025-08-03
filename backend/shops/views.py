@@ -4,17 +4,19 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction, models
-from django.db.models import Count
+from django.db.models import Count, F
+from django.shortcuts import get_object_or_404
 from .models import (
-    Shop, ShopType, ShopLayout, ShopOption, ShopReview,
-    ShopReviewReaction, RelationType, UserShopRelation,
+    Shop, ShopType, ShopLayout, ShopOption, ShopReview, ShopReviewLike,
+    RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation
 )
 from .serializers import (
     ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
-    ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer
+    ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer,
+    ShopReviewSerializer, ShopReviewLikeSerializer
 )
 from .utils.geocode import get_coordinates_from_address
 
@@ -346,12 +348,67 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
 
 
 class ShopReviewViewSet(viewsets.ModelViewSet):
-    queryset = ShopReview.objects.all()
+    serializer_class = ShopReviewSerializer
     permission_classes = [IsAuthenticated]
 
-class ShopReviewReactionViewSet(viewsets.ModelViewSet):
-    queryset = ShopReviewReaction.objects.all()
+    def get_queryset(self):
+        shop_id = self.kwargs.get('shop_pk')
+        queryset = ShopReview.objects.filter(shop_id=shop_id)
+
+        # 来店目的による絞り込み
+        visit_purpose_id = self.request.query_params.get('visit_purpose_id')
+        if visit_purpose_id:
+            queryset = queryset.filter(visit_purpose_id=visit_purpose_id)
+
+        # 来店ステータスによる絞り込み
+        status = self.request.query_params.get('status')
+        if status:
+            try:
+                # "favorite" (行きつけ) または "visited" (行った) のRelationTypeを取得
+                relation_type = RelationType.objects.get(name=status)
+                # そのリレーションを持つユーザーを取得
+                user_ids = UserShopRelation.objects.filter(
+                    shop_id=shop_id,
+                    relation_type=relation_type
+                ).values_list('user_id', flat=True)
+                queryset = queryset.filter(user_id__in=user_ids)
+            except RelationType.DoesNotExist:
+                # 該当するRelationTypeがなければ、空のクエリセットを返す
+                return queryset.none()
+
+        return queryset.select_related('user', 'visit_purpose').order_by('-created_at')
+
+    def perform_create(self, serializer):
+        shop = get_object_or_404(Shop, pk=self.kwargs.get('shop_pk'))
+        serializer.save(user=self.request.user, shop=shop)
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+
+class ReviewLikeAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        review_id = self.kwargs.get('review_pk')
+        review = get_object_or_404(ShopReview, pk=review_id)
+        like, created = ShopReviewLike.objects.get_or_create(user=request.user, review=review)
+
+        if created:
+            # いいねを追加
+            review.likes_count = F('likes_count') + 1
+            review.save(update_fields=['likes_count'])
+            review.refresh_from_db()  # F()クエリ後にDBから最新値を取得
+            return Response({"status": "liked", "likes_count": review.likes_count}, status=status.HTTP_201_CREATED)
+        else:
+            # いいねを削除
+            like.delete()
+            review.likes_count = F('likes_count') - 1
+            review.save(update_fields=['likes_count'])
+            review.refresh_from_db()  # F()クエリ後にDBから最新値を取得
+            return Response({"status": "unliked", "likes_count": review.likes_count}, status=status.HTTP_200_OK)
+
+
 
 class RelationTypeViewSet(viewsets.ModelViewSet):
     queryset = RelationType.objects.all()

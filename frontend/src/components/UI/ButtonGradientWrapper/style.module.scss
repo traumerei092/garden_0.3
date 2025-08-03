@@ -27,6 +27,10 @@
   }
 
   &:hover {
-    background: linear-gradient(to right,rgba(0, 198, 255, 0.2),rgba(235, 14, 242, 0.2));
+    background: linear-gradient(to right,rgba(0, 198, 255, 0.3),rgba(235, 14, 242, 0.3));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
   }
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

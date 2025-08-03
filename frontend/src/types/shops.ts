@@ -3,6 +3,27 @@ export interface ShopCategory {
   name: string;
 }
 
+export interface VisitPurpose {
+  id: number;
+  name: string;
+}
+
+export interface ReviewAuthor {
+  id: number;
+  name: string;
+  avatar_url: string | null;
+}
+
+export interface ShopReview {
+  id: number;
+  user: ReviewAuthor;
+  visit_purpose: VisitPurpose | null;
+  comment: string;
+  likes_count: number;
+  created_at: string;
+  is_liked: boolean;
+}
+
 export interface ShopTag {
   id: number;
   shop: number;

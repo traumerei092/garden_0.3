@@ -2,12 +2,62 @@ from rest_framework import serializers
 from .models import (
     Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
     ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
-    ShopEditHistory, HistoryEvaluation
+    ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike
 )
+from accounts.models import VisitPurpose
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 
 User = get_user_model()
+
+class VisitPurposeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VisitPurpose
+        fields = ['id', 'name']
+
+class ReviewAuthorSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'avatar_url')
+
+    def get_avatar_url(self, obj):
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            return obj.avatar.url
+        return None
+
+class ShopReviewSerializer(serializers.ModelSerializer):
+    user = ReviewAuthorSerializer(read_only=True)
+    visit_purpose = VisitPurposeSerializer(read_only=True)
+    visit_purpose_id = serializers.PrimaryKeyRelatedField(
+        queryset=VisitPurpose.objects.all(), source='visit_purpose', write_only=True, required=False, allow_null=True
+    )
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShopReview
+        fields = (
+            'id', 'user', 'visit_purpose', 'visit_purpose_id', 'comment',
+            'likes_count', 'created_at', 'is_liked'
+        )
+        read_only_fields = ('likes_count', 'created_at')
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ShopReviewLike.objects.filter(review=obj, user=request.user).exists()
+        return False
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+class ShopReviewLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShopReviewLike
+        fields = ('id', 'user', 'review', 'created_at')
+        read_only_fields = ('user', 'review', 'created_at')
 
 class BusinessHourSerializer(serializers.ModelSerializer):
     weekday_display = serializers.CharField(source='get_weekday_display', read_only=True)

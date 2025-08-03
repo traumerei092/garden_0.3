@@ -11,6 +11,7 @@ from .views import (
     UpdateDrinkStylesView,
     AtmosphereIndicatorsView,
     UserAtmospherePreferencesView,
+    VisitPurposesListView,
     UpdateVisitPurposesView,
 )
 
@@ -40,6 +41,8 @@ urlpatterns = [
     path("atmosphere-indicators/", AtmosphereIndicatorsView.as_view(), name="atmosphere-indicators"),
     # ユーザーの雰囲気好み取得・更新
     path("atmosphere-preferences/", UserAtmospherePreferencesView.as_view(), name="atmosphere-preferences"),
+    # 来店目的一覧取得
+    path("visit-purposes/", VisitPurposesListView.as_view(), name="visit-purposes"),
     # 来店目的更新
     path("update-visit-purposes/", UpdateVisitPurposesView.as_view(), name="update-visit-purposes"),
     # ViewSet のルーティング

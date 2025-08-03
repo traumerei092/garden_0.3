@@ -323,6 +323,22 @@ class UserAtmospherePreferencesView(APIView):
             )
 
 
+# 来店目的一覧取得
+class VisitPurposesListView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        """来店目的一覧を取得"""
+        try:
+            visit_purposes = VisitPurpose.objects.all().order_by('order')
+            serializer = VisitPurposeSerializer(visit_purposes, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': '来店目的リストの取得に失敗しました'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 # 来店目的更新
 class UpdateVisitPurposesView(APIView):
     permission_classes = (IsAuthenticated,)

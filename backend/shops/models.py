@@ -212,20 +212,38 @@ class HistoryEvaluation(models.Model):
 # 店舗口コミ
 ##############################################
 class ShopReview(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='reviews')
+    visit_purpose = models.ForeignKey(
+        'accounts.VisitPurpose', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='reviews'
+    )
     comment = models.TextField()
-    rating = models.IntegerField()
+    likes_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review by {self.user.name} on {self.shop.name}"
+
 ##############################################
-# 店舗口コミに対するリアクション
+# 店舗口コミに対する「役に立った」
 ##############################################
-class ShopReviewReaction(models.Model):
-    shop_review = models.ForeignKey(ShopReview, on_delete=models.CASCADE)
+class ShopReviewLike(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
-    reaction_type = models.CharField(max_length=10)  # GOOD or BAD
-    reacted_at = models.DateTimeField(auto_now_add=True)
+    review = models.ForeignKey(ShopReview, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'review')
+
+    def __str__(self):
+        return f"{self.user.name} liked review {self.review.id}"
 
 ##############################################
 # ユーザーと店舗とのリレーションオプションテーブル（気になる、行った、閲覧履歴 etc.）

@@ -2,13 +2,16 @@
   width: 100%;
   color: white;
   padding: 20px 0;
+  position: relative;
 }
 
-.reviewHeader {
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sectionTitle {
@@ -21,25 +24,15 @@
 }
 
 .writeReviewButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: rgba(76, 201, 240, 0.2);
-  color: #4cc9f0;
-  border: 1px solid rgba(76, 201, 240, 0.3);
-  border-radius: 20px;
-  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
   font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   &:hover {
-    background-color: rgba(76, 201, 240, 0.3);
     transform: translateY(-2px);
-  }
-  
-  svg {
-    color: #4cc9f0;
   }
 }
 
@@ -50,20 +43,66 @@
 }
 
 .reviewCard {
-  background-color: rgba(53, 131, 200, 0.1);
-  border-radius: 10px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
   
   &:hover {
-    background-color: rgba(53, 131, 200, 0.2);
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+  
+  &.expanded {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(76, 201, 240, 0.3);
   }
 }
 
 .userInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reviewSequence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(76, 201, 240, 0.8);
+  font-size: 0.75rem;
+  font-weight: 500;
+  
+  svg {
+    color: rgba(76, 201, 240, 0.8);
+  }
 }
 
 .avatar {
@@ -137,7 +176,27 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+}
+
+.reviewMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.expandButton {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  min-height: auto;
+  color: rgba(76, 201, 240, 0.8);
+  border: 1px solid rgba(76, 201, 240, 0.3);
+  
+  &:hover {
+    background-color: rgba(76, 201, 240, 0.1);
+    border-color: rgba(76, 201, 240, 0.5);
+  }
 }
 
 .reviewContent {
@@ -180,23 +239,365 @@
 }
 
 .noReviews {
-  background-color: rgba(53, 131, 200, 0.1);
-  border-radius: 10px;
-  padding: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 40px;
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;
+  font-size: 0.9rem;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+// フィルター関連のスタイル
+.filters {
+  margin-bottom: 32px;
+}
+
+.filterSection {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.statusFilters {
+  margin-bottom: 24px;
+}
+
+.filterLabel {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statusFilterButton {
+  font-size: 0.8rem;
+  font-weight: 500;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.2);
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  &.active, &[data-hover="true"][aria-pressed="true"] {
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(118, 75, 162, 0.2)) !important;
+    border: 1px solid rgba(76, 201, 240, 0.6) !important;
+    color: rgba(76, 201, 240, 1) !important;
+    box-shadow: 0 0 20px rgba(76, 201, 240, 0.3) !important;
+    
+    svg {
+      color: rgba(76, 201, 240, 1) !important;
+    }
+  }
+}
+
+.purposeFilters {
+}
+
+.purposeChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.purposeChip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  &.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+  }
+}
+
+// 関連口コミのスタイル
+.relatedReviews {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(76, 201, 240, 0.05);
+  border: 1px solid rgba(76, 201, 240, 0.2);
+  border-radius: 8px;
+}
+
+.relatedTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  color: rgba(76, 201, 240, 0.9);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.relatedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relatedReviewItem {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border-left: 3px solid rgba(76, 201, 240, 0.4);
+}
+
+.relatedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.relatedDate {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.relatedPurpose {
+  font-size: 0.7rem;
+}
+
+.relatedContent {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+// モーダル関連のスタイル
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.textareaContainer {
+  .reviewTextarea {
+    :global {
+      [data-slot="input-wrapper"] {
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        
+        &:hover {
+          background: rgba(0, 0, 0, 0.5) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        &[data-focus="true"] {
+          background: rgba(0, 0, 0, 0.6) !important;
+          border-color: rgba(76, 201, 240, 0.5) !important;
+          box-shadow: 0 0 0 1px rgba(76, 201, 240, 0.2) !important;
+        }
+      }
+      
+      textarea {
+        background: transparent !important;
+        color: white !important;
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+      
+      [data-slot="label"] {
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+    }
+  }
+}
+
+.purposeSelection {
+  .purposeTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .purposeChipsContainer {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    
+    .purposeSelectChip {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+      }
+      
+      &.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+    }
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.submitButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  
+  &:disabled {
+    opacity: 0.6;
+    transform: none;
+  }
+}
+
+.visitPurpose {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 12px;
+  background: rgba(76, 201, 240, 0.1);
+  border: 1px solid rgba(76, 201, 240, 0.3);
+  border-radius: 16px;
+  font-size: 0.8rem;
+  color: rgba(76, 201, 240, 0.9);
+  width: fit-content;
+  
+  svg {
+    color: rgba(76, 201, 240, 0.9);
+  }
+}
+
+.likeButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  &.liked {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: rgba(255, 193, 7, 1);
+    
+    svg {
+      fill: rgba(255, 193, 7, 1);
+      color: rgba(255, 193, 7, 1);
+    }
+    
+    &:hover {
+      background: rgba(255, 193, 7, 0.15);
+      border-color: rgba(255, 193, 7, 0.4);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    }
+  }
 }
 
 // レスポンシブ対応
 @media (max-width: 768px) {
-  .reviewHeader {
+  .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
+    gap: 16px;
   }
   
   .writeReviewButton {
-    align-self: flex-end;
+    align-self: stretch;
+  }
+  
+  .reviewCard {
+    padding: 16px;
+  }
+  
+  .reviewHeader {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .reviewMeta {
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .filterButtons {
+    justify-content: center;
+  }
+  
+  .purposeChips {
+    justify-content: center;
   }
 }
