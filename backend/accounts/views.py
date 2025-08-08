@@ -22,6 +22,8 @@ from .serializers import (
     DietaryPreferenceSerializer,
     BudgetRangeSerializer,
     VisitPurposeSerializer,
+    ProfileVisibilitySettingsSerializer,
+    PublicUserProfileSerializer,
 )
 from .models import (
     Interest,
@@ -39,6 +41,7 @@ from .models import (
     DietaryPreference,
     BudgetRange,
     VisitPurpose,
+    ProfileVisibilitySettings,
 )
 from shops.models import AtmosphereIndicator
 
@@ -364,4 +367,180 @@ class UpdateVisitPurposesView(APIView):
             return Response(
                 {'error': '来店目的の更新に失敗しました'},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# 趣味更新
+class UpdateHobbiesView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        hobby_names = request.data.get('hobby_names', [])
+
+        try:
+            # 既存の趣味をクリア
+            user.hobbies.clear()
+            
+            # 新しい趣味を設定
+            if hobby_names:
+                hobbies = []
+                for name in hobby_names:
+                    if name.strip():  # 空文字列をチェック
+                        hobby, created = Hobby.objects.get_or_create(name=name.strip())
+                        hobbies.append(hobby)
+                user.hobbies.set(hobbies)
+            
+            # 更新されたユーザー情報を返す
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"趣味更新エラー: {e}")
+            return Response(
+                {'error': '趣味の更新に失敗しました'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# プロフィール画像更新
+class UpdateProfileImageView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        avatar = request.FILES.get('avatar')
+
+        if not avatar:
+            return Response(
+                {'error': '画像ファイルが必要です'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # アバター画像を更新
+            user.avatar = avatar
+            user.save()
+            
+            # 更新されたユーザー情報を返す
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"プロフィール画像更新エラー: {e}")
+            return Response(
+                {'error': '画像の更新に失敗しました'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# 公開ユーザープロフィール取得
+class PublicUserProfileView(APIView):
+    """
+    他のユーザーから見たプロフィール情報を取得するAPI
+    公開設定に応じて項目をフィルタリング
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, uid, *args, **kwargs):
+        """指定されたUIDのユーザーの公開プロフィールを取得"""
+        try:
+            user = User.objects.select_related(
+                'visibility_settings', 'blood_type', 'mbti', 
+                'exercise_frequency', 'dietary_preference'
+            ).prefetch_related(
+                'interests__category', 'alcohol_categories', 'alcohol_brands__category',
+                'drink_styles__category', 'hobbies', 'visit_purposes',
+                'atmosphere_preferences__indicator'
+            ).get(uid=uid)
+            
+            serializer = PublicUserProfileSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'ユーザーが見つかりません'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'プロフィールの取得に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# プロフィール公開設定取得・更新
+class ProfileVisibilitySettingsView(APIView):
+    """
+    プロフィール公開設定の取得・更新API
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        """現在のプロフィール公開設定を取得"""
+        try:
+            settings, created = ProfileVisibilitySettings.objects.get_or_create(
+                user=request.user
+            )
+            serializer = ProfileVisibilitySettingsSerializer(settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': '公開設定の取得に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def put(self, request, *args, **kwargs):
+        """プロフィール公開設定を更新"""
+        try:
+            settings, created = ProfileVisibilitySettings.objects.get_or_create(
+                user=request.user
+            )
+            serializer = ProfileVisibilitySettingsSerializer(
+                settings, data=request.data, partial=True
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    serializer.errors, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            return Response(
+                {'error': '公開設定の更新に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# プレビュー用プロフィール取得
+class PreviewUserProfileView(APIView):
+    """
+    自分のプロフィールが他のユーザーからどう見えるかをプレビューするAPI
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        """自分のプロフィールをプレビュー"""
+        try:
+            user = User.objects.select_related(
+                'visibility_settings', 'blood_type', 'mbti', 
+                'exercise_frequency', 'dietary_preference'
+            ).prefetch_related(
+                'interests__category', 'alcohol_categories', 'alcohol_brands__category',
+                'drink_styles__category', 'hobbies', 'visit_purposes',
+                'atmosphere_preferences__indicator'
+            ).get(id=request.user.id)
+            
+            serializer = PublicUserProfileSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'プレビューの取得に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import (
     Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
     ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
-    ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike
+    ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike,
+    ShopDrink, ShopDrinkReaction
 )
-from accounts.models import VisitPurpose
+from accounts.models import VisitPurpose, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 
@@ -48,6 +49,72 @@ class ShopReviewSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return ShopReviewLike.objects.filter(review=obj, user=request.user).exists()
         return False
+
+# ドリンク関連のシリアライザー
+class AlcoholCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlcoholCategory
+        fields = ['id', 'name']
+
+class AlcoholBrandSerializer(serializers.ModelSerializer):
+    category = AlcoholCategorySerializer(read_only=True)
+    
+    class Meta:
+        model = AlcoholBrand
+        fields = ['id', 'name', 'category']
+
+class DrinkStyleSerializer(serializers.ModelSerializer):
+    category = AlcoholCategorySerializer(read_only=True)
+    
+    class Meta:
+        model = DrinkStyle
+        fields = ['id', 'name', 'category']
+
+class ShopDrinkSerializer(serializers.ModelSerializer):
+    alcohol_category = AlcoholCategorySerializer(read_only=True)
+    alcohol_brand = AlcoholBrandSerializer(read_only=True)
+    drink_style = DrinkStyleSerializer(read_only=True)
+    created_by = ReviewAuthorSerializer(read_only=True)
+    reaction_count = serializers.SerializerMethodField()
+    user_has_reacted = serializers.SerializerMethodField()
+    
+    # 書き込み用のフィールド
+    alcohol_category_id = serializers.PrimaryKeyRelatedField(
+        queryset=AlcoholCategory.objects.all(), source='alcohol_category', write_only=True, required=False, allow_null=True
+    )
+    alcohol_brand_id = serializers.PrimaryKeyRelatedField(
+        queryset=AlcoholBrand.objects.all(), source='alcohol_brand', write_only=True, required=False, allow_null=True
+    )
+    drink_style_id = serializers.PrimaryKeyRelatedField(
+        queryset=DrinkStyle.objects.all(), source='drink_style', write_only=True, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = ShopDrink
+        fields = [
+            'id', 'name', 'alcohol_category', 'alcohol_brand', 'drink_style',
+            'description', 'is_alcohol', 'is_available', 'created_by',
+            'reaction_count', 'user_has_reacted', 'created_at',
+            'alcohol_category_id', 'alcohol_brand_id', 'drink_style_id'
+        ]
+        read_only_fields = ['created_at']
+
+    def get_reaction_count(self, obj):
+        return obj.reactions.filter(reaction_type='like').count()
+
+    def get_user_has_reacted(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ShopDrinkReaction.objects.filter(
+                drink=obj, user=request.user, reaction_type='like'
+            ).exists()
+        return False
+
+class ShopDrinkReactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShopDrinkReaction
+        fields = ['id', 'reaction_type', 'created_at']
+        read_only_fields = ['created_at']
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

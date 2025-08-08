@@ -3,6 +3,7 @@ import { UpdateBasicInfoRequest, ApiResponse, User } from '@/types/users';
 
 export const updateBasicInfo = async (data: UpdateBasicInfoRequest): Promise<ApiResponse<User>> => {
   try {
+    console.log('updateBasicInfo - Sending data:', data);
     const response = await fetchWithAuth('/accounts/users/me/', {
       method: 'PATCH',
       headers: {
@@ -11,11 +12,14 @@ export const updateBasicInfo = async (data: UpdateBasicInfoRequest): Promise<Api
       body: JSON.stringify(data),
     });
 
+    console.log('updateBasicInfo - Response status:', response.status);
+    
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('updateBasicInfo - Error response:', errorData);
       return {
         success: false,
-        error: errorData.message || 'プロフィールの更新に失敗しました',
+        error: errorData.message || errorData.detail || JSON.stringify(errorData) || 'プロフィールの更新に失敗しました',
       };
     }
 

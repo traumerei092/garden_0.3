@@ -43,6 +43,7 @@ const ShopCreate = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [errors, setErrors] = useState<{[key: string]: string}>({});
+    const [createdShopId, setCreatedShopId] = useState<number | null>(null);
 
     // タイプ、レイアウト、オプション、支払方法
     const [shopTypeOptions, setShopTypeOptions] = useState<ShopType[]>([]);
@@ -66,6 +67,11 @@ const ShopCreate = () => {
         phoneNumber: '',
         access: '',
         paymentMethods: [],
+        budgetWeekdayMin: null,
+        budgetWeekdayMax: null,
+        budgetWeekendMin: null,
+        budgetWeekendMax: null,
+        budgetNote: '',
     });
 
     const validateForm = () => {
@@ -105,7 +111,13 @@ const ShopCreate = () => {
     };
 
     const handleBackShopList = () => {
-            router.push('/shops');
+        router.push('/shops');
+    };
+
+    const handleGoToShopPage = () => {
+        if (createdShopId) {
+            router.push(`/shops/${createdShopId}`);
+        }
     };
 
     const handleInputChange = (field: keyof ShopFormValues, value: string) => {
@@ -254,16 +266,16 @@ const ShopCreate = () => {
                             <div className={`${styles.formItem} ${styles.formCheckbox}`}>
                                 <CheckboxGroup
                                     name="shopTypes"
-                                    values={formValues.shopTypes.map((type) => type.id)}
+                                    values={formValues.shopTypes.map((type) => type.id.toString())}
                                     onChange={(selected: string[]) =>
                                         setFormValues((prev) => ({
                                             ...prev,
-                                            shopTypes: shopTypeOptions.filter((type) => selected.includes(type.id)),
+                                            shopTypes: shopTypeOptions.filter((type) => selected.includes(type.id.toString())),
                                         }))
                                     }
                                     options={shopTypeOptions.map((type) => ({
                                         label: type.name,
-                                        value: type.id,
+                                        value: type.id.toString(),
                                     }))}
                                 />
                             </div>
@@ -276,16 +288,16 @@ const ShopCreate = () => {
                             <div className={`${styles.formItem} ${styles.formCheckbox}`}>
                                 <CheckboxGroup
                                     name="shopLayouts"
-                                    values={formValues.shopLayouts.map((type) => type.id)}
+                                    values={formValues.shopLayouts.map((type) => type.id.toString())}
                                     onChange={(selected: string[]) =>
                                         setFormValues((prev) => ({
                                             ...prev,
-                                            shopLayouts: shopLayoutOptions.filter((type) => selected.includes(type.id)),
+                                            shopLayouts: shopLayoutOptions.filter((type) => selected.includes(type.id.toString())),
                                         }))
                                     }
                                     options={shopLayoutOptions.map((type) => ({
                                         label: type.name,
-                                        value: type.id,
+                                        value: type.id.toString(),
                                     }))}
                                 />
                             </div>
@@ -298,18 +310,139 @@ const ShopCreate = () => {
                             <div className={`${styles.formItem} ${styles.formCheckbox}`}>
                                 <CheckboxGroup
                                     name="shopOptions"
-                                    values={formValues.shopOptions.map((type) => type.id)}
+                                    values={formValues.shopOptions.map((type) => type.id.toString())}
                                     onChange={(selected: string[]) =>
                                         setFormValues((prev) => ({
                                             ...prev,
-                                            shopOptions: shopOptionOptions.filter((type) => selected.includes(type.id)),
+                                            shopOptions: shopOptionOptions.filter((type) => selected.includes(type.id.toString())),
                                         }))
                                     }
                                     options={shopOptionOptions.map((type) => ({
                                         label: type.name,
-                                        value: type.id,
+                                        value: type.id.toString(),
                                     }))}
                                 />
+                            </div>
+                        </div>
+                        <div className={styles.formRow}>
+                            <div className={styles.formLabel}>
+                                <p>予算目安</p>
+                            </div>
+                            <div className={styles.formRequire}/>
+                            <div className={`${styles.formItem} ${styles.budgetSection}`}>
+                                <div className={styles.budgetCategory}>
+                                    <h4 className={styles.budgetCategoryTitle}>平日予算</h4>
+                                    <div className={styles.budgetRange}>
+                                        <Input
+                                            label="最低額"
+                                            type="number"
+                                            placeholder="2000"
+                                            value={formValues.budgetWeekdayMin?.toString() || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value === '' ? null : parseInt(e.target.value);
+                                                setFormValues(prev => ({ ...prev, budgetWeekdayMin: value }));
+                                            }}
+                                            endContent={
+                                                <div className="pointer-events-none flex items-center">
+                                                    <span className="text-default-400 text-small">円</span>
+                                                </div>
+                                            }
+                                            classNames={{
+                                                base: styles.budgetInput,
+                                                inputWrapper: styles.formInput,
+                                                input: styles.formInputElement,
+                                                label: styles.budgetLabel,
+                                            }}
+                                        />
+                                        <span className={styles.budgetSeparator}>〜</span>
+                                        <Input
+                                            label="最高額"
+                                            type="number"
+                                            placeholder="4000"
+                                            value={formValues.budgetWeekdayMax?.toString() || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value === '' ? null : parseInt(e.target.value);
+                                                setFormValues(prev => ({ ...prev, budgetWeekdayMax: value }));
+                                            }}
+                                            endContent={
+                                                <div className="pointer-events-none flex items-center">
+                                                    <span className="text-default-400 text-small">円</span>
+                                                </div>
+                                            }
+                                            classNames={{
+                                                base: styles.budgetInput,
+                                                inputWrapper: styles.formInput,
+                                                input: styles.formInputElement,
+                                                label: styles.budgetLabel,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className={styles.budgetCategory}>
+                                    <h4 className={styles.budgetCategoryTitle}>週末予算</h4>
+                                    <div className={styles.budgetRange}>
+                                        <Input
+                                            label="最低額"
+                                            type="number"
+                                            placeholder="3000"
+                                            value={formValues.budgetWeekendMin?.toString() || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value === '' ? null : parseInt(e.target.value);
+                                                setFormValues(prev => ({ ...prev, budgetWeekendMin: value }));
+                                            }}
+                                            endContent={
+                                                <div className="pointer-events-none flex items-center">
+                                                    <span className="text-default-400 text-small">円</span>
+                                                </div>
+                                            }
+                                            classNames={{
+                                                base: styles.budgetInput,
+                                                inputWrapper: styles.formInput,
+                                                input: styles.formInputElement,
+                                                label: styles.budgetLabel,
+                                            }}
+                                        />
+                                        <span className={styles.budgetSeparator}>〜</span>
+                                        <Input
+                                            label="最高額"
+                                            type="number"
+                                            placeholder="5000"
+                                            value={formValues.budgetWeekendMax?.toString() || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value === '' ? null : parseInt(e.target.value);
+                                                setFormValues(prev => ({ ...prev, budgetWeekendMax: value }));
+                                            }}
+                                            endContent={
+                                                <div className="pointer-events-none flex items-center">
+                                                    <span className="text-default-400 text-small">円</span>
+                                                </div>
+                                            }
+                                            classNames={{
+                                                base: styles.budgetInput,
+                                                inputWrapper: styles.formInput,
+                                                input: styles.formInputElement,
+                                                label: styles.budgetLabel,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className={styles.budgetNoteSection}>
+                                    <Input
+                                        label="予算に関する補足（料金システムなど）"
+                                        type="text"
+                                        placeholder="チャージ料金、サービス料、時間制など"
+                                        value={formValues.budgetNote}
+                                        onChange={(e) => {
+                                            setFormValues(prev => ({ ...prev, budgetNote: e.target.value }));
+                                        }}
+                                        classNames={{
+                                            base: styles.budgetNoteInput,
+                                            inputWrapper: styles.formInput,
+                                            input: styles.formInputElement,
+                                            label: styles.budgetLabel,
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className={styles.formRow}>
@@ -421,13 +554,8 @@ const ShopCreate = () => {
                                 <p>画像登録</p>
                             </div>
                             <div className={styles.formRequire}/>
-                            <div className={`${styles.formItem} ${styles.imageUploadGrid}`}>
-                                <RadioGroup
-                                    value={formValues.images.findIndex((img) => img.isIcon).toString()}
-                                    onValueChange={handleIconChange}
-                                    orientation="horizontal"
-                                    className={styles.imageRadioGroup}
-                                >
+                            <div className={`${styles.formItem} ${styles.imageUploadContainer}`}>
+                                <div className={styles.imageUploadGrid}>
                                     {formValues.images.map((img, index) => (
                                         <PictureUpload
                                             key={index}
@@ -439,9 +567,11 @@ const ShopCreate = () => {
                                             value={index.toString()}
                                             hideIconSelect={false}
                                             isRequired={false}
+                                            isSelected={formValues.images[index].isIcon}
+                                            onIconSelect={() => handleIconChange(index.toString())}
                                         />
                                     ))}
-                                </RadioGroup>
+                                </div>
                             </div>
                         </div>
                     </>
@@ -514,6 +644,37 @@ const ShopCreate = () => {
                             <p className={styles.confirmValue}>{formValues.access || '未入力'}</p>
                         </div>
                         <div className={styles.confirmRow}>
+                            <p className={styles.confirmLabel}>予算目安</p>
+                            <div className={styles.confirmValue}>
+                                <div className={styles.budgetConfirm}>
+                                    <div className={styles.budgetConfirmCategory}>
+                                        <span className={styles.budgetCategoryLabel}>平日:</span>
+                                        <span className={styles.budgetItem}>
+                                            {formValues.budgetWeekdayMin || formValues.budgetWeekdayMax ? 
+                                                `${formValues.budgetWeekdayMin?.toLocaleString() || ''}円 〜 ${formValues.budgetWeekdayMax?.toLocaleString() || ''}円` 
+                                                : '未設定'
+                                            }
+                                        </span>
+                                    </div>
+                                    <div className={styles.budgetConfirmCategory}>
+                                        <span className={styles.budgetCategoryLabel}>週末:</span>
+                                        <span className={styles.budgetItem}>
+                                            {formValues.budgetWeekendMin || formValues.budgetWeekendMax ? 
+                                                `${formValues.budgetWeekendMin?.toLocaleString() || ''}円 〜 ${formValues.budgetWeekendMax?.toLocaleString() || ''}円` 
+                                                : '未設定'
+                                            }
+                                        </span>
+                                    </div>
+                                    {formValues.budgetNote && (
+                                        <div className={styles.budgetConfirmNote}>
+                                            <span className={styles.budgetNoteLabel}>補足:</span>
+                                            <span className={styles.budgetNoteText}>{formValues.budgetNote}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.confirmRow}>
                             <p className={styles.confirmLabel}>席数</p>
                             <p className={styles.confirmValue}>{formValues.capacity} 席</p>
                         </div>
@@ -572,6 +733,36 @@ const ShopCreate = () => {
                     </>
                 )}
 
+                {currentStep === 2 && (
+                    <div className={styles.completionSection}>
+                        <div className={styles.completionIcon}>
+                            <div className={styles.checkmarkContainer}>
+                                <svg className={styles.checkmark} viewBox="0 0 52 52">
+                                    <circle className={styles.checkmarkCircle} cx="26" cy="26" r="25" fill="none"/>
+                                    <path className={styles.checkmarkCheck} fill="none" d="m14,27 l8,8 16,-16"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div className={styles.completionContent}>
+                            <h2 className={styles.completionTitle}>店舗登録が完了しました！</h2>
+                            <p className={styles.completionMessage}>
+                                ご登録いただき、ありがとうございます。<br/>
+                                あなたの素敵なサードプレイスが、多くの人に発見されることを願っています。
+                            </p>
+                            <div className={styles.completionStats}>
+                                <div className={styles.statItem}>
+                                    <span className={styles.statNumber}>📍</span>
+                                    <span className={styles.statLabel}>新しい場所が追加されました</span>
+                                </div>
+                                <div className={styles.statItem}>
+                                    <span className={styles.statNumber}>🎉</span>
+                                    <span className={styles.statLabel}>コミュニティの一員です</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
             <div className={styles.createNext}>
                 {currentStep === 0 && (
@@ -603,6 +794,7 @@ const ShopCreate = () => {
                                 onClose={() => setShowModal(false)}
                                 formValues={formValues}
                                 setCurrentStep={setCurrentStep}
+                                onShopCreated={setCreatedShopId}
                             />
                         )}
                     </>
@@ -610,9 +802,14 @@ const ShopCreate = () => {
 
                 {currentStep === 2 && (
                     <>
-                        <ButtonGradient anotherStyle={''} onClick={handleBackShopList}>
+                        <ButtonGradientWrapper anotherStyle={''} onClick={handleBackShopList}>
                             店舗リストに戻る
-                        </ButtonGradient>
+                        </ButtonGradientWrapper>
+                        {createdShopId && (
+                            <ButtonGradient anotherStyle={''} onClick={handleGoToShopPage}>
+                                登録した店舗ページへ
+                            </ButtonGradient>
+                        )}
                     </>
                 )}
             </div>

@@ -414,9 +414,13 @@
 }
 
 .atmosphereList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .atmosphereItem {
@@ -459,21 +463,41 @@
 }
 
 .atmosphereScore {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: inline-block;
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  min-width: 120px;
+  position: relative;
+  
+  &.gradientBorder {
+    border: none;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(90deg, rgba(0, 194, 255, 0.4) 0%, rgba(235, 14, 242, 0.4) 100%);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: xor;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+    }
+  }
 }
 
 .scoreValue {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(0, 194, 255, 0.9);
-  padding: 6px 12px;
-  background: rgba(0, 194, 255, 0.1);
-  border: 1px solid rgba(0, 194, 255, 0.3);
-  border-radius: 20px;
-  text-align: center;
-  max-width: 200px;
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .scoreIndicator {
@@ -781,4 +805,33 @@
   .recommendGrid {
     grid-template-columns: 1fr;
   }
+}
+
+// アイコンと公開設定
+.visibilityIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.visibilityIconPublic {
+  color: rgba(0, 255, 255, 0.8); // 青色（公開）
+}
+
+.visibilityIconPrivate {
+  color: rgba(156, 163, 175, 0.6); // グレー（非公開）
+}
+
+// 各項目のラベルと公開アイコン
+.personalityLabelWithVisibility,
+.lifestyleLabelWithVisibility,
+.workLabelWithVisibility,
+.alcoholTitleWithVisibility,
+.atmosphereTitleWithVisibility,
+.visitPurposeTitleWithVisibility,
+.interestTitleWithVisibility {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

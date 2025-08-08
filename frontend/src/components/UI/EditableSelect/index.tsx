@@ -5,6 +5,7 @@ import { Select, SelectItem } from '@nextui-org/react';
 import { Edit, Check, X } from 'lucide-react';
 import styles from './style.module.scss';
 import LoadingSpinner from '../LoadingSpinner';
+import SwitchVisibility from '../SwitchVisibility';
 
 interface Option {
   id: number;
@@ -17,6 +18,13 @@ interface EditableSelectProps {
   onSave: (value: string) => Promise<void>;
   placeholder?: string;
   className?: string;
+  visibilityControl?: {
+    isVisible: boolean;
+    onVisibilityChange: (visible: boolean) => void;
+    label?: string;
+  };
+  onEditStart?: () => void;
+  onEditEnd?: () => void;
 }
 
 const EditableSelect: React.FC<EditableSelectProps> = ({
@@ -24,7 +32,10 @@ const EditableSelect: React.FC<EditableSelectProps> = ({
   options,
   onSave,
   placeholder = '選択してください',
-  className
+  className,
+  visibilityControl,
+  onEditStart,
+  onEditEnd
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>(value ? String(value) : '');
@@ -37,11 +48,13 @@ const EditableSelect: React.FC<EditableSelectProps> = ({
   const handleEdit = () => {
     setIsEditing(true);
     setEditValue(value ? String(value) : '');
+    onEditStart?.();
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditValue(value ? String(value) : '');
+    onEditEnd?.();
   };
 
   const handleSave = async () => {
@@ -52,6 +65,7 @@ const EditableSelect: React.FC<EditableSelectProps> = ({
     try {
       await onSave(editValue);
       setIsEditing(false);
+      onEditEnd?.();
     } catch (error) {
       console.error('Save error:', error);
     } finally {

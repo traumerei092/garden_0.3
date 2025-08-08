@@ -170,6 +170,49 @@ export interface ProfileOptions {
   }>;
 }
 
+// プロフィール公開設定の型定義
+export interface ProfileVisibilitySettings {
+  age: boolean;
+  my_area: boolean;
+  interests: boolean;
+  blood_type: boolean;
+  mbti: boolean;
+  occupation: boolean;
+  industry: boolean;
+  position: boolean;
+  alcohol_preferences: boolean;
+  hobbies: boolean;
+  exercise_frequency: boolean;
+  dietary_preference: boolean;
+  atmosphere_preferences: boolean;
+  visit_purposes: boolean;
+}
+
+// 他のユーザーから見たプロフィール用の型定義
+export interface PublicUserProfile {
+  uid: string;
+  name: string;
+  avatar: string | null;
+  introduction: string | null;
+  gender: string | null;
+  age?: number;
+  my_area?: string | null;
+  interests?: Interest[];
+  blood_type?: BloodType | null;
+  mbti?: MBTI | null;
+  occupation?: string | null;
+  industry?: string | null;
+  position?: string | null;
+  alcohol_categories?: AlcoholCategory[];
+  alcohol_brands?: AlcoholBrand[];
+  drink_styles?: DrinkStyle[];
+  hobbies?: Hobby[];
+  exercise_frequency?: ExerciseFrequency | null;
+  dietary_preference?: DietaryPreference | null;
+  atmosphere_preferences?: UserAtmospherePreference[];
+  visit_purposes?: VisitPurpose[];
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;

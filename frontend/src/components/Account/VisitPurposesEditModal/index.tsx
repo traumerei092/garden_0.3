@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
+import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
 import { User as UserType, ProfileOptions } from '@/types/users';
 import { updateVisitPurposes } from '@/actions/profile/updateVisitPurposes';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
 import styles from './style.module.scss';
 
@@ -26,6 +28,9 @@ const VisitPurposesEditModal: React.FC<VisitPurposesEditModalProps> = ({
 }) => {
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
 
   // モーダルが開かれた時にユーザーの現在の利用目的を設定
   useEffect(() => {
@@ -67,6 +72,14 @@ const VisitPurposesEditModal: React.FC<VisitPurposesEditModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={handleCancel} title="利用目的を編集">
       <div className={styles.modalContent}>
+        <div className={styles.visibilitySection}>
+          <div className={styles.visibilityLabel}>利用目的の公開設定</div>
+          <SwitchVisibility
+            isSelected={visibilitySettings?.visit_purposes ?? true}
+            onValueChange={(value) => updateVisibilitySetting('visit_purposes', value)}
+          />
+        </div>
+        
         <div className={styles.description}>
           どのような目的でお店を利用することが多いですか？複数選択可能です。
         </div>

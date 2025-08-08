@@ -229,6 +229,10 @@
   font-weight: 500;
 }
 
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
 .formLabel {
   display: block;
   font-size: 14px;
@@ -249,11 +253,11 @@
   align-items: center;
 }
 
-.eyeIcon {
-  color: #00C2FF;
+.visibilityIconPublic {
+  color: rgba(0, 255, 255, 0.8); // 青色（公開）
 }
 
-.eyeOffIcon {
+.visibilityIconPrivate {
   color: rgba(255, 255, 255, 0.4);
 }
 

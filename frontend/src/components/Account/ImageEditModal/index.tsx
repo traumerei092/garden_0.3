@@ -1,18 +1,31 @@
 'use client'
 
 import React, { useState } from 'react';
-import { User } from '@/types/users';
 import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
+import { updateProfileImage } from '@/actions/profile/updateProfileImage';
 import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import { PictureUpload } from '@/components/UI/PictureUpload';
 import styles from './style.module.scss';
 
+// BasicInfoで使用するUserInfo型と完全に互換性のあるインターface
+interface UserForImageEdit {
+  id: number;
+  uid: string;
+  email: string;
+  name: string | null;
+  avatar: string | null;
+  introduction: string | null;
+  gender: string | null;
+  birthdate: string | null;
+  my_area: string | null;
+}
+
 interface ImageEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
-  onUpdate: (updatedUser: User) => void;
+  user: UserForImageEdit;
+  onUpdate: (updatedUser: UserForImageEdit) => void;
 }
 
 const ImageEditModal: React.FC<ImageEditModalProps> = ({
@@ -41,17 +54,17 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
     setIsLoading(true);
     try {
-      // TODO: 画像アップロードAPIの実装
-      // const result = await updateProfileImage(selectedImage);
+      const result = await updateProfileImage(selectedImage);
       
-      // 仮の実装
-      const previewUrl = URL.createObjectURL(selectedImage);
-      const updatedUser = { ...user, avatar: previewUrl };
-      onUpdate(updatedUser);
-      showProfileUpdateToast();
-      onClose();
+      if (result.success && result.data) {
+        onUpdate(result.data);
+        showProfileUpdateToast();
+        onClose();
+      } else {
+        showErrorToast(result.error || '画像の更新に失敗しました');
+      }
     } catch (error) {
-      showErrorToast('画像の更新に失敗しました');
+      showErrorToast('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);
     }

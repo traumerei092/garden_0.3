@@ -1,5 +1,3 @@
-'use server'
-
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { User } from '@/types/users';
 

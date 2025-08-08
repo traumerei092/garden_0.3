@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import UserAccount
+from accounts.models import UserAccount, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.conf import settings
 import requests
 
@@ -20,28 +20,48 @@ class ShopOption(models.Model):
     def __str__(self):
         return self.name
 
-class DrinkCategory(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-def get_default_category():
-    # マイグレーション後、"未分類" を自動作成してそのIDを返す
-    from .models import DrinkCategory  # ここでimport（循環インポート防止）
-    return DrinkCategory.objects.get_or_create(name="未分類")[0].id
-
 class ShopDrink(models.Model):
-    name = models.CharField(max_length=100)
-    category = models.ForeignKey(
-        DrinkCategory,
-        on_delete=models.CASCADE,
-        related_name='drinks',
-        default=get_default_category,  # 未分類が自動セットされる
-    )
+    """店舗が提供するドリンク"""
+    shop = models.ForeignKey('Shop', on_delete=models.CASCADE, related_name='drinks')
+    name = models.CharField(max_length=100, verbose_name='ドリンク名')
+    alcohol_category = models.ForeignKey(AlcoholCategory, on_delete=models.CASCADE, null=True, blank=True, verbose_name='お酒のジャンル')
+    alcohol_brand = models.ForeignKey(AlcoholBrand, on_delete=models.CASCADE, null=True, blank=True, verbose_name='お酒の銘柄')
+    drink_style = models.ForeignKey(DrinkStyle, on_delete=models.CASCADE, null=True, blank=True, verbose_name='カクテル・飲み方')
+    description = models.TextField(blank=True, verbose_name='説明')
+    is_alcohol = models.BooleanField(default=True, verbose_name='アルコール含有')
+    is_available = models.BooleanField(default=True, verbose_name='提供中')
+    created_by = models.ForeignKey(UserAccount, on_delete=models.CASCADE, verbose_name='登録者')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['shop', 'name']  # 同一店舗内でのドリンク名重複防止
+        ordering = ['-created_at']
+        verbose_name = '店舗ドリンク'
+        verbose_name_plural = '店舗ドリンク'
 
     def __str__(self):
-        return self.name
+        return f"{self.shop.name} - {self.name}"
+
+class ShopDrinkReaction(models.Model):
+    """ドリンクへの反応（いいね等）"""
+    REACTION_CHOICES = [
+        ('like', 'いいね'),
+        ('want_to_try', '飲んでみたい'),
+    ]
+    
+    drink = models.ForeignKey(ShopDrink, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    reaction_type = models.CharField(max_length=20, choices=REACTION_CHOICES, default='like')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['drink', 'user', 'reaction_type']
+        verbose_name = 'ドリンク反応'
+        verbose_name_plural = 'ドリンク反応'
+
+    def __str__(self):
+        return f"{self.user.name} - {self.drink.name} ({self.get_reaction_type_display()})"
 
 # 支払方法モデル
 class PaymentMethod(models.Model):

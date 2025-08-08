@@ -10,15 +10,18 @@ from .models import (
     Shop, ShopType, ShopLayout, ShopOption, ShopReview, ShopReviewLike,
     RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
-    BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation
+    BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation,
+    ShopDrink, ShopDrinkReaction
 )
 from .serializers import (
     ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
     ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer,
-    ShopReviewSerializer, ShopReviewLikeSerializer
+    ShopReviewSerializer, ShopReviewLikeSerializer, ShopDrinkSerializer, ShopDrinkReactionSerializer,
+    AlcoholCategorySerializer, AlcoholBrandSerializer, DrinkStyleSerializer
 )
 from .utils.geocode import get_coordinates_from_address
+from .views_drink import ShopDrinkViewSet
 
 
 class ShopUpdateAPIView(generics.UpdateAPIView):

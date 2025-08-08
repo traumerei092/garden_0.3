@@ -18,6 +18,7 @@ from .models import (
     DietaryPreference,
     BudgetRange,
     VisitPurpose,
+    ProfileVisibilitySettings,
 )
 
 User = get_user_model()
@@ -135,12 +136,58 @@ admin.site.register(ExerciseHabit)
 admin.site.register(SocialPreference)
 
 # お酒関連のモデルを管理画面に登録
-admin.site.register(AlcoholCategory)
-admin.site.register(AlcoholBrand)
-admin.site.register(DrinkStyle)
+@admin.register(AlcoholCategory)
+class AlcoholCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(AlcoholBrand)
+class AlcoholBrandAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category')
+    list_filter = ('category',)
+    search_fields = ('name',)
+
+@admin.register(DrinkStyle)
+class DrinkStyleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category')
+    list_filter = ('category',)
+    search_fields = ('name',)
 
 # 新しいプロフィール関連のモデルを管理画面に登録
 admin.site.register(ExerciseFrequency)
 admin.site.register(DietaryPreference)
 admin.site.register(BudgetRange)
 admin.site.register(VisitPurpose)
+
+# プロフィール公開設定の管理画面設定
+@admin.register(ProfileVisibilitySettings)
+class ProfileVisibilitySettingsAdmin(admin.ModelAdmin):
+    list_display = ('user', 'age', 'interests', 'blood_type', 'mbti', 'occupation', 'created_at')
+    list_filter = ('age', 'interests', 'blood_type', 'mbti', 'occupation')
+    search_fields = ('user__name', 'user__email')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('ユーザー情報', {
+            'fields': ('user',)
+        }),
+        ('基本情報公開設定', {
+            'fields': ('age', 'my_area')
+        }),
+        ('興味・パーソナリティ', {
+            'fields': ('interests', 'blood_type', 'mbti', 'hobbies')
+        }),
+        ('仕事情報', {
+            'fields': ('occupation', 'industry', 'position')
+        }),
+        ('ライフスタイル', {
+            'fields': ('alcohol_preferences', 'exercise_frequency', 'dietary_preference')
+        }),
+        ('店舗好み', {
+            'fields': ('atmosphere_preferences', 'visit_purposes')
+        }),
+        ('システム情報', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )

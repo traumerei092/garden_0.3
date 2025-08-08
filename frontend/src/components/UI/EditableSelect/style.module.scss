@@ -368,3 +368,38 @@
 .selectContent {
   animation: fadeInUp 0.2s ease;
 }
+
+// SwitchVisibility関連のスタイル
+.visibilitySection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.visibilityLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+// 編集時のコンテナ調整
+.editableSelect .editingContainer {
+  flex-direction: column;
+  gap: 0;
+}
+
+.editableSelect .editingContainer .selectBase {
+  margin-top: 0;
+}
+
+.editableSelect .editingContainer .editActions {
+  align-self: flex-end;
+  margin-top: 12px;
+}

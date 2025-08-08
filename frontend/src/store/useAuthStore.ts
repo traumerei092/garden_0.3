@@ -12,6 +12,7 @@ interface UserInfo {
   introduction: string | null;
   gender: string | null;
   birthdate: string | null;
+  my_area: string | null;
 }
 
 interface AuthState {

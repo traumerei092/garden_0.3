@@ -14,9 +14,10 @@ type Props = {
     onClose: () => void;
     formValues: ShopFormValues;
     setCurrentStep: (step: number) => void;
+    onShopCreated?: (shopId: number) => void;
 };
 
-const ShopCreateModal = ({ isOpen,　onClose, formValues, setCurrentStep }: Props) => {
+const ShopCreateModal = ({ isOpen,　onClose, formValues, setCurrentStep, onShopCreated }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +39,9 @@ const ShopCreateModal = ({ isOpen,　onClose, formValues, setCurrentStep }: Prop
             const result = await createShop(formValues, accessToken);
 
             if (result.success) {
+                if (onShopCreated && (result.data?.id || result.data?.shop_id)) {
+                    onShopCreated(result.data?.id || result.data?.shop_id);
+                }
                 setCurrentStep(2);
                 onClose();
             } else {

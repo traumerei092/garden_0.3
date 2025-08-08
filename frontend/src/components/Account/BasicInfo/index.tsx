@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Link, Textarea } from '@nextui-org/react';
-import { Camera, User, Mail, Lock, MapPin, Edit, Info, Pen, Eye, EyeOff } from 'lucide-react';
+import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff } from 'lucide-react';
 import styles from './style.module.scss';
-import ButtonGradient from '@/components/UI/ButtonGradient';
-import SwitchVisibility from '@/components/UI/SwitchVisibility';
-import BasicInfoEditModal from '@/components/Account/BasicInfoEditModal';
 import PasswordChangeModal from '@/components/Account/PasswordChangeModal';
-import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
 import ImageEditModal from '@/components/Account/ImageEditModal';
+import BasicInfoEditModal from '@/components/Account/BasicInfoEditModal';
+import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getUserClient } from '@/actions/auth/getUserClient';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 
 // UserInfo型をuseAuthStoreから取得
 interface UserInfo {
@@ -23,6 +22,7 @@ interface UserInfo {
   introduction: string | null;
   gender: string | null;
   birthdate: string | null;
+  my_area: string | null;
 }
 
 interface BasicInfoProps {
@@ -41,6 +41,9 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
   
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
+  
   // ユーザー情報を取得
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,24 +54,6 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
       fetchUser();
     }
   }, [user]);
-  
-  // 公開設定の状態
-  const [visibilitySettings, setVisibilitySettings] = useState({
-    email: true,
-    name: true,
-    location: true,
-    introduction: true,
-    gender: true,
-    birthdate: true
-  });
-  
-  // 公開設定の切り替え
-  const toggleVisibility = (key: string) => {
-    setVisibilitySettings(prev => ({
-      ...prev,
-      [key]: !prev[key as keyof typeof prev]
-    }));
-  };
   
   // プロフィール完成度を計算
   const calculateProfileCompletion = () => {
@@ -81,6 +66,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
       user.introduction,
       user.gender,
       user.birthdate,
+      user.my_area,
       user.avatar
     ];
     
@@ -109,6 +95,39 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
   // ユーザー情報更新ハンドラー
   const handleUserUpdate = (updatedUser: UserInfo) => {
     setUser(updatedUser);
+  };
+
+  // UserInfo型からUser型への変換（編集モーダル用）
+  const convertUserInfoToUser = (userInfo: UserInfo): any => {
+    if (!userInfo) return null;
+    return {
+      ...userInfo,
+      username: userInfo.name || '',
+      first_name: '',
+      last_name: '',
+      bio: userInfo.introduction,
+      work_info: null,
+      occupation: null,
+      industry: null,
+      position: null,
+      exercise_frequency: null,
+      dietary_preference: null,
+      budget_range: null,
+      visit_purposes: [],
+      is_profile_public: true,
+      interests: [],
+      blood_type: null,
+      mbti: null,
+      alcohols: [],
+      alcohol_categories: [],
+      alcohol_brands: [],
+      drink_styles: [],
+      hobbies: [],
+      exercise_habits: [],
+      social_preferences: [],
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
   };
 
   // 性別の表示名を取得
@@ -143,7 +162,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
     };
   };
 
-  const { lastName, firstName } = getNameParts();
+  // const { lastName, firstName } = getNameParts(); // 一時的に無効化
   
   return (
     <div className={styles.basicInfoContainer}>
@@ -257,28 +276,29 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
         
         {/* メールアドレス */}
         <div className={styles.formGroup}>
-          <div className={styles.formLabelWithVisibility}>
-            <label className={styles.formLabel}>メールアドレス</label>
-            <div className={styles.visibilityIcon}>
-              {visibilitySettings.email ? (
-                <Eye size={16} className={styles.eyeIcon} />
-              ) : (
-                <EyeOff size={16} className={styles.eyeOffIcon} />
-              )}
-            </div>
+          <label className={styles.formLabel}>メールアドレス</label>
+          <div className={styles.passwordGroup}>
+            <Input
+              value={user?.email || ''}
+              variant="bordered"
+              radius="sm"
+              startContent={<Mail size={16} />}
+              classNames={{
+                base: styles.inputBase,
+                inputWrapper: styles.inputWrapper,
+                input: styles.input
+              }}
+              readOnly
+            />
+            <Button
+              size="sm"
+              variant="light"
+              onPress={() => setIsPasswordModalOpen(true)}
+              className={styles.changePasswordButton}
+            >
+              変更
+            </Button>
           </div>
-          <Input
-            value={user?.email || ''}
-            variant="bordered"
-            radius="sm"
-            startContent={<Mail size={16} />}
-            classNames={{
-              base: styles.inputBase,
-              inputWrapper: styles.inputWrapper,
-              input: styles.input
-            }}
-            readOnly
-          />
         </div>
         
         {/* パスワード */}
@@ -311,16 +331,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
         
         {/* 性別 */}
         <div className={styles.formGroup}>
-          <div className={styles.formLabelWithVisibility}>
-            <label className={styles.formLabel}>性別</label>
-            <div className={styles.visibilityIcon}>
-              {visibilitySettings.gender ? (
-                <Eye size={16} className={styles.eyeIcon} />
-              ) : (
-                <EyeOff size={16} className={styles.eyeOffIcon} />
-              )}
-            </div>
-          </div>
+          <label className={styles.formLabel}>性別</label>
           <Input
             value={getGenderDisplay(user?.gender)}
             variant="bordered"
@@ -339,10 +350,10 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>生年月日</label>
             <div className={styles.visibilityIcon}>
-              {visibilitySettings.birthdate ? (
-                <Eye size={16} className={styles.eyeIcon} />
+              {visibilitySettings?.age ? (
+                <Eye size={16} className={styles.visibilityIconPublic} />
               ) : (
-                <EyeOff size={16} className={styles.eyeOffIcon} />
+                <EyeOff size={16} className={styles.visibilityIconPrivate} />
               )}
             </div>
           </div>
@@ -364,15 +375,15 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
           <div className={styles.formLabelWithVisibility}>
             <label className={styles.formLabel}>マイエリア</label>
             <div className={styles.visibilityIcon}>
-              {visibilitySettings.location ? (
-                <Eye size={16} className={styles.eyeIcon} />
+              {visibilitySettings?.my_area ? (
+                <Eye size={16} className={styles.visibilityIconPublic} />
               ) : (
-                <EyeOff size={16} className={styles.eyeOffIcon} />
+                <EyeOff size={16} className={styles.visibilityIconPrivate} />
               )}
             </div>
           </div>
           <Input
-            value="東京都渋谷区渋谷1-1-1"
+            value={user?.my_area || ''}
             variant="bordered"
             radius="sm"
             startContent={<MapPin size={16} />}
@@ -391,8 +402,22 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
         <BasicInfoEditModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          user={user}
-          onUpdate={handleUserUpdate}
+          user={convertUserInfoToUser(user)}
+          onUpdate={(updatedUser) => {
+            // User型からUserInfo型への変換
+            const userInfo: UserInfo = {
+              id: updatedUser.id,
+              uid: updatedUser.uid,
+              email: updatedUser.email,
+              name: updatedUser.name,
+              avatar: updatedUser.avatar,
+              introduction: updatedUser.introduction,
+              gender: updatedUser.gender,
+              birthdate: updatedUser.birthdate,
+              my_area: updatedUser.my_area
+            };
+            handleUserUpdate(userInfo);
+          }}
         />
       )}
 
@@ -401,8 +426,22 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
         <IntroductionEditModal
           isOpen={isIntroductionModalOpen}
           onClose={() => setIsIntroductionModalOpen(false)}
-          user={user}
-          onUpdate={handleUserUpdate}
+          user={convertUserInfoToUser(user)}
+          onUpdate={(updatedUser) => {
+            // User型からUserInfo型への変換
+            const userInfo: UserInfo = {
+              id: updatedUser.id,
+              uid: updatedUser.uid,
+              email: updatedUser.email,
+              name: updatedUser.name,
+              avatar: updatedUser.avatar,
+              introduction: updatedUser.introduction,
+              gender: updatedUser.gender,
+              birthdate: updatedUser.birthdate,
+              my_area: updatedUser.my_area
+            };
+            handleUserUpdate(userInfo);
+          }}
         />
       )}
 
@@ -413,29 +452,24 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
       />
 
       {/* プロフィール画像編集モーダル */}
-      <ImageEditModal
-        isOpen={isAvatarModalOpen}
-        onClose={() => setIsAvatarModalOpen(false)}
-        type="avatar"
-        currentImage={user?.avatar}
-        onUpdate={(imageUrl) => {
-          if (user) {
-            handleUserUpdate({ ...user, avatar: imageUrl });
-          }
-        }}
-      />
+      {user && (
+        <ImageEditModal
+          isOpen={isAvatarModalOpen}
+          onClose={() => setIsAvatarModalOpen(false)}
+          user={user}
+          onUpdate={handleUserUpdate}
+        />
+      )}
 
       {/* ヘッダー画像編集モーダル */}
-      <ImageEditModal
-        isOpen={isHeaderModalOpen}
-        onClose={() => setIsHeaderModalOpen(false)}
-        type="header"
-        currentImage="/assets/picture/beach.jpg"
-        onUpdate={(imageUrl) => {
-          // ヘッダー画像の更新処理
-          console.log('Header image updated:', imageUrl);
-        }}
-      />
+      {user && (
+        <ImageEditModal
+          isOpen={isHeaderModalOpen}
+          onClose={() => setIsHeaderModalOpen(false)}
+          user={user}
+          onUpdate={handleUserUpdate}
+        />
+      )}
     </div>
   );
 };

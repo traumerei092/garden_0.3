@@ -13,6 +13,11 @@ from .views import (
     UserAtmospherePreferencesView,
     VisitPurposesListView,
     UpdateVisitPurposesView,
+    UpdateHobbiesView,
+    UpdateProfileImageView,
+    PublicUserProfileView,
+    ProfileVisibilitySettingsView,
+    PreviewUserProfileView,
 )
 
 router = DefaultRouter()
@@ -23,6 +28,8 @@ urlpatterns = [
     path("profile-data/", ProfileDataView.as_view(), name="profile-data"),
     # 認証済みユーザーのプロフィール詳細・更新
     path("users/me/", UserDetailView.as_view(), name="user-me-detail"),
+    # プロフィール画像更新
+    path("users/me/avatar/", UpdateProfileImageView.as_view(), name="update-profile-image"),
     # ユーザー詳細（uidで検索）
     path("users/<str:uid>/", UserDetailView.as_view(), name="user-detail"),
     # パスワード変更
@@ -44,7 +51,15 @@ urlpatterns = [
     # 来店目的一覧取得
     path("visit-purposes/", VisitPurposesListView.as_view(), name="visit-purposes"),
     # 来店目的更新
-    path("update-visit-purposes/", UpdateVisitPurposesView.as_view(), name="update-visit-purposes"),
+    path("visit-purposes/update/", UpdateVisitPurposesView.as_view(), name="update-visit-purposes"),
+    # 趣味更新
+    path("hobbies/update/", UpdateHobbiesView.as_view(), name="update-hobbies"),
+    # 公開ユーザープロフィール取得
+    path("user/<str:uid>/", PublicUserProfileView.as_view(), name="public-user-profile"),
+    # プロフィール公開設定取得・更新
+    path("profile-visibility/", ProfileVisibilitySettingsView.as_view(), name="profile-visibility"),
+    # プレビュー用プロフィール取得
+    path("profile-preview/", PreviewUserProfileView.as_view(), name="profile-preview"),
     # ViewSet のルーティング
     path("", include(router.urls)),
 ]

@@ -18,6 +18,7 @@ from .models import (
     DietaryPreference,
     BudgetRange,
     VisitPurpose,
+    ProfileVisibilitySettings,
 )
 from shops.models import AtmosphereIndicator
 
@@ -261,3 +262,103 @@ class UserSerializer(serializers.ModelSerializer):
         
         # その他のフィールドを更新
         return super().update(instance, validated_data)
+
+
+class ProfileVisibilitySettingsSerializer(serializers.ModelSerializer):
+    """
+    プロフィール公開設定のシリアライザー
+    """
+    class Meta:
+        model = ProfileVisibilitySettings
+        fields = [
+            'age', 'my_area', 'interests', 'blood_type', 'mbti',
+            'occupation', 'industry', 'position', 'alcohol_preferences',
+            'hobbies', 'exercise_frequency', 'dietary_preference',
+            'atmosphere_preferences', 'visit_purposes'
+        ]
+
+
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    """
+    他のユーザーから見たプロフィール用のシリアライザー
+    公開設定に応じて項目を表示/非表示
+    """
+    uid = serializers.CharField(read_only=True)
+    avatar = Base64ImageField(max_length=None, use_url=True, required=False, allow_null=True)
+    age = serializers.SerializerMethodField()
+    
+    # 関連フィールド
+    interests = InterestSerializer(many=True, read_only=True)
+    blood_type = BloodTypeSerializer(read_only=True)
+    mbti = MBTISerializer(read_only=True)
+    alcohol_categories = AlcoholCategorySerializer(many=True, read_only=True)
+    alcohol_brands = AlcoholBrandSerializer(many=True, read_only=True)
+    drink_styles = DrinkStyleSerializer(many=True, read_only=True)
+    hobbies = HobbySerializer(many=True, read_only=True)
+    exercise_frequency = ExerciseFrequencySerializer(read_only=True)
+    dietary_preference = DietaryPreferenceSerializer(read_only=True)
+    visit_purposes = VisitPurposeSerializer(many=True, read_only=True)
+    atmosphere_preferences = UserAtmospherePreferenceSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = User
+        fields = [
+            'uid', 'name', 'avatar', 'introduction', 'gender', 'age', 'my_area',
+            'interests', 'blood_type', 'mbti', 'occupation', 'industry', 'position',
+            'alcohol_categories', 'alcohol_brands', 'drink_styles', 'hobbies',
+            'exercise_frequency', 'dietary_preference', 'atmosphere_preferences',
+            'visit_purposes'
+        ]
+    
+    def get_age(self, obj):
+        """年齢を計算して返す"""
+        if obj.birthdate:
+            from datetime import date
+            today = date.today()
+            age = today.year - obj.birthdate.year - ((today.month, today.day) < (obj.birthdate.month, obj.birthdate.day))
+            return age
+        return None
+    
+    def to_representation(self, instance):
+        """
+        公開設定に応じてフィールドをフィルタリング
+        """
+        data = super().to_representation(instance)
+        
+        # 公開設定を取得
+        visibility_settings = getattr(instance, 'visibility_settings', None)
+        
+        if visibility_settings:
+            # 非公開に設定されている項目を削除
+            if not visibility_settings.age:
+                data.pop('age', None)
+            if not visibility_settings.my_area:
+                data.pop('my_area', None)
+            if not visibility_settings.interests:
+                data.pop('interests', None)
+            if not visibility_settings.blood_type:
+                data.pop('blood_type', None)
+            if not visibility_settings.mbti:
+                data.pop('mbti', None)
+            if not visibility_settings.occupation:
+                data.pop('occupation', None)
+            if not visibility_settings.industry:
+                data.pop('industry', None)
+            if not visibility_settings.position:
+                data.pop('position', None)
+            if not visibility_settings.alcohol_preferences:
+                data.pop('alcohol_categories', None)
+                data.pop('alcohol_brands', None)
+                data.pop('drink_styles', None)
+            if not visibility_settings.hobbies:
+                data.pop('hobbies', None)
+            if not visibility_settings.exercise_frequency:
+                data.pop('exercise_frequency', None)
+            if not visibility_settings.dietary_preference:
+                data.pop('dietary_preference', None)
+            if not visibility_settings.atmosphere_preferences:
+                data.pop('atmosphere_preferences', None)
+            if not visibility_settings.visit_purposes:
+                data.pop('visit_purposes', None)
+        
+        return data

@@ -7,6 +7,7 @@ from .views import (
     ShopUpdateAPIView, ShopEditHistoryListAPIView, HistoryEvaluationAPIView,
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet
 )
+from .views_drink import ShopDrinkViewSet
 
 router = DefaultRouter()
 router.register(r'shops', ShopViewSet, basename='shop')
@@ -20,6 +21,7 @@ router.register(r'shop-tag-reactions', ShopTagReactionViewSet)
 router.register(r'shop-images', ShopImageViewSet)
 router.register(r'relation-types', RelationTypeViewSet)
 router.register(r'user-shop-relations', UserShopRelationViewSet, basename='user-shop-relation')
+router.register(r'shop-drinks', ShopDrinkViewSet, basename='shop-drink')
 
 urlpatterns = [
     path('', include(router.urls)),

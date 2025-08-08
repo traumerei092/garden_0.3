@@ -7,8 +7,9 @@ import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
 import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
-import styles from './style.module.scss';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
+import styles from './style.module.scss';
 
 interface InterestsEditModalProps {
   isOpen: boolean;
@@ -27,7 +28,9 @@ const InterestsEditModal: React.FC<InterestsEditModalProps> = ({
 }) => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPublic, setIsPublic] = useState(true);
+  
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
 
   // 現在の興味を初期値として設定
   useEffect(() => {
@@ -101,17 +104,19 @@ const InterestsEditModal: React.FC<InterestsEditModalProps> = ({
       footer={footer}
       size="2xl"
     >
+      <div className={styles.modalHeader}>
+        <div className={styles.visibilitySection}>
+          <div className={styles.visibilityLabel}>興味の公開設定</div>
+          <SwitchVisibility
+            isSelected={visibilitySettings?.interests ?? true}
+            onValueChange={(value) => updateVisibilitySetting('interests', value)}
+          />
+        </div>
+      </div>
+      
       <p className={styles.description}>
         あなたの興味を選択してください。複数選択可能です。
       </p>
-      
-      <div className={styles.visibilitySection}>
-        <div className={styles.visibilityLabel}>興味の公開設定</div>
-        <SwitchVisibility
-          isSelected={isPublic}
-          onValueChange={setIsPublic}
-        />
-      </div>
       
       <div className={styles.categoriesContainer}>
         {Object.entries(groupedInterests).map(([categoryName, interests]) => (

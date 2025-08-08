@@ -5,6 +5,11 @@
   align-items: center;
   padding: 0;
   background-color: rgb(10,11,28);
+  min-height: 100vh;
+  
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
 }
 
 .createTitle, .createNav {
@@ -12,11 +17,30 @@
   background: linear-gradient(to right, rgba(0,198,255,0.2), rgba(0235,14,242,0.2));
   color: white;
   margin-bottom: 30px;
+  
+  @media (max-width: 1024px) {
+    width: 85%;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-bottom: 20px;
+  }
 }
 
 .createTitle {
   margin-top: 90px;
   padding: 10px 30px;
+  
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    padding: 15px 20px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 40px;
+    padding: 12px 16px;
+  }
 }
 
 .createTitleBody {
@@ -28,15 +52,40 @@
   h1 {
     font-size: 24px;
     font-weight: bolder;
+    
+    @media (max-width: 768px) {
+      font-size: 20px;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 18px;
+    }
   }
 
   h2 {
     font-size: 20px;
     font-weight: bolder;
+    
+    @media (max-width: 768px) {
+      font-size: 18px;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 16px;
+    }
   }
 
   p {
     font-size: 14px;
+    line-height: 1.5;
+    
+    @media (max-width: 768px) {
+      font-size: 13px;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 12px;
+    }
   }
 }
 
@@ -55,6 +104,23 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  
+  @media (max-width: 1024px) {
+    width: 85%;
+    padding: 40px 35px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 30px 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 20px 15px;
+    gap: 0.875rem;
+  }
 }
 
 // currentStep === 0
@@ -109,21 +175,41 @@
   width: 50%;
 }
 
+.imageUploadContainer {
+  background: rgba(168, 168, 168, 0.1);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
 .imageUploadGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: rgba(168, 168, 168, 0.1);
-  gap: 1rem;
-  border-radius: 10px;
-  padding: 10px 15px;
-}
-
-.imageRadioGroup {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1.25rem;
   width: 100%;
-  justify-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 600px; // グリッド全体の最小高さを設定
+  
+  // 各アイテムの高さを統一
+  & > * {
+    height: 100%;
+    min-height: 280px;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 1rem;
+    max-width: 600px;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 0.875rem;
+    max-width: 400px;
+  }
 }
 
 .radioItem {
@@ -203,4 +289,251 @@
 .createNext {
   display: flex;
   gap: 1.5rem;
+}
+
+// 予算入力関連のスタイル
+.budgetSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: rgba(168, 168, 168, 0.1);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.budgetCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.budgetCategoryTitle {
+  color: rgba(76, 201, 240, 0.9);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.budgetRange {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.budgetSeparator {
+  color: rgba(76, 201, 240, 0.8);
+  font-weight: 600;
+  font-size: 1.1rem;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.budgetInput {
+  flex: 1;
+  min-width: 140px;
+}
+
+.budgetNoteSection {
+  margin-top: 0.5rem;
+  width: 70%;
+}
+
+.budgetNoteInput {
+  width: 100%;
+}
+
+.budgetLabel {
+  color: rgba(76, 201, 240, 0.9) !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+}
+
+// 確認画面の予算表示
+.budgetConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.budgetConfirmCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.budgetCategoryLabel {
+  color: rgba(76, 201, 240, 0.8);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.budgetItem {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(76, 201, 240, 0.1);
+  border: 1px solid rgba(76, 201, 240, 0.3);
+  border-radius: 8px;
+  color: rgba(76, 201, 240, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.budgetConfirmNote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.budgetNoteLabel {
+  color: rgba(76, 201, 240, 0.8);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.budgetNoteText {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+// 登録完了セクション
+.completionSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.completionIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkmarkContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.checkmark {
+  width: 80px;
+  height: 80px;
+  animation: checkmark-pop 0.6s ease-in-out;
+}
+
+.checkmarkCircle {
+  stroke: rgba(76, 201, 240, 0.8);
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmarkCheck {
+  stroke: rgba(76, 201, 240, 1);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-miterlimit: 10;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes checkmark-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.completionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+}
+
+.completionTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.completionMessage {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.completionStats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(76, 201, 240, 0.1);
+  border: 1px solid rgba(76, 201, 240, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.statNumber {
+  font-size: 2rem;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: rgba(76, 201, 240, 0.9);
+  font-weight: 500;
+  text-align: center;
 }

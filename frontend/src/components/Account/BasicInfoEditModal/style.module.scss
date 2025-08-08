@@ -18,6 +18,22 @@
   gap: 0.5rem;
 }
 
+.fieldWithVisibility {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.fieldWithVisibility > *:first-child {
+  flex: 1;
+}
+
+.visibilityControl {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
 .visibilitySection {
   margin-top: 2rem;
   padding: 1.5rem;

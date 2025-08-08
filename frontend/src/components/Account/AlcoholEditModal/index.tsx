@@ -13,6 +13,7 @@ import { updateAlcoholCategories } from '@/actions/profile/updateAlcoholCategori
 import { updateAlcoholBrands } from '@/actions/profile/updateAlcoholBrands';
 import { updateDrinkStyles } from '@/actions/profile/updateDrinkStyles';
 import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 
 interface AlcoholEditModalProps {
   isOpen: boolean;
@@ -34,7 +35,9 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
   const [selectedDrinkStyles, setSelectedDrinkStyles] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('categories');
   const [isLoading, setIsLoading] = useState(false);
-  const [isPublic, setIsPublic] = useState(true);
+  
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
 
   // モーダルが開かれた時に現在の選択状態を設定
   useEffect(() => {
@@ -94,10 +97,10 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
     <Modal isOpen={isOpen} onClose={handleCancel} title="お酒の好みを編集">
       <div className={styles.modalHeader}>
         <div className={styles.visibilitySection}>
-          <div className={styles.visibilityLabel}>興味の公開設定</div>
+          <div className={styles.visibilityLabel}>お酒の好みの公開設定</div>
           <SwitchVisibility
-            isSelected={isPublic}
-            onValueChange={setIsPublic}
+            isSelected={visibilitySettings?.alcohol_preferences ?? true}
+            onValueChange={(value) => updateVisibilitySetting('alcohol_preferences', value)}
           />
         </div>
       </div>

@@ -8,6 +8,45 @@ export interface VisitPurpose {
   name: string;
 }
 
+// ドリンク関連の型定義
+export interface AlcoholCategory {
+  id: number;
+  name: string;
+}
+
+export interface AlcoholBrand {
+  id: number;
+  name: string;
+  category: AlcoholCategory;
+}
+
+export interface DrinkStyle {
+  id: number;
+  name: string;
+  category: AlcoholCategory;
+}
+
+export interface ShopDrink {
+  id: number;
+  name: string;
+  alcohol_category?: AlcoholCategory;
+  alcohol_brand?: AlcoholBrand;
+  drink_style?: DrinkStyle;
+  description: string;
+  is_alcohol: boolean;
+  is_available: boolean;
+  created_by: ReviewAuthor;
+  reaction_count: number;
+  user_has_reacted: boolean;
+  created_at: string;
+}
+
+export interface DrinkMasterData {
+  alcohol_categories: AlcoholCategory[];
+  alcohol_brands: AlcoholBrand[];
+  drink_styles: DrinkStyle[];
+}
+
 export interface ReviewAuthor {
   id: number;
   name: string;
@@ -142,6 +181,12 @@ export interface ShopFormValues {
   phoneNumber: string;
   access: string;
   paymentMethods: PaymentMethod[];
+  // 予算目安フィールド
+  budgetWeekdayMin: number | null;   // 平日予算最低額
+  budgetWeekdayMax: number | null;   // 平日予算最高額
+  budgetWeekendMin: number | null;   // 週末予算最低額
+  budgetWeekendMax: number | null;   // 週末予算最高額
+  budgetNote: string;                // 予算に関する補足情報
 }
 
 ///* 営業日・営業時間フィールド *////

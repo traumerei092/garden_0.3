@@ -7,7 +7,9 @@ import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
 import { updateBasicInfo } from '@/actions/profile/updateBasicInfo';
 import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
+import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import { User } from '@/types/users';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import styles from './style.module.scss';
 
 interface BasicInfoEditModalProps {
@@ -33,6 +35,9 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
 
   useEffect(() => {
     if (user && isOpen) {
@@ -63,7 +68,7 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
   };
 
   const handleDateChange = (date: any) => {
-    if (date) {
+    if (date && date.year && date.month && date.day) {
       const dateString = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
       handleInputChange('birthdate', dateString);
     } else {
@@ -90,20 +95,23 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
     try {
       const updateData = {
         name: formData.name,
-        gender: formData.gender,
-        birthdate: formData.birthdate,
-        my_area: formData.my_area,
-        introduction: formData.introduction,
+        gender: formData.gender || '',
+        birthdate: formData.birthdate || null,
+        my_area: formData.my_area || '',
+        introduction: formData.introduction || '',
         is_profile_public: formData.is_profile_public
       };
 
+      console.log('BasicInfoEditModal - updateData:', updateData);
       const result = await updateBasicInfo(updateData);
+      console.log('BasicInfoEditModal - API result:', result);
       
       if (result.success && result.data) {
         onUpdate(result.data);
         showProfileUpdateToast();
         onClose();
       } else {
+        console.error('BasicInfoEditModal - Error:', result.error);
         showErrorToast(result.error || 'プロフィールの更新に失敗しました');
       }
     } catch (error) {
@@ -202,75 +210,54 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
         </div>
 
         <div className={styles.formField}>
-          <DatePicker
-            label="生年月日"
-            value={parseBirthdate(formData.birthdate) as any}
-            onChange={handleDateChange}
-            variant="bordered"
-            radius="sm"
-            showMonthAndYearPickers
-            classNames={{
-              base: styles.inputBase,
-              label: styles.inputLabel,
-              inputWrapper: styles.datePickerWrapper,
-              popoverContent: styles.datePickerPopover
-            }}
-          />
+          <div className={styles.fieldWithVisibility}>
+            <DatePicker
+              label="生年月日"
+              value={parseBirthdate(formData.birthdate) as any}
+              onChange={handleDateChange}
+              variant="bordered"
+              radius="sm"
+              showMonthAndYearPickers
+              classNames={{
+                base: styles.inputBase,
+                label: styles.inputLabel,
+                inputWrapper: styles.datePickerWrapper,
+                popoverContent: styles.datePickerPopover
+              }}
+            />
+            <div className={styles.visibilityControl}>
+              <SwitchVisibility
+                isSelected={visibilitySettings?.age ?? true}
+                onValueChange={(value) => updateVisibilitySetting('age', value)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className={styles.formField}>
-          <Input
-            label="マイエリア"
-            value={formData.my_area}
-            onChange={(e) => handleInputChange('my_area', e.target.value)}
-            variant="bordered"
-            radius="sm"
-            placeholder="マイエリアを入力"
-            classNames={{
-              base: styles.inputBase,
-              label: styles.inputLabel,
-              inputWrapper: styles.inputWrapper,
-              input: styles.input
-            }}
-          />
-        </div>
-      </div>
-
-      <div className={styles.formField}>
-        <Input
-          label="自己紹介"
-          value={formData.introduction}
-          onChange={(e) => handleInputChange('introduction', e.target.value)}
-          variant="bordered"
-          radius="sm"
-          placeholder="自己紹介を入力"
-          classNames={{
-            base: styles.inputBase,
-            label: styles.inputLabel,
-            inputWrapper: styles.inputWrapper,
-            input: styles.input
-          }}
-        />
-      </div>
-
-      <div className={styles.visibilitySection}>
-        <div className={styles.visibilityField}>
-          <label className={styles.visibilityLabel}>プロフィール公開設定</label>
-          <div className={styles.switchContainer}>
-            <Switch
-              isSelected={formData.is_profile_public}
-              onValueChange={(value) => handleInputChange('is_profile_public', value)}
-              size="sm"
-              color="primary"
+          <div className={styles.fieldWithVisibility}>
+            <Input
+              label="マイエリア"
+              value={formData.my_area}
+              onChange={(e) => handleInputChange('my_area', e.target.value)}
+              variant="bordered"
+              radius="sm"
+              placeholder="マイエリアを入力"
+              classNames={{
+                base: styles.inputBase,
+                label: styles.inputLabel,
+                inputWrapper: styles.inputWrapper,
+                input: styles.input
+              }}
             />
-            <span className={styles.switchText}>
-              {formData.is_profile_public ? '公開' : '非公開'}
-            </span>
+            <div className={styles.visibilityControl}>
+              <SwitchVisibility
+                isSelected={visibilitySettings?.my_area ?? true}
+                onValueChange={(value) => updateVisibilitySetting('my_area', value)}
+              />
+            </div>
           </div>
         </div>
-        <p className={styles.visibilityDescription}>
-          プロフィールを公開すると、他のユーザーがあなたの情報を閲覧できます。
-        </p>
       </div>
     </CustomModal>
   );

@@ -25,12 +25,17 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
         capacity: formValues.capacity,
         phone_number: formValues.phoneNumber,
         access: formValues.access,
+        budget_weekday_min: formValues.budgetWeekdayMin,
+        budget_weekday_max: formValues.budgetWeekdayMax,
+        budget_weekend_min: formValues.budgetWeekendMin,
+        budget_weekend_max: formValues.budgetWeekendMax,
+        budget_note: formValues.budgetNote,
     };
 
     // FormDataに追加
     Object.entries(createFormData).forEach(([key, value]) => {
-        // capacityフィールドの特別処理 - null, undefined, NaNの場合は送信しない
-        if (key === 'capacity') {
+        // capacity、予算フィールドの特別処理 - null, undefined, NaNの場合は送信しない
+        if (['capacity', 'budget_weekday_min', 'budget_weekday_max', 'budget_weekend_min', 'budget_weekend_max'].includes(key)) {
             if (value !== null && value !== undefined && !isNaN(Number(value))) {
                 formData.append(key, String(value));
             }

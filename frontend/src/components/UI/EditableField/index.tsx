@@ -5,6 +5,7 @@ import { Input, Textarea } from '@nextui-org/react';
 import { Edit, Check, X } from 'lucide-react';
 import styles from './style.module.scss';
 import LoadingSpinner from '../LoadingSpinner';
+import SwitchVisibility from '../SwitchVisibility';
 
 interface EditableFieldProps {
   value: string;
@@ -14,6 +15,13 @@ interface EditableFieldProps {
   multiline?: boolean;
   validation?: (value: string) => string | null;
   className?: string;
+  visibilityControl?: {
+    isVisible: boolean;
+    onVisibilityChange: (visible: boolean) => void;
+    label?: string;
+  };
+  onEditStart?: () => void;
+  onEditEnd?: () => void;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({
@@ -23,7 +31,10 @@ const EditableField: React.FC<EditableFieldProps> = ({
   maxLength,
   multiline = false,
   validation,
-  className
+  className,
+  visibilityControl,
+  onEditStart,
+  onEditEnd
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -38,12 +49,14 @@ const EditableField: React.FC<EditableFieldProps> = ({
     setIsEditing(true);
     setEditValue(value);
     setError(null);
+    onEditStart?.();
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditValue(value);
     setError(null);
+    onEditEnd?.();
   };
 
   const handleSave = async () => {
@@ -61,6 +74,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
     try {
       await onSave(editValue);
       setIsEditing(false);
+      onEditEnd?.();
     } catch (error) {
       setError('保存に失敗しました');
     } finally {

@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
+import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import styles from './style.module.scss';
 import { AtmosphereIndicator, UserAtmospherePreference } from '@/types/users';
 import { fetchAtmosphereIndicators, fetchUserAtmospherePreferences } from '@/actions/profile/fetchAtmosphereData';
 import { updateAtmospherePreferences } from '@/actions/profile/updateAtmospherePreferences';
+import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import { showToast } from '@/utils/toasts';
 
 interface AtmosphereEditModalProps {
@@ -26,6 +28,9 @@ const AtmosphereEditModal: React.FC<AtmosphereEditModalProps> = ({
   const [preferences, setPreferences] = useState<{ [key: number]: number }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // 公開設定フック
+  const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
 
   useEffect(() => {
     if (isOpen) {
@@ -108,6 +113,16 @@ const AtmosphereEditModal: React.FC<AtmosphereEditModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="雰囲気の好み">
       <div className={styles.content}>
+        <div className={styles.modalHeader}>
+          <div className={styles.visibilitySection}>
+            <div className={styles.visibilityLabel}>雰囲気の好みの公開設定</div>
+            <SwitchVisibility
+              isSelected={visibilitySettings?.atmosphere_preferences ?? true}
+              onValueChange={(value) => updateVisibilitySetting('atmosphere_preferences', value)}
+            />
+          </div>
+        </div>
+        
         {isLoading ? (
           <div className={styles.loading}>
             <LoadingSpinner />

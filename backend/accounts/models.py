@@ -322,3 +322,55 @@ class UserAtmospherePreference(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.name} - {self.indicator.name}: {self.score}"
+
+
+# --- Profile Visibility Settings Model ---
+
+class ProfileVisibilitySettings(models.Model):
+    """
+    ユーザーのプロフィール公開/非公開設定を管理するモデル
+    各項目ごとに公開設定を制御できます
+    """
+    user = models.OneToOneField(
+        UserAccount, 
+        on_delete=models.CASCADE, 
+        related_name='visibility_settings',
+        verbose_name="ユーザー"
+    )
+    
+    # 常に公開される項目: header_image, avatar, introduction, name, gender
+    # 以下は設定可能な項目
+    age = models.BooleanField("年齢公開", default=True)
+    my_area = models.BooleanField("マイエリア公開", default=True)
+    interests = models.BooleanField("興味公開", default=True)
+    blood_type = models.BooleanField("血液型公開", default=True)
+    mbti = models.BooleanField("MBTI公開", default=True)
+    occupation = models.BooleanField("職業公開", default=True)
+    industry = models.BooleanField("業種公開", default=True)
+    position = models.BooleanField("役職公開", default=True)
+    alcohol_preferences = models.BooleanField("お酒の好み公開", default=True)
+    hobbies = models.BooleanField("趣味公開", default=True)
+    exercise_frequency = models.BooleanField("運動頻度公開", default=True)
+    dietary_preference = models.BooleanField("食事制限・好み公開", default=True)
+    atmosphere_preferences = models.BooleanField("雰囲気の好み公開", default=True)
+    visit_purposes = models.BooleanField("利用目的公開", default=True)
+    
+    created_at = models.DateTimeField("作成日", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日", auto_now=True)
+    
+    class Meta:
+        verbose_name = "プロフィール公開設定"
+        verbose_name_plural = "プロフィール公開設定"
+    
+    def __str__(self):
+        return f"{self.user.name}の公開設定"
+
+
+# プロフィール公開設定の自動作成シグナル
+@receiver(post_save, sender=UserAccount)
+def create_profile_visibility_settings(sender, instance, created, **kwargs):
+    """
+    ユーザー作成時にデフォルトのプロフィール公開設定を作成
+    """
+    if created:
+        ProfileVisibilitySettings.objects.create(user=instance)

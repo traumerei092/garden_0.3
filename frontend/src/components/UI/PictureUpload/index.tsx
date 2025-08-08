@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useRef } from "react";
-import { ImagePlus } from "lucide-react";
-import {Button, useRadio, VisuallyHidden, RadioProps, Input} from "@nextui-org/react";
+import React, { useRef, useState } from "react";
+import { ImagePlus, Upload, X, Star, Camera } from "lucide-react";
+import {Button, Input} from "@nextui-org/react";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./style.module.scss";
 
 interface PictureUploadProps {
@@ -15,6 +16,8 @@ interface PictureUploadProps {
     value?: string;
     name?: string;
     isRequired?: boolean;
+    isSelected?: boolean;
+    onIconSelect?: () => void;
 }
 
 export const PictureUpload = (props: PictureUploadProps) => {
@@ -26,13 +29,14 @@ export const PictureUpload = (props: PictureUploadProps) => {
         onCaptionChange,
         hideIconSelect = false,
         isRequired = false,
+        isSelected = false,
+        onIconSelect,
         ...radioProps
     } = props;
 
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    // hideIconSelectがtrueの場合はuseRadioを使用しない
-    const radioHook = !hideIconSelect ? useRadio({ ...radioProps as RadioProps }) : null;
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0] ?? null;
@@ -45,156 +49,147 @@ export const PictureUpload = (props: PictureUploadProps) => {
         onCaptionChange(index, "");
     };
 
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const droppedFile = e.dataTransfer.files[0];
+        if (droppedFile && droppedFile.type.startsWith('image/')) {
+            onFileChange(index, droppedFile);
+        }
+    };
+
     return (
-        <div className={styles.pictureUploadEntire}>
-            {!hideIconSelect && radioHook ? (
-                <radioHook.Component
-                    {...radioHook.getBaseProps()}
-                    className={`${styles.pictureUploadBlock} ${file && radioHook.isSelected ? styles.selected : ""}`}
-                >
-                    <VisuallyHidden>
-                        <input {...radioHook.getInputProps()} disabled={!file} />
-                    </VisuallyHidden>
-
-                    <div {...radioHook.getWrapperProps()} className={styles.pictureUploadContainer}>
-                        <div className={styles.imagePreview}>
+        <motion.div 
+            className={styles.pictureUploadEntire}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <div
+                className={`${styles.pictureUploadBlock} ${file && isSelected ? styles.selected : ""} ${isDragOver ? styles.dragOver : ""}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                <div className={styles.pictureUploadContainer}>
+                    <div className={styles.imagePreview}>
+                        <AnimatePresence mode="wait">
                             {file instanceof File ? (
-                                <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={`image-${index}`}
-                                    className={styles.image}
-                                />
+                                <motion.div
+                                    key="image"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.3 }}
+                                    className={styles.imageContainer}
+                                >
+                                    <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`image-${index}`}
+                                        className={styles.image}
+                                    />
+                                    {isHovered && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className={styles.imageOverlay}
+                                        >
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={handleRemove}
+                                                className={styles.removeButton}
+                                            >
+                                                <X size={16} />
+                                            </motion.button>
+                                        </motion.div>
+                                    )}
+                                </motion.div>
                             ) : (
-                                <div className={styles.placeholder}>
-                                    <ImagePlus size={36}/>
+                                <motion.div
+                                    key="placeholder"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.3 }}
+                                    className={styles.placeholder}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <motion.div
+                                        animate={{ 
+                                            scale: isDragOver ? 1.1 : 1,
+                                            rotateY: isDragOver ? 360 : 0
+                                        }}
+                                        transition={{ duration: 0.3 }}
+                                        className={styles.placeholderIcon}
+                                    >
+                                        {isDragOver ? <Upload size={32} /> : <ImagePlus size={32} />}
+                                    </motion.div>
+                                    <p className={styles.placeholderText}>
+                                        {isDragOver ? "ドロップして追加" : "クリックまたはドラッグ"}
+                                    </p>
+                                    <p className={styles.placeholderSubtext}>PNG, JPG, GIF</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {file && (
+                        <div className={styles.controls}>
+                            <Input
+                                value={caption}
+                                onChange={(e) => onCaptionChange(index, e.target.value)}
+                                placeholder="画像の説明（任意）"
+                                size="sm"
+                                classNames={{
+                                    inputWrapper: styles.formInput,
+                                    input: styles.formInputElement,
+                                    label: styles.formLabel,
+                                }}
+                            />
+                            
+                            {!hideIconSelect && (
+                                <div className={styles.iconRadioWrapper}>
+                                    <label 
+                                        className={`${styles.iconRadioLabel} ${isSelected ? styles.selected : ""}`}
+                                        onClick={onIconSelect}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="shopIcon"
+                                            checked={isSelected}
+                                            onChange={onIconSelect}
+                                            className={styles.radio}
+                                        />
+                                        <Star className={styles.starIcon} size={14} />
+                                        <span>アイコンに設定</span>
+                                    </label>
                                 </div>
                             )}
                         </div>
-
-                        <div className={styles.controls}>
-                            {file instanceof File ? (
-                                <Input
-                                    label="キャプション"
-                                    placeholder="例：外観"
-                                    size="sm"
-                                    value={caption}
-                                    onChange={(e) => onCaptionChange(index, e.target.value)}
-                                    classNames={{
-                                        inputWrapper: styles.formInput,
-                                        input: styles.formInputElement,
-                                    }}
-                                />
-                            ) : (
-                                <Input
-                                    label="キャプション"
-                                    placeholder="ファイルを選択してください"
-                                    size="sm"
-                                    isDisabled
-                                    classNames={{
-                                        inputWrapper: styles.formInput,
-                                        input: styles.formInputElement,
-                                    }}
-                                />
-                            )}
-
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                ref={fileInputRef}
-                                style={{display: "none"}}
-                            />
-                        </div>
-
-                        <div className={styles.iconRadioWrapper}>
-                            <input
-                                type={"radio"}
-                                {...radioHook.getInputProps()}
-                                disabled={!file}
-                                className={styles.radio}/>
-                            <label>アイコン画像に設定</label>
-                        </div>
-                    </div>
-                </radioHook.Component>
-            ) : (
-                <div className={styles.pictureUploadBlock}>
-                    <div className={styles.pictureUploadContainer}>
-                        <div className={styles.imagePreview}>
-                            {file instanceof File ? (
-                                <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={`image-${index}`}
-                                    className={styles.image}
-                                />
-                            ) : (
-                                <div className={styles.placeholder}>
-                                    <ImagePlus size={36}/>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className={styles.controls}>
-                            {file instanceof File ? (
-                                <Input
-                                    label="キャプション"
-                                    placeholder="例：外観"
-                                    size="sm"
-                                    value={caption}
-                                    onChange={(e) => onCaptionChange(index, e.target.value)}
-                                    classNames={{
-                                        inputWrapper: styles.formInput,
-                                        input: styles.formInputElement,
-                                    }}
-                                />
-                            ) : (
-                                <Input
-                                    label="キャプション"
-                                    placeholder="ファイルを選択してください"
-                                    size="sm"
-                                    isDisabled
-                                    classNames={{
-                                        inputWrapper: styles.formInput,
-                                        input: styles.formInputElement,
-                                    }}
-                                />
-                            )}
-
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                ref={fileInputRef}
-                                style={{display: "none"}}
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
-            )}
-            <div className={styles.uploadButtonWrapper}>
-                {file instanceof File ? (
-                    <Button
-                        color="danger"
-                        radius="sm"
-                        size="sm"
-                        variant="flat"
-                        onPress={handleRemove}
-                        className={styles.uploadButton}
-                    >
-                        削除
-                    </Button>
-                ) : (
-                    <Button
-                        color="primary"
-                        radius="sm"
-                        size="sm"
-                        variant="solid"
-                        onPress={() => fileInputRef.current?.click()}
-                        className={styles.uploadButton}
-                    >
-                        ファイルを選択
-                    </Button>
-                )}
             </div>
-        </div>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
+        </motion.div>
     );
-}
+};
