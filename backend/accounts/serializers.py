@@ -205,6 +205,11 @@ class UserSerializer(serializers.ModelSerializer):
         )
     
     def update(self, instance, validated_data):
+        # birthdateの空文字列をNoneに変換
+        if 'birthdate' in validated_data:
+            if validated_data['birthdate'] == '' or validated_data['birthdate'] == 'null':
+                validated_data['birthdate'] = None
+        
         # blood_type_idが提供された場合、blood_typeを設定
         if 'blood_type_id' in validated_data:
             blood_type_id = validated_data.pop('blood_type_id')
@@ -271,7 +276,7 @@ class ProfileVisibilitySettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileVisibilitySettings
         fields = [
-            'age', 'my_area', 'interests', 'blood_type', 'mbti',
+            'age', 'interests', 'blood_type', 'mbti',
             'occupation', 'industry', 'position', 'alcohol_preferences',
             'hobbies', 'exercise_frequency', 'dietary_preference',
             'atmosphere_preferences', 'visit_purposes'
@@ -303,7 +308,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'uid', 'name', 'avatar', 'introduction', 'gender', 'age', 'my_area',
+            'uid', 'name', 'avatar', 'introduction', 'gender', 'age',
             'interests', 'blood_type', 'mbti', 'occupation', 'industry', 'position',
             'alcohol_categories', 'alcohol_brands', 'drink_styles', 'hobbies',
             'exercise_frequency', 'dietary_preference', 'atmosphere_preferences',
@@ -332,8 +337,6 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             # 非公開に設定されている項目を削除
             if not visibility_settings.age:
                 data.pop('age', None)
-            if not visibility_settings.my_area:
-                data.pop('my_area', None)
             if not visibility_settings.interests:
                 data.pop('interests', None)
             if not visibility_settings.blood_type:

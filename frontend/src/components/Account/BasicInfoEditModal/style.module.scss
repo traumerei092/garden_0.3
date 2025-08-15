@@ -137,20 +137,139 @@
 }
 
 // NextUI DatePicker overrides
+.datePickerBase {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+
+}
+
 .datePickerWrapper {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   
   &:focus-within {
-    border-color: rgba(102, 126, 234, 1);
-    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 1) !important;
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.3) !important;
+  }
+  
+  input {
+    color: #ffffff !important;
+    background: transparent !important;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
   }
 }
 
 .datePickerPopover {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: #1a1a1a !important;
+  border: 1px solid #333 !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  
+  // カレンダーのヘッダー
+  [data-slot="header"] {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    
+    button {
+      color: #ffffff !important;
+      background: transparent !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+  
+  // カレンダーのグリッド
+  [data-slot="grid"] {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+  }
+  
+  // 曜日ヘッダー
+  [data-slot="grid-header"] {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  
+  // 日付セル
+  [data-slot="grid-body"] button {
+    color: #ffffff !important;
+    background: transparent !important;
+    
+    &:hover {
+      background: rgba(102, 126, 234, 0.2) !important;
+      color: #ffffff !important;
+    }
+    
+    &[data-selected="true"] {
+      background: rgba(102, 126, 234, 1) !important;
+      color: #ffffff !important;
+    }
+    
+    &[data-today="true"] {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #00ffff !important;
+    }
+    
+    &[data-outside-month="true"] {
+      color: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+  
+  // 年月選択
+  [data-slot="picker"] {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    
+    button {
+      color: #ffffff !important;
+      background: transparent !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+      
+      &[data-selected="true"] {
+        background: rgba(102, 126, 234, 1) !important;
+      }
+    }
+  }
 }
+
+.datePickerCalendar {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+.datePickerCalendarContent {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  
+  // カレンダーのヘッダー
+  [data-slot="header"] {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    
+    button {
+      color: #ffffff !important;
+      background: transparent !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+  
+  // カレンダーのグリッド
+  [data-slot="grid"] {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+  }
+}
+
 
 @media (max-width: 768px) {
   .formGrid {

@@ -408,19 +408,26 @@ class UpdateProfileImageView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
+        print(f"プロフィール画像更新リクエスト - ユーザー: {request.user.email}")
+        print(f"受信ファイル: {request.FILES}")
+        
         user = request.user
         avatar = request.FILES.get('avatar')
 
         if not avatar:
+            print("エラー: 画像ファイルが見つかりません")
             return Response(
                 {'error': '画像ファイルが必要です'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        print(f"アップロード画像情報: name={avatar.name}, size={avatar.size}, content_type={avatar.content_type}")
+
         try:
             # アバター画像を更新
             user.avatar = avatar
             user.save()
+            print(f"画像更新成功: {user.avatar.url if user.avatar else 'None'}")
             
             # 更新されたユーザー情報を返す
             serializer = UserSerializer(user)
@@ -428,8 +435,10 @@ class UpdateProfileImageView(APIView):
             
         except Exception as e:
             print(f"プロフィール画像更新エラー: {e}")
+            import traceback
+            traceback.print_exc()
             return Response(
-                {'error': '画像の更新に失敗しました'},
+                {'error': f'画像の更新に失敗しました: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -527,6 +536,12 @@ class PreviewUserProfileView(APIView):
     def get(self, request, *args, **kwargs):
         """自分のプロフィールをプレビュー"""
         try:
+            # ProfileVisibilitySettingsが存在しない場合は作成
+            from .models import ProfileVisibilitySettings
+            visibility_settings, created = ProfileVisibilitySettings.objects.get_or_create(
+                user=request.user
+            )
+            
             user = User.objects.select_related(
                 'visibility_settings', 'blood_type', 'mbti', 
                 'exercise_frequency', 'dietary_preference'
@@ -540,6 +555,9 @@ class PreviewUserProfileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
             
         except Exception as e:
+            import traceback
+            print(f"PreviewUserProfileView error: {str(e)}")
+            print(f"PreviewUserProfileView traceback: {traceback.format_exc()}")
             return Response(
                 {'error': 'プレビューの取得に失敗しました'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

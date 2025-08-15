@@ -42,7 +42,8 @@ export async function fetchProfilePreview(): Promise<PublicUserProfile | null> {
     const response = await fetchWithAuth('/accounts/profile-preview/');
 
     if (!response.ok) {
-      throw new Error('プレビューの取得に失敗しました');
+      const errorText = await response.text();
+      throw new Error(`プレビューの取得に失敗しました (${response.status}): ${errorText}`);
     }
 
     const data: PublicUserProfile = await response.json();

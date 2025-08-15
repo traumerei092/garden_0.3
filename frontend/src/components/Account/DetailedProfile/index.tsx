@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Switch, Progress } from '@nextui-org/react';
-import { Eye, EyeOff, Plus } from 'lucide-react';
+import { Switch } from '@nextui-org/react';
+import { Eye, EyeOff, Plus, Sparkle } from 'lucide-react';
+import ProfileCompletion from '@/components/UI/ProfileCompletion';
 import styles from './style.module.scss';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
@@ -46,28 +47,236 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
   // 公開設定フック
   const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
   
-  // プロフィール完成度を動的に計算
-  const calculateProfileCompletion = (): number => {
-    const fields = [
-      userData.introduction,
-      userData.gender,
-      userData.birthdate,
-      userData.my_area,
-      userData.work_info,
-      userData.blood_type,
-      userData.mbti,
-      userData.interests && userData.interests.length > 0,
-      userData.alcohols && userData.alcohols.length > 0,
-      userData.hobbies && userData.hobbies.length > 0,
-      userData.exercise_habits && userData.exercise_habits.length > 0,
-      userData.social_preferences && userData.social_preferences.length > 0,
-    ];
+  
+  // レコメンド項目の型定義
+  interface RecommendationItem {
+    id: string;
+    title: string;
+    description: string;
+    priority: number;
+    action: () => void;
+  }
+  
+  // レコメンド項目の優先度とアクション設定
+  const getRecommendations = (): RecommendationItem[] => {
+    const recommendations: RecommendationItem[] = [];
     
-    const completedFields = fields.filter(field => field).length;
-    return Math.round((completedFields / fields.length) * 100);
+    // 雰囲気の好み（最優先）
+    if (!userAtmospherePreferences || userAtmospherePreferences.length === 0) {
+      recommendations.push({
+        id: 'atmosphere_preferences',
+        title: '雰囲気の好み',
+        description: 'お店の雰囲気を設定すると、より良いマッチングが可能になります',
+        priority: 1,
+        action: () => setIsAtmosphereModalOpen(true)
+      });
+    }
+    
+    // 興味（カテゴリ別チェック）
+    const checkMissingInterestCategories = () => {
+      if (!profileOptions.interests || profileOptions.interests.length === 0) {
+        return true; // オプションがない場合は未設定とみなす
+      }
+      
+      // 利用可能な興味カテゴリを取得
+      const availableCategories = Array.from(new Set(profileOptions.interests.map(interest => interest.category.name)));
+      
+      // ユーザーが設定済みの興味カテゴリを取得
+      const userCategories = userData.interests 
+        ? Array.from(new Set(userData.interests.map(interest => interest.category.name)))
+        : [];
+      
+      // 未設定のカテゴリがあるかチェック
+      return availableCategories.some(category => !userCategories.includes(category));
+    };
+    
+    if (checkMissingInterestCategories()) {
+      recommendations.push({
+        id: 'interests',
+        title: '興味',
+        description: '興味を設定すると、同じ趣味の人との出会いが増えます',
+        priority: 2,
+        action: () => setIsInterestsModalOpen(true)
+      });
+    }
+    
+    // お酒の好み
+    const hasAlcoholPreferences = userData.alcohol_categories?.length > 0 || 
+                                userData.alcohol_brands?.length > 0 || 
+                                userData.drink_styles?.length > 0;
+    if (!hasAlcoholPreferences) {
+      recommendations.push({
+        id: 'alcohol_preferences',
+        title: 'お酒の好み',
+        description: 'お酒の好みを設定すると、お店選びの精度が向上します',
+        priority: 3,
+        action: () => setIsAlcoholModalOpen(true)
+      });
+    }
+    
+    // 利用目的
+    if (!userData.visit_purposes || userData.visit_purposes.length === 0) {
+      recommendations.push({
+        id: 'visit_purposes',
+        title: '利用目的',
+        description: '利用目的を設定すると、シーンに合ったお店を見つけやすくなります',
+        priority: 4,
+        action: () => setIsVisitPurposesModalOpen(true)
+      });
+    }
+    
+    // 希望予算
+    if (!userData.budget_range) {
+      recommendations.push({
+        id: 'budget_range',
+        title: '希望予算',
+        description: '予算を設定すると、価格帯に合ったお店を見つけやすくなります',
+        priority: 5,
+        action: () => {
+          // 希望予算の項目までスクロール
+          const budgetElement = document.querySelector('[data-field="budget_range"]');
+          if (budgetElement) {
+            budgetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 血液型
+    if (!userData.blood_type) {
+      recommendations.push({
+        id: 'blood_type',
+        title: '血液型',
+        description: '相性診断が利用できます',
+        priority: 6,
+        action: () => {
+          const bloodTypeElement = document.querySelector('[data-field="blood_type"]');
+          if (bloodTypeElement) {
+            bloodTypeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // MBTI
+    if (!userData.mbti) {
+      recommendations.push({
+        id: 'mbti',
+        title: 'MBTI',
+        description: '性格マッチングの精度が向上します',
+        priority: 7,
+        action: () => {
+          const mbtiElement = document.querySelector('[data-field="mbti"]');
+          if (mbtiElement) {
+            mbtiElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 仕事情報（職業）
+    if (!userData.occupation) {
+      recommendations.push({
+        id: 'occupation',
+        title: '仕事情報（職業）',
+        description: '同業者との出会いが増えます',
+        priority: 8,
+        action: () => {
+          const occupationElement = document.querySelector('[data-field="occupation"]');
+          if (occupationElement) {
+            occupationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 仕事情報（業種）
+    if (!userData.industry) {
+      recommendations.push({
+        id: 'industry',
+        title: '仕事情報（業種）',
+        description: '業界の仲間との出会いが期待できます',
+        priority: 9,
+        action: () => {
+          const industryElement = document.querySelector('[data-field="industry"]');
+          if (industryElement) {
+            industryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 仕事情報（役職）
+    if (!userData.position) {
+      recommendations.push({
+        id: 'position',
+        title: '仕事情報（役職）',
+        description: '同じ役職レベルの人とのネットワーキングに有効です',
+        priority: 10,
+        action: () => {
+          const positionElement = document.querySelector('[data-field="position"]');
+          if (positionElement) {
+            positionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 趣味
+    if (!userData.hobbies || userData.hobbies.length === 0) {
+      recommendations.push({
+        id: 'hobbies',
+        title: '趣味',
+        description: '共通の趣味を持つ人との繋がりを作れます',
+        priority: 11,
+        action: () => {
+          const hobbiesElement = document.querySelector('[data-field="hobbies"]');
+          if (hobbiesElement) {
+            hobbiesElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 運動頻度
+    if (!userData.exercise_frequency) {
+      recommendations.push({
+        id: 'exercise_frequency',
+        title: '運動頻度',
+        description: 'アクティブな生活スタイルをアピールできます',
+        priority: 12,
+        action: () => {
+          const exerciseElement = document.querySelector('[data-field="exercise_frequency"]');
+          if (exerciseElement) {
+            exerciseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 食事制限・好み
+    if (!userData.dietary_preference) {
+      recommendations.push({
+        id: 'dietary_preference',
+        title: '食事制限・好み',
+        description: '食事の好みに合ったお店を見つけやすくなります',
+        priority: 13,
+        action: () => {
+          const dietaryElement = document.querySelector('[data-field="dietary_preference"]');
+          if (dietaryElement) {
+            dietaryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+    }
+    
+    // 優先度順にソートして上位3つまでを返す
+    return recommendations
+      .sort((a, b) => a.priority - b.priority)
+      .slice(0, 3);
   };
   
-  const profileCompletion = calculateProfileCompletion();
+  const topRecommendations = getRecommendations();
   
   // 雰囲気データを取得
   useEffect(() => {
@@ -206,27 +415,38 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
     <>
       <div className={styles.detailedProfileContainer}>
       {/* プロフィール完成度 */}
-      <div className={styles.completionSection}>
-        <h2 className={styles.completionTitle}>プロフィール完成度</h2>
-        <p className={styles.completionDescription}>{profileCompletion}%完成 - あと少しで魅力的なプロフィールに！</p>
-        
-        <div className={styles.progressContainer}>
-          <Progress 
-            value={profileCompletion}
-            classNames={{
-              base: styles.progressBase,
-              indicator: styles.progressIndicator,
-              label: styles.progressLabel,
-              value: styles.progressValue,
-              track: styles.progressTrack
-            }}
-            size="md"
-            showValueLabel={true}
-            label=""
-          />
-          <div className={styles.progressValue}>{profileCompletion}%</div>
+      <ProfileCompletion
+        userData={userData}
+        profileOptions={profileOptions}
+        userAtmospherePreferences={userAtmospherePreferences}
+      />
+      
+      {/* 動的レコメンド */}
+      {topRecommendations.length > 0 && (
+        <div className={styles.recommendSection}>
+          <h3 className={styles.recommendTitle}>
+              <span className={styles.starIcon}>
+                <Sparkle strokeWidth={1} />
+              </span>
+              プロフィールを充実させるとお店とのマッチング精度が向上します！
+          </h3>
+          
+          <div className={styles.recommendGrid}>
+            {topRecommendations.map((recommendation) => (
+              <div key={recommendation.id} className={styles.recommendItem}>
+                <div className={styles.recommendContent}>
+                  <h4 className={styles.recommendLabel}>{recommendation.title}</h4>
+                  <p className={styles.recommendDescription}>{recommendation.description}</p>
+                </div>
+                <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={recommendation.action}>
+                  <Plus size={14} />
+                  追加する
+                </ButtonGradientWrapper>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       
       {/* 興味 */}
       <div className={styles.sectionCard}>
@@ -289,7 +509,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           <h3 className={styles.sectionTitle}>パーソナリティ</h3>
         </div>
         
-        <div className={styles.personalityItem}>
+        <div className={styles.personalityItem} data-field="blood_type">
           <div className={styles.personalityLabelWithVisibility}>
             <div className={styles.personalityLabel}>血液型</div>
             <div className={styles.visibilityIcon}>
@@ -324,7 +544,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.personalityItem}>
+        <div className={styles.personalityItem} data-field="mbti">
           <div className={styles.personalityLabelWithVisibility}>
             <div className={styles.personalityLabel}>MBTI</div>
             <div className={styles.visibilityIcon}>
@@ -366,7 +586,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           <h3 className={styles.sectionTitle}>仕事情報</h3>
         </div>
         
-        <div className={styles.workItem}>
+        <div className={styles.workItem} data-field="occupation">
           <div className={styles.workLabelWithVisibility}>
             <div className={styles.workLabel}>職業</div>
             <div className={styles.visibilityIcon}>
@@ -392,7 +612,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.workItem}>
+        <div className={styles.workItem} data-field="industry">
           <div className={styles.workLabelWithVisibility}>
             <div className={styles.workLabel}>業種</div>
             <div className={styles.visibilityIcon}>
@@ -418,7 +638,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.workItem}>
+        <div className={styles.workItem} data-field="position">
           <div className={styles.workLabelWithVisibility}>
             <div className={styles.workLabel}>役職</div>
             <div className={styles.visibilityIcon}>
@@ -523,7 +743,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.lifestyleItem}>
+        <div className={styles.lifestyleItem} data-field="hobbies">
           <div className={styles.lifestyleLabelWithVisibility}>
             <div className={styles.lifestyleLabel}>趣味</div>
             <div className={styles.visibilityIcon}>
@@ -551,7 +771,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.lifestyleItem}>
+        <div className={styles.lifestyleItem} data-field="exercise_frequency">
           <div className={styles.lifestyleLabelWithVisibility}>
             <div className={styles.lifestyleLabel}>運動頻度</div>
             <div className={styles.visibilityIcon}>
@@ -578,7 +798,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
           </div>
         </div>
         
-        <div className={styles.lifestyleItem}>
+        <div className={styles.lifestyleItem} data-field="dietary_preference">
           <div className={styles.lifestyleLabelWithVisibility}>
             <div className={styles.lifestyleLabel}>食事制限・好み</div>
             <div className={styles.visibilityIcon}>
@@ -692,7 +912,7 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
             
             
           </div>
-          <div className={styles.budgetSection}>
+          <div className={styles.budgetSection} data-field="budget_range">
             <h4 className={styles.budgetTitle}>希望予算</h4>
             <div className={styles.budgetItem}>
               <div className={styles.budgetValue}>
@@ -748,52 +968,6 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* 登録していない項目のレコメンド */}
-      <div className={styles.recommendSection}>
-        <h3 className={styles.recommendTitle}>
-          <span className={styles.starIcon}>⭐</span> プロフィールを充実させましょう
-        </h3>
-        
-        <div className={styles.recommendGrid}>
-          <div className={styles.recommendItem}>
-            <div className={styles.recommendContent}>
-              <h4 className={styles.recommendLabel}>血液型</h4>
-              <p className={styles.recommendDescription}>相性診断が利用できます</p>
-            </div>
-            <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={() => {}}>
-              <Plus size={14} />
-              追加する
-            </ButtonGradientWrapper>
-          </div>
-          
-          <div className={styles.recommendItem}>
-            <div className={styles.recommendContent}>
-              <h4 className={styles.recommendLabel}>MBTI</h4>
-              <p className={styles.recommendDescription}>性格マッチングの精度が向上します</p>
-            </div>
-            <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={() => {}}>
-              <Plus size={14} />
-              追加する
-            </ButtonGradientWrapper>
-          </div>
-          
-          <div className={styles.recommendItem}>
-            <div className={styles.recommendContent}>
-              <h4 className={styles.recommendLabel}>職業</h4>
-              <p className={styles.recommendDescription}>同業者との出会いが増えます</p>
-            </div>
-            <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={() => {}}>
-              <Plus size={14} />
-              追加する
-            </ButtonGradientWrapper>
-          </div>
-        </div>
-        
-        <ButtonGradientWrapper anotherStyle={styles.editButton} onClick={() => {}}>
-          編集する
-        </ButtonGradientWrapper>
       </div>
     </div>
     

@@ -81,6 +81,12 @@ const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
                 <p className={styles.errorMessage}>
                   しばらくしてから再度お試しください。
                 </p>
+                {process.env.NODE_ENV === 'development' && (
+                  <details className={styles.errorDetails}>
+                    <summary>エラー詳細</summary>
+                    <pre>{error.message}</pre>
+                  </details>
+                )}
               </div>
             </div>
           )}

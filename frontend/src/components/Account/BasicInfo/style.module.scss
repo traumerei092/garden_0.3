@@ -317,6 +317,74 @@
   font-weight: 500;
 }
 
+// レコメンドセクション
+.recommendSection {
+  background: linear-gradient(135deg,
+    rgba(0, 198, 255, 0.1) 0%,
+    rgba(235, 14, 242, 0.1) 100%);
+  border: solid 1px rgba(0, 198, 255, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  color: white;
+  margin-top: 24px;
+}
+
+.recommendTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.starIcon {
+  color: rgba(0, 198, 255, 0.8);
+}
+
+.recommendGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.recommendItem {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.recommendContent {
+  flex-grow: 1;
+}
+
+.recommendLabel {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.recommendDescription {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 6px 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .profileImageContainer {
     flex-direction: column;
@@ -349,5 +417,9 @@
   .nameInputs {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  
+  .recommendGrid {
+    grid-template-columns: 1fr;
   }
 }

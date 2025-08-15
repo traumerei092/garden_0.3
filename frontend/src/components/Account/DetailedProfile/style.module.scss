@@ -13,6 +13,9 @@
 }
 
 .completionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 8px 0;
@@ -30,7 +33,7 @@
 }
 
 .progressBase {
-  height: 12px !important;
+  height: 6px !important;
   background: rgba(0, 0, 0, 0.3) !important;
 }
 
@@ -47,7 +50,7 @@
 .progressValue {
   position: absolute;
   right: 0;
-  top: -24px;
+  top: -28px;
   font-size: 18px;
   font-weight: 700;
   color: #00C2FF;
@@ -196,7 +199,7 @@
   gap: 8px;
   font-size: 14px;
   padding: 8px 16px;
-  border-radius: 30px;
+  border-radius: 10px;
   max-width: 250px;
 }
 
@@ -326,7 +329,7 @@
   gap: 8px;
   font-size: 14px;
   padding: 8px 16px;
-  border-radius: 30px;
+  border-radius: 10px;
   max-width: 200px;
 }
 

@@ -54,16 +54,34 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
     setIsLoading(true);
     try {
+      console.log('ImageEditModal - Uploading image:', selectedImage.name, selectedImage.size);
       const result = await updateProfileImage(selectedImage);
+      console.log('ImageEditModal - Upload result:', result);
       
       if (result.success && result.data) {
-        onUpdate(result.data);
+        // User型からUserInfo型への変換
+        const userInfo = {
+          id: result.data.id,
+          uid: result.data.uid,
+          email: result.data.email,
+          name: result.data.name,
+          avatar: result.data.avatar,
+          introduction: result.data.introduction,
+          gender: result.data.gender,
+          birthdate: result.data.birthdate,
+          my_area: result.data.my_area
+        };
+        onUpdate(userInfo);
         showProfileUpdateToast();
+        setSelectedImage(null);
+        setCaption('');
         onClose();
       } else {
+        console.error('ImageEditModal - Error:', result.error);
         showErrorToast(result.error || '画像の更新に失敗しました');
       }
     } catch (error) {
+      console.error('ImageEditModal - Network error:', error);
       showErrorToast('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);

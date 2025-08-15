@@ -115,10 +115,11 @@ export interface UserUserTag {
 // API通信用の型定義
 export interface UpdateBasicInfoRequest {
   name?: string;
-  introduction?: string;
   gender?: string;
-  birthdate?: string;
-  work_info?: string;
+  birthdate?: string | null;
+  my_area?: string;
+  introduction?: string;
+  is_profile_public?: boolean;
 }
 
 export interface UpdatePasswordRequest {
@@ -173,7 +174,6 @@ export interface ProfileOptions {
 // プロフィール公開設定の型定義
 export interface ProfileVisibilitySettings {
   age: boolean;
-  my_area: boolean;
   interests: boolean;
   blood_type: boolean;
   mbti: boolean;
@@ -196,7 +196,6 @@ export interface PublicUserProfile {
   introduction: string | null;
   gender: string | null;
   age?: number;
-  my_area?: string | null;
   interests?: Interest[];
   blood_type?: BloodType | null;
   mbti?: MBTI | null;

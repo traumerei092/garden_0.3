@@ -9,6 +9,12 @@ interface UpdateProfileImageResponse {
 
 export async function updateProfileImage(imageFile: File): Promise<UpdateProfileImageResponse> {
   try {
+    console.log('updateProfileImage - File info:', {
+      name: imageFile.name,
+      size: imageFile.size,
+      type: imageFile.type
+    });
+
     const formData = new FormData();
     formData.append('avatar', imageFile);
 
@@ -17,11 +23,14 @@ export async function updateProfileImage(imageFile: File): Promise<UpdateProfile
       body: formData,
     });
 
+    console.log('updateProfileImage - Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('updateProfileImage - Error response:', errorData);
       return {
         success: false,
-        error: errorData.error || '画像の更新に失敗しました',
+        error: errorData.error || errorData.detail || JSON.stringify(errorData) || '画像の更新に失敗しました',
       };
     }
 

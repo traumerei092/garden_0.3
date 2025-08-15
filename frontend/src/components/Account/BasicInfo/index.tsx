@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Link, Textarea } from '@nextui-org/react';
-import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff } from 'lucide-react';
+import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff, Plus, Sparkle } from 'lucide-react';
+import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
+import ProfileCompletion from '@/components/UI/ProfileCompletion';
 import styles from './style.module.scss';
 import PasswordChangeModal from '@/components/Account/PasswordChangeModal';
 import ImageEditModal from '@/components/Account/ImageEditModal';
@@ -26,10 +28,13 @@ interface UserInfo {
 }
 
 interface BasicInfoProps {
+  userData?: UserType;
   onUserUpdate?: (updatedUser: any) => void;
+  profileOptions?: any;
+  userAtmospherePreferences?: any[];
 }
 
-const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
+const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOptions, userAtmospherePreferences }) => {
   // ユーザー情報をストアから取得
   const user = useAuthStore(state => state.user);
   const setUser = useAuthStore(state => state.setUser);
@@ -55,26 +60,31 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
     }
   }, [user]);
   
-  // プロフィール完成度を計算
-  const calculateProfileCompletion = () => {
-    if (!user) return 0;
+  
+  // BasicInfo用レコメンドロジック
+  const getBasicInfoRecommendations = () => {
+    if (!user) return [];
     
-    const fields = [
-      user.uid,
-      user.email,
-      user.name,
-      user.introduction,
-      user.gender,
-      user.birthdate,
-      user.my_area,
-      user.avatar
-    ];
+    const missingFields = [];
     
-    const filledFields = fields.filter(field => field !== null && field !== '' && field !== undefined).length;
-    return Math.round((filledFields / fields.length) * 100);
+    if (!user.name) missingFields.push('ユーザー名');
+    if (!user.introduction) missingFields.push('自己紹介');
+    if (!user.gender) missingFields.push('性別');
+    if (!user.birthdate) missingFields.push('生年月日');
+    if (!user.my_area) missingFields.push('マイエリア');
+    if (!user.avatar) missingFields.push('プロフィール画像');
+    
+    if (missingFields.length === 0) return [];
+    
+    return [{
+      id: 'basic_info',
+      title: '基本情報',
+      description: `${missingFields.join('、')}の入力が完了していません`,
+      action: () => setIsEditModalOpen(true)
+    }];
   };
   
-  const profileCompletion = user ? calculateProfileCompletion() : 0;
+  const basicInfoRecommendations = getBasicInfoRecommendations();
   
   // プロフィール画像のイニシャルを取得
   const getInitials = () => {
@@ -201,23 +211,41 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ onUserUpdate }) => {
         </div>
       </div>
       
-      {/* プロフィール統計 */}
-      <div className={styles.profileStats}>
-        <div className={styles.statItem}>
-          <h3 className={styles.statValue}>{profileCompletion}%</h3>
-          <p className={styles.statLabel}>プロフィール完成度</p>
+      {/* プロフィール完成度 */}
+      {userData && profileOptions && (
+        <ProfileCompletion
+          userData={userData}
+          profileOptions={profileOptions}
+          userAtmospherePreferences={userAtmospherePreferences || []}
+        />
+      )}
+      
+      {/* BasicInfo用レコメンド */}
+      {basicInfoRecommendations.length > 0 && (
+        <div className={styles.recommendSection}>
+          <h3 className={styles.recommendTitle}>
+            <span className={styles.starIcon}>
+              <Sparkle strokeWidth={1} />
+            </span>
+            基本情報を充実させましょう
+          </h3>
+          
+          <div className={styles.recommendGrid}>
+            {basicInfoRecommendations.map((recommendation) => (
+              <div key={recommendation.id} className={styles.recommendItem}>
+                <div className={styles.recommendContent}>
+                  <h4 className={styles.recommendLabel}>{recommendation.title}</h4>
+                  <p className={styles.recommendDescription}>{recommendation.description}</p>
+                </div>
+                <ButtonGradientWrapper anotherStyle={styles.addButton} onClick={recommendation.action}>
+                  <Plus size={14} />
+                  編集する
+                </ButtonGradientWrapper>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        <div className={styles.statItem}>
-          <h3 className={styles.statValue}>12</h3>
-          <p className={styles.statLabel}>行ったお店</p>
-        </div>
-        
-        <div className={styles.statItem}>
-          <h3 className={styles.statValue}>8</h3>
-          <p className={styles.statLabel}>行きたいお店</p>
-        </div>
-      </div>
+      )}
 
       {/* 自己紹介 */}
       <div className={styles.basicInfoForm}>

@@ -13,6 +13,7 @@ import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import useSWR from 'swr';
 import { User as UserType } from '@/types/users';
 import { fetchUserProfile, fetchProfileOptions } from '@/actions/profile/fetchProfile';
+import { fetchUserAtmospherePreferences } from '@/actions/profile/fetchAtmosphereData';
 import ProfilePreviewModal from '@/components/Profile/ProfilePreviewModal';
 
 const ProfilePage = () => {
@@ -20,6 +21,7 @@ const ProfilePage = () => {
   
   const { data: userData, error: userError, mutate: mutateUser } = useSWR<UserType>('user-profile', fetchUserProfile);
   const { data: profileOptions, error: optionsError } = useSWR('profile-options', fetchProfileOptions);
+  const { data: userAtmospherePreferences } = useSWR('user-atmosphere-preferences', fetchUserAtmospherePreferences);
 
   if (userError || optionsError) return <div>データの読み込みに失敗しました。</div>;
   if (!userData || !profileOptions) return <div>データを読み込み中...</div>;
@@ -62,7 +64,12 @@ const ProfilePage = () => {
       </div>
       
       <Tabs items={tabItems} defaultActiveKey="basic">
-        <BasicInfo onUserUpdate={handleUserUpdate} />
+        <BasicInfo 
+          userData={userData}
+          onUserUpdate={handleUserUpdate} 
+          profileOptions={profileOptions}
+          userAtmospherePreferences={userAtmospherePreferences?.data || []}
+        />
         <DetailedProfile userData={userData} profileOptions={profileOptions} onUserUpdate={handleUserUpdate} />
         <Dashboard />
       </Tabs>

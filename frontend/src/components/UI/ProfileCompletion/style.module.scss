@@ -1,0 +1,94 @@
+/* プロフィール完成度セクション */
+.completionSection {
+  background: linear-gradient(135deg, 
+    rgba(24, 35, 61, 0.9) 0%, 
+    rgba(88, 28, 135, 0.4) 100%
+  );
+  border: 1px solid rgba(0, 194, 255, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.completionSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(0, 194, 255, 0.05) 0%, 
+    rgba(235, 14, 242, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.completionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.starIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #00c2ff, #eb0ef2);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.completionDescription {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 20px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.progressBase {
+  flex: 1;
+  height: 8px !important;
+}
+
+.progressTrack {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+.progressIndicator {
+  background: linear-gradient(90deg, #00c2ff 0%, #eb0ef2 100%) !important;
+  border-radius: 4px !important;
+}
+
+.progressValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00c2ff, #eb0ef2);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  min-width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}

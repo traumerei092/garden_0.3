@@ -109,11 +109,6 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                   {userProfile.gender}
                 </span>
               )}
-              {userProfile.my_area && (
-                <span className={styles.metaItem}>
-                  📍 {userProfile.my_area}
-                </span>
-              )}
             </div>
             {userProfile.introduction && (
               <p className={styles.userIntroduction}>
@@ -128,17 +123,17 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       <section className={styles.profileContent}>
         <div className={styles.profileGrid}>
           {/* パーソナリティ */}
-          {(userProfile.blood_type || userProfile.mbti) && (
+          {(userProfile.blood_type?.name || userProfile.mbti?.name) && (
             <div className={styles.profileCard}>
               <h3 className={styles.cardTitle}>パーソナリティ</h3>
               <div className={styles.cardContent}>
-                {userProfile.blood_type && (
+                {userProfile.blood_type?.name && (
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>血液型</span>
                     <span className={styles.infoValue}>{userProfile.blood_type.name}</span>
                   </div>
                 )}
-                {userProfile.mbti && (
+                {userProfile.mbti?.name && (
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>MBTI</span>
                     <span className={styles.infoValue}>{userProfile.mbti.name}</span>
@@ -181,21 +176,23 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
               <h3 className={styles.cardTitle}>興味</h3>
               <div className={styles.cardContent}>
                 <div className={styles.tagsContainer}>
-                  {userProfile.interests.map((interest) => (
-                    <ChipSelected 
-                      key={interest.id} 
-                      styleName={styles.interestTag}
-                    >
-                      {interest.name}
-                    </ChipSelected>
-                  ))}
+                  {userProfile.interests
+                    .filter(interest => interest?.name)
+                    .map((interest) => (
+                      <ChipSelected 
+                        key={interest.id} 
+                        styleName={styles.interestTag}
+                      >
+                        {interest.name}
+                      </ChipSelected>
+                    ))}
                 </div>
               </div>
             </div>
           )}
 
           {/* ライフスタイル */}
-          {(userProfile.hobbies || userProfile.exercise_frequency || userProfile.dietary_preference) && (
+          {(userProfile.hobbies?.length > 0 || userProfile.exercise_frequency?.name || userProfile.dietary_preference?.name) && (
             <div className={styles.profileCard}>
               <h3 className={styles.cardTitle}>ライフスタイル</h3>
               <div className={styles.cardContent}>
@@ -203,24 +200,26 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                   <div className={styles.lifestyleSection}>
                     <h4 className={styles.sectionTitle}>趣味</h4>
                     <div className={styles.tagsContainer}>
-                      {userProfile.hobbies.map((hobby) => (
-                        <ChipSelected 
-                          key={hobby.id} 
-                          styleName={styles.hobbyTag}
-                        >
-                          {hobby.name}
-                        </ChipSelected>
-                      ))}
+                      {userProfile.hobbies
+                        .filter(hobby => hobby?.name)
+                        .map((hobby) => (
+                          <ChipSelected 
+                            key={hobby.id} 
+                            styleName={styles.hobbyTag}
+                          >
+                            {hobby.name}
+                          </ChipSelected>
+                        ))}
                     </div>
                   </div>
                 )}
-                {userProfile.exercise_frequency && (
+                {userProfile.exercise_frequency?.name && (
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>運動頻度</span>
                     <span className={styles.infoValue}>{userProfile.exercise_frequency.name}</span>
                   </div>
                 )}
-                {userProfile.dietary_preference && (
+                {userProfile.dietary_preference?.name && (
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>食事制限・好み</span>
                     <span className={styles.infoValue}>{userProfile.dietary_preference.name}</span>
@@ -240,14 +239,16 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                   <div className={styles.alcoholSection}>
                     <h4 className={styles.sectionTitle}>好きなジャンル</h4>
                     <div className={styles.tagsContainer}>
-                      {userProfile.alcohol_categories.map((category) => (
-                        <ChipSelected 
-                          key={category.id} 
-                          styleName={styles.alcoholTag}
-                        >
-                          {category.name}
-                        </ChipSelected>
-                      ))}
+                      {userProfile.alcohol_categories
+                        .filter(category => category?.name)
+                        .map((category) => (
+                          <ChipSelected 
+                            key={category.id} 
+                            styleName={styles.alcoholTag}
+                          >
+                            {category.name}
+                          </ChipSelected>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -255,14 +256,16 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                   <div className={styles.alcoholSection}>
                     <h4 className={styles.sectionTitle}>好きな銘柄</h4>
                     <div className={styles.tagsContainer}>
-                      {userProfile.alcohol_brands.map((brand) => (
-                        <ChipSelected 
-                          key={brand.id} 
-                          styleName={styles.alcoholTag}
-                        >
-                          {brand.name}
-                        </ChipSelected>
-                      ))}
+                      {userProfile.alcohol_brands
+                        .filter(brand => brand?.name)
+                        .map((brand) => (
+                          <ChipSelected 
+                            key={brand.id} 
+                            styleName={styles.alcoholTag}
+                          >
+                            {brand.name}
+                          </ChipSelected>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -270,14 +273,16 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                   <div className={styles.alcoholSection}>
                     <h4 className={styles.sectionTitle}>好きな飲み方・カクテル</h4>
                     <div className={styles.tagsContainer}>
-                      {userProfile.drink_styles.map((style) => (
-                        <ChipSelected 
-                          key={style.id} 
-                          styleName={styles.alcoholTag}
-                        >
-                          {style.name}
-                        </ChipSelected>
-                      ))}
+                      {userProfile.drink_styles
+                        .filter(style => style?.name)
+                        .map((style) => (
+                          <ChipSelected 
+                            key={style.id} 
+                            styleName={styles.alcoholTag}
+                          >
+                            {style.name}
+                          </ChipSelected>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -292,37 +297,39 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
               <div className={styles.cardContent}>
                 <div className={styles.atmosphereGrid}>
                   {userProfile.atmosphere_preferences.map((preference) => (
-                    <div key={preference.id} className={styles.atmosphereItem}>
-                      <h5 className={styles.atmosphereName}>{preference.indicator.name}</h5>
-                      <div 
-                        className={`${styles.atmosphereScore} ${preference.score === 0 ? styles.gradientBorder : ''}`}
-                        style={{
-                          ...getAtmosphereScoreStyles(preference.score),
-                          ...(preference.score !== 0 
-                            ? {
-                                border: `1px solid ${getAtmosphereScoreStyles(preference.score).borderColor}`,
-                                background: getAtmosphereScoreStyles(preference.score).backgroundColor
-                              }
-                            : {
-                                background: getAtmosphereScoreStyles(preference.score).backgroundColor
-                              }
-                          )
-                        }}
-                      >
-                        <span 
-                          className={styles.scoreValue}
+                    preference.indicator?.name && (
+                      <div key={preference.id} className={styles.atmosphereItem}>
+                        <h5 className={styles.atmosphereName}>{preference.indicator.name}</h5>
+                        <div 
+                          className={`${styles.atmosphereScore} ${preference.score === 0 ? styles.gradientBorder : ''}`}
                           style={{
-                            color: getAtmosphereScoreStyles(preference.score).color
+                            ...getAtmosphereScoreStyles(preference.score),
+                            ...(preference.score !== 0 
+                              ? {
+                                  border: `1px solid ${getAtmosphereScoreStyles(preference.score).borderColor}`,
+                                  background: getAtmosphereScoreStyles(preference.score).backgroundColor
+                                }
+                              : {
+                                  background: getAtmosphereScoreStyles(preference.score).backgroundColor
+                                }
+                            )
                           }}
                         >
-                          {getAtmosphereScoreDescription(
-                            preference.score,
-                            preference.indicator.description_left,
-                            preference.indicator.description_right
-                          )}
-                        </span>
+                          <span 
+                            className={styles.scoreValue}
+                            style={{
+                              color: getAtmosphereScoreStyles(preference.score).color
+                            }}
+                          >
+                            {getAtmosphereScoreDescription(
+                              preference.score,
+                              preference.indicator?.description_left || '',
+                              preference.indicator?.description_right || ''
+                            )}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )
                   ))}
                 </div>
               </div>
@@ -335,14 +342,16 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
               <h3 className={styles.cardTitle}>利用目的</h3>
               <div className={styles.cardContent}>
                 <div className={styles.tagsContainer}>
-                  {userProfile.visit_purposes.map((purpose) => (
-                    <ChipSelected 
-                      key={purpose.id} 
-                      styleName={styles.visitPurposeTag}
-                    >
-                      {purpose.name}
-                    </ChipSelected>
-                  ))}
+                  {userProfile.visit_purposes
+                    .filter(purpose => purpose?.name)
+                    .map((purpose) => (
+                      <ChipSelected 
+                        key={purpose.id} 
+                        styleName={styles.visitPurposeTag}
+                      >
+                        {purpose.name}
+                      </ChipSelected>
+                    ))}
                 </div>
               </div>
             </div>

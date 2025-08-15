@@ -219,10 +219,10 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
               radius="sm"
               showMonthAndYearPickers
               classNames={{
-                base: styles.inputBase,
-                label: styles.inputLabel,
-                inputWrapper: styles.datePickerWrapper,
-                popoverContent: styles.datePickerPopover
+                base: styles.datePickerBase,
+                popoverContent: styles.datePickerPopover,
+                calendar: styles.datePickerCalendar,
+                calendarContent: styles.datePickerCalendarContent,
               }}
             />
             <div className={styles.visibilityControl}>
