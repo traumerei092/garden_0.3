@@ -3,7 +3,7 @@ from .models import (
     Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
     ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
     ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike,
-    ShopDrink, ShopDrinkReaction
+    ShopDrink, ShopDrinkReaction, Area
 )
 from accounts.models import VisitPurpose, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.contrib.auth import get_user_model
@@ -454,3 +454,95 @@ class UserShopRelationSerializer(serializers.ModelSerializer):
         model = UserShopRelation
         fields = ['user', 'shop', 'relation_type', 'created_at']
         read_only_fields = ['created_at']
+
+
+##############################################
+# Area関連のSerializer
+##############################################
+
+class AreaSerializer(serializers.ModelSerializer):
+    """基本的なエリア情報のシリアライザー"""
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    class Meta:
+        model = Area
+        fields = [
+            'id', 'name', 'name_kana', 'area_type', 'level',
+            'postal_code', 'jis_code', 'is_active', 'full_name',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class AreaDetailSerializer(serializers.ModelSerializer):
+    """詳細なエリア情報のシリアライザー（階層情報含む）"""
+    parent = AreaSerializer(read_only=True)
+    children = AreaSerializer(many=True, read_only=True)
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    shops_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Area
+        fields = [
+            'id', 'name', 'name_kana', 'area_type', 'level',
+            'parent', 'children', 'postal_code', 'jis_code',
+            'is_active', 'full_name', 'shops_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+    
+    def get_shops_count(self, obj):
+        return obj.shops.filter().count()
+
+
+class AreaTreeSerializer(serializers.ModelSerializer):
+    """エリア階層ツリー表示用のシリアライザー"""
+    children = serializers.SerializerMethodField()
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    
+    class Meta:
+        model = Area
+        fields = [
+            'id', 'name', 'name_kana', 'area_type', 'level',
+            'full_name', 'children'
+        ]
+    
+    def get_children(self, obj):
+        children = obj.children.filter(is_active=True).order_by('name')
+        return AreaTreeSerializer(children, many=True).data
+
+
+class AreaGeoJSONSerializer(serializers.ModelSerializer):
+    """GeoJSON形式でエリアを出力するシリアライザー"""
+    
+    class Meta:
+        model = Area
+        fields = [
+            'id', 'name', 'name_kana', 'area_type', 'level',
+            'geometry', 'center_point'
+        ]
+    
+    def to_representation(self, instance):
+        # GeoJSON形式に変換
+        feature = {
+            'type': 'Feature',
+            'id': instance.id,
+            'properties': {
+                'name': instance.name,
+                'name_kana': instance.name_kana,
+                'area_type': instance.area_type,
+                'level': instance.level,
+                'full_name': instance.get_full_name()
+            },
+            'geometry': None
+        }
+        
+        if instance.geometry:
+            try:
+                # 一時的にJSON文字列として保存されている場合の処理
+                import json
+                feature['geometry'] = json.loads(instance.geometry) if isinstance(instance.geometry, str) else instance.geometry
+            except (json.JSONDecodeError, TypeError):
+                feature['geometry'] = None
+        
+        return feature

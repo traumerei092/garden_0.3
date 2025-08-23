@@ -159,12 +159,17 @@ class UserSerializer(serializers.ModelSerializer):
     budget_range = BudgetRangeSerializer(read_only=True)
     visit_purposes = VisitPurposeSerializer(many=True, read_only=True)
     
+    # エリア関連フィールド
+    my_areas = serializers.StringRelatedField(many=True, read_only=True)
+    primary_area = serializers.StringRelatedField(read_only=True)
+    
     # 書き込み用のフィールド
     blood_type_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     mbti_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     exercise_frequency_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     dietary_preference_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     budget_range_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    primary_area_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -200,6 +205,9 @@ class UserSerializer(serializers.ModelSerializer):
             "hobbies",
             "exercise_habits",
             "social_preferences",
+            "my_areas",
+            "primary_area",
+            "primary_area_id",
             "updated_at",
             "created_at",
         )
@@ -264,6 +272,18 @@ class UserSerializer(serializers.ModelSerializer):
                     pass
             else:
                 instance.budget_range = None
+        
+        # primary_area_idが提供された場合、primary_areaを設定
+        if 'primary_area_id' in validated_data:
+            primary_area_id = validated_data.pop('primary_area_id')
+            if primary_area_id:
+                try:
+                    from shops.models import Area
+                    instance.primary_area = Area.objects.get(id=primary_area_id)
+                except Area.DoesNotExist:
+                    pass
+            else:
+                instance.primary_area = None
         
         # その他のフィールドを更新
         return super().update(instance, validated_data)

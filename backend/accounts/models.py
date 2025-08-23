@@ -300,6 +300,16 @@ UserAccount.add_to_class(
     models.ManyToManyField(SocialPreference, blank=True, related_name='users')
 )
 
+# マイエリア機能の追加
+UserAccount.add_to_class(
+    'my_areas',
+    models.ManyToManyField('shops.Area', blank=True, related_name='users', verbose_name='マイエリア')
+)
+UserAccount.add_to_class(
+    'primary_area',
+    models.ForeignKey('shops.Area', on_delete=models.SET_NULL, null=True, blank=True, related_name='primary_users', verbose_name='メインエリア')
+)
+
 # --- Atmosphere Preference Models ---
 
 class UserAtmospherePreference(models.Model):

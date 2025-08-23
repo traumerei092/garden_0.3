@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'accounts',
     "shops",
+    "django.contrib.gis",
 ]
 
 MIDDLEWARE = [
@@ -93,12 +94,30 @@ WSGI_APPLICATION = "garden.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# GeoDjango対応：開発環境では一時的にSQLite、本番ではPostGIS
 default_dburl = "sqlite:///" + str(BASE_DIR / "db.sqlite3")
 
-# 本場環境では、DATABASE_URLにPostgreSQLのURLを指定する
+# 本場環境では、DATABASE_URLにPostGIS対応PostgreSQLのURLを指定する
 DATABASES = {
     "default": env.db("DATABASE_URL", default=default_dburl),
 }
+
+# 空間データベース設定：本番環境のみ有効化
+# if 'postgis' in DATABASES['default']['ENGINE']:
+#     DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+
+# GDAL/SpatiaLite関連の設定
+import os
+
+# GDAL ライブラリパスの設定
+if 'darwin' in os.sys.platform.lower():  # macOS
+    GDAL_LIBRARY_PATH = '/opt/homebrew/lib/libgdal.dylib'
+    GEOS_LIBRARY_PATH = '/opt/homebrew/lib/libgeos_c.dylib'
+    SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+elif 'linux' in os.sys.platform.lower():  # Linux
+    SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+# Windowsの場合は以下をコメントアウト
+# SPATIALITE_LIBRARY_PATH = r'C:\path\to\mod_spatialite.dll'
 
 
 # Password validation

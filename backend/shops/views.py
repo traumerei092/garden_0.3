@@ -11,16 +11,16 @@ from .models import (
     RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation,
-    ShopDrink, ShopDrinkReaction
+    ShopDrink, ShopDrinkReaction, Area
 )
 from .serializers import (
     ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
     ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer,
     ShopReviewSerializer, ShopReviewLikeSerializer, ShopDrinkSerializer, ShopDrinkReactionSerializer,
-    AlcoholCategorySerializer, AlcoholBrandSerializer, DrinkStyleSerializer
+    AlcoholCategorySerializer, AlcoholBrandSerializer, DrinkStyleSerializer, AreaSerializer, AreaDetailSerializer,
+    AreaTreeSerializer, AreaGeoJSONSerializer
 )
-from .utils.geocode import get_coordinates_from_address
 from .views_drink import ShopDrinkViewSet
 
 
@@ -168,16 +168,7 @@ class ShopCreateViewSet(viewsets.GenericViewSet):
                 if not serializer.is_valid():
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # 住所から緯度・経度を取得
-                address = request.data.get('address', '')
-                if address:
-                    coordinates = get_coordinates_from_address(address)
-                    if coordinates:  # Noneでない場合のみアンパック
-                        latitude, longitude = coordinates
-                        serializer.validated_data['latitude'] = latitude
-                        serializer.validated_data['longitude'] = longitude
-
-                # 店舗を保存
+                # 店舗を保存（Geocoding処理はmodelのsave()メソッドで自動実行）
                 shop = serializer.save(created_by=request.user)
 
                 # ManyToManyフィールドの設定
@@ -845,165 +836,186 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
                 {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+##############################################
+# Area関連のViewSet
+##############################################
+
+class AreaViewSet(viewsets.ModelViewSet):
+    """エリア情報のCRUD操作"""
+    queryset = Area.objects.filter(is_active=True).order_by('level', 'name')
+    permission_classes = [AllowAny]
+    
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AreaDetailSerializer
+        return AreaSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # エリアタイプでフィルタ
+        area_type = self.request.query_params.get('area_type')
+        if area_type:
+            queryset = queryset.filter(area_type=area_type)
+        
+        # 階層レベルでフィルタ
+        level = self.request.query_params.get('level')
+        if level is not None:
+            try:
+                queryset = queryset.filter(level=int(level))
+            except ValueError:
+                pass
+        
+        # 親エリアでフィルタ
+        parent_id = self.request.query_params.get('parent')
+        if parent_id:
+            try:
+                queryset = queryset.filter(parent_id=int(parent_id))
+            except ValueError:
+                pass
+        
+        # ルートエリア（親なし）のみ取得
+        if self.request.query_params.get('root_only') == 'true':
+            queryset = queryset.filter(parent__isnull=True)
+        
+        return queryset
+    
+    @action(detail=True, methods=['get'])
+    def children(self, request, pk=None):
+        """エリアの子エリア一覧を取得"""
+        area = self.get_object()
+        children = area.children.filter(is_active=True).order_by('name')
+        serializer = AreaSerializer(children, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def ancestors(self, request, pk=None):
+        """エリアの祖先エリア一覧を取得"""
+        area = self.get_object()
+        ancestors = area.get_ancestors()
+        serializer = AreaSerializer(ancestors, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def shops(self, request, pk=None):
+        """エリア内の店舗一覧を取得"""
+        area = self.get_object()
+        shops = area.shops.all()
+        
+        # 子エリアの店舗も含める場合
+        if request.query_params.get('include_children') == 'true':
+            descendant_areas = area.get_descendants()
+            descendant_shop_ids = []
+            for desc_area in descendant_areas:
+                descendant_shop_ids.extend(list(desc_area.shops.values_list('id', flat=True)))
+            shops = shops.union(Shop.objects.filter(id__in=descendant_shop_ids))
+        
+        from .serializers import ShopSerializer
+        serializer = ShopSerializer(shops, many=True, context={'request': request})
+        return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
-    def visited_shops(self, request):
-        """
-        ユーザーが行った店舗一覧を取得
-        """
-        if not request.user.is_authenticated:
+    def tree(self, request):
+        """エリア階層ツリーを取得"""
+        # ルートエリアのみ取得
+        root_areas = Area.objects.filter(
+            parent__isnull=True, 
+            is_active=True
+        ).order_by('name')
+        
+        serializer = AreaTreeSerializer(root_areas, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def geojson(self, request):
+        """GeoJSON形式でエリア情報を取得"""
+        queryset = self.get_queryset()
+        
+        # ジオメトリが設定されているエリアのみ
+        queryset = queryset.exclude(geometry__isnull=True)
+        
+        serializer = AreaGeoJSONSerializer(queryset, many=True)
+        
+        # FeatureCollectionとして返す
+        geojson = {
+            'type': 'FeatureCollection',
+            'features': serializer.data
+        }
+        
+        return Response(geojson)
+    
+    @action(detail=False, methods=['post'])
+    def detect_by_coordinates(self, request):
+        """緯度経度からエリアを検出"""
+        latitude = request.data.get('latitude')
+        longitude = request.data.get('longitude')
+        
+        if latitude is None or longitude is None:
             return Response(
-                {"detail": "認証が必要です"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "latitude and longitude are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # "visited" タイプのRelationTypeを取得
-            visited_relation_type = RelationType.objects.filter(name='visited').first()
-            if not visited_relation_type:
-                return Response({"shops": []})
-            
-            # ユーザーが行った店舗を取得
-            relations = UserShopRelation.objects.filter(
-                user=request.user,
-                relation_type=visited_relation_type
-            ).select_related('shop').prefetch_related(
-                'shop__images',
-                'shop__shop_types',
-                'shop__shop_layouts',
-                'shop__shop_options'
-            ).order_by('-created_at')
-            
-            shops_data = []
-            for relation in relations:
-                shop = relation.shop
-                # アイコン画像を取得
-                icon_image = shop.images.filter(is_icon=True).first()
-                if not icon_image:
-                    icon_image = shop.images.first()
-                
-                shops_data.append({
-                    'id': shop.id,
-                    'name': shop.name,
-                    'prefecture': shop.prefecture,
-                    'city': shop.city,
-                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
-                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
-                    'visited_at': relation.created_at
-                })
-            
-            return Response({"shops": shops_data})
-            
-        except Exception as e:
+            from .utils.area_detection import AreaDetectionService
+            areas = AreaDetectionService.find_areas_by_point(
+                float(latitude), float(longitude)
+            )
+            serializer = AreaSerializer(areas, many=True)
+            return Response(serializer.data)
+        except ValueError:
             return Response(
-                {"detail": str(e)},
+                {"error": "Invalid latitude or longitude format"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-    @action(detail=False, methods=['get'])
-    def wishlist_shops(self, request):
-        """
-        ユーザーが行きたい店舗一覧を取得
-        """
-        if not request.user.is_authenticated:
+    @action(detail=False, methods=['post'])
+    def detect_by_address(self, request):
+        """住所からエリアを検出"""
+        address = request.data.get('address')
+        
+        if not address:
             return Response(
-                {"detail": "認証が必要です"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "address is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
         
-        try:
-            # "interested" タイプのRelationTypeを取得
-            wishlist_relation_type = RelationType.objects.filter(name='interested').first()
-            if not wishlist_relation_type:
-                return Response({"shops": []})
-            
-            # ユーザーが行きたい店舗を取得
-            relations = UserShopRelation.objects.filter(
-                user=request.user,
-                relation_type=wishlist_relation_type
-            ).select_related('shop').prefetch_related(
-                'shop__images',
-                'shop__shop_types',
-                'shop__shop_layouts',
-                'shop__shop_options'
-            ).order_by('-created_at')
-            
-            shops_data = []
-            for relation in relations:
-                shop = relation.shop
-                # アイコン画像を取得
-                icon_image = shop.images.filter(is_icon=True).first()
-                if not icon_image:
-                    icon_image = shop.images.first()
-                
-                shops_data.append({
-                    'id': shop.id,
-                    'name': shop.name,
-                    'prefecture': shop.prefecture,
-                    'city': shop.city,
-                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
-                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
-                    'added_at': relation.created_at
-                })
-            
-            return Response({"shops": shops_data})
-            
-        except Exception as e:
+        from .utils.area_detection import AreaDetectionService
+        area = AreaDetectionService.detect_area_from_address(address)
+        
+        if area:
+            serializer = AreaDetailSerializer(area)
+            return Response(serializer.data)
+        else:
             return Response(
-                {"detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "No area found for the given address"}, 
+                status=status.HTTP_404_NOT_FOUND
             )
     
     @action(detail=False, methods=['get'])
-    def favorite_shops(self, request):
-        """
-        ユーザーの行きつけ店舗一覧を取得
-        """
-        if not request.user.is_authenticated:
+    def nearby(self, request):
+        """指定地点の近くのエリアを検索"""
+        latitude = request.query_params.get('latitude')
+        longitude = request.query_params.get('longitude')
+        radius = request.query_params.get('radius', '5.0')  # デフォルト5km
+        
+        if not latitude or not longitude:
             return Response(
-                {"detail": "認証が必要です"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "latitude and longitude are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # "favorite" タイプのRelationTypeを取得
-            favorite_relation_type = RelationType.objects.filter(name='favorite').first()
-            if not favorite_relation_type:
-                return Response({"shops": []})
-            
-            # ユーザーの行きつけ店舗を取得
-            relations = UserShopRelation.objects.filter(
-                user=request.user,
-                relation_type=favorite_relation_type
-            ).select_related('shop').prefetch_related(
-                'shop__images',
-                'shop__shop_types',
-                'shop__shop_layouts',
-                'shop__shop_options'
-            ).order_by('-created_at')
-            
-            shops_data = []
-            for relation in relations:
-                shop = relation.shop
-                # アイコン画像を取得
-                icon_image = shop.images.filter(is_icon=True).first()
-                if not icon_image:
-                    icon_image = shop.images.first()
-                
-                shops_data.append({
-                    'id': shop.id,
-                    'name': shop.name,
-                    'prefecture': shop.prefecture,
-                    'city': shop.city,
-                    'area': f"{shop.prefecture or ''} > {shop.city or ''}".strip(' > '),
-                    'image_url': icon_image.image.url if icon_image and icon_image.image else None,
-                    'added_at': relation.created_at
-                })
-            
-            return Response({"shops": shops_data})
-            
-        except Exception as e:
+            from .utils.area_detection import AreaDetectionService
+            areas = AreaDetectionService.find_nearby_areas(
+                float(latitude), float(longitude), float(radius)
+            )
+            serializer = AreaSerializer(areas, many=True)
+            return Response(serializer.data)
+        except ValueError:
             return Response(
-                {"detail": str(e)},
+                {"error": "Invalid parameter format"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )

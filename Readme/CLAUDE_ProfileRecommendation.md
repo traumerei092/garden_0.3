@@ -176,13 +176,19 @@ interface RecommendationItem {
 ## 仕様変更・拡張時の考慮事項
 
 ### パフォーマンス
-- `getRecommendations()`は`userData`変更時に再計算されるため、重い処理は避ける
-- 必要に応じて`useMemo`でのメモ化を検討
+- `getRecommendations()`と`getBasicInfoRecommendations()`は`userData`変更時に再計算されるため、重い処理は避ける
+- ProfileCompletionコンポーネントは必要に応じて`useMemo`でのメモ化を検討
 
 ### ユーザビリティ
 - スクロール先の要素が確実に表示されるよう、十分な余白を確保
 - モーダル表示後の状態更新により、レコメンド表示が即座に更新される
+- BasicInfoとDetailedProfileで統一された完成度表示によりユーザーの混乱を防止
 
 ### 拡張性
-- 新しいプロフィール項目追加時は、型定義とレコメンドロジックの両方を更新
+- 新しいプロフィール項目追加時は、型定義、ProfileCompletionの計算ロジック、レコメンドロジックの全てを更新
 - 優先度の動的変更機能（管理画面等）の実装も可能な設計
+- 共通コンポーネント化により、新しい画面での完成度表示も容易に追加可能
+
+### データ連携
+- プロフィールページ（page.tsx）で同じuserDataをBasicInfoとDetailedProfileに渡すことで一貫性を保持
+- userAtmospherePreferencesも両方のコンポーネントで共有

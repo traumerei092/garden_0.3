@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 def get_coordinates_from_address(address):
     """
-    住所から緯度経度を取得する
+    住所から緯度経度を取得する（Google Maps Geocoding API使用）
     
     Args:
         address (str): 住所文字列
@@ -15,20 +15,23 @@ def get_coordinates_from_address(address):
         tuple: (latitude, longitude) または None（エラー時）
     """
     try:
-        # OpenCage Geocoding APIを使用する
-        # APIキーは環境変数またはsettings.pyから取得
-        api_key = getattr(settings, 'OPENCAGE_API_KEY', '')
+        # Google Maps Geocoding APIを使用する
+        api_key = getattr(settings, 'GOOGLE_MAPS_API_KEY', '')
         
         if not api_key:
-            logger.warning("OpenCage API key is not set")
+            logger.warning("Google Maps API key is not set")
             return None
             
-        # 住所をURLエンコード
-        encoded_address = requests.utils.quote(address)
+        # Google Maps Geocoding APIリクエスト
+        api_url = "https://maps.googleapis.com/maps/api/geocode/json"
+        params = {
+            'address': address,
+            'key': api_key,
+            'language': 'ja',
+            'region': 'jp',  # 日本地域を優先
+        }
         
-        # APIリクエスト
-        url = f"https://api.opencagedata.com/geocode/v1/json?q={encoded_address}&key={api_key}&language=ja&countrycode=jp"
-        response = requests.get(url)
+        response = requests.get(api_url, params=params)
         
         if response.status_code != 200:
             logger.error(f"Geocoding API error: {response.status_code}")
@@ -36,12 +39,14 @@ def get_coordinates_from_address(address):
             
         data = response.json()
         
-        if len(data['results']) == 0:
-            logger.error("No results found for the address")
+        if data['status'] != 'OK' or not data['results']:
+            logger.error(f"Geocoding failed: {data.get('status', 'Unknown error')}")
+            if 'error_message' in data:
+                logger.error(f"Error message: {data['error_message']}")
             return None
             
         # 結果から緯度経度を取得
-        location = data['results'][0]['geometry']
+        location = data['results'][0]['geometry']['location']
         return (location['lat'], location['lng'])
         
     except Exception as e:

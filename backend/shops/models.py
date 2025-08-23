@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import MultiPolygon, Point
 from accounts.models import UserAccount, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.conf import settings
 import requests
@@ -70,6 +72,135 @@ class PaymentMethod(models.Model):
     def __str__(self):
         return self.name
 
+##############################################
+# エリアモデル（地理空間データ対応）
+##############################################
+class Area(models.Model):
+    """
+    地理的エリアを管理するモデル
+    階層構造をサポートし、ポリゴンジオメトリを保存
+    """
+    # 基本情報
+    name = models.CharField("エリア名", max_length=100)
+    name_kana = models.CharField("エリア名（カナ）", max_length=100, blank=True)
+    area_type = models.CharField("エリアタイプ", max_length=20, choices=[
+        ('prefecture', '都道府県'),
+        ('city', '市区町村'),
+        ('ward', '区'),
+        ('district', '地区'),
+        ('neighborhood', '町域'),
+        ('custom', 'カスタムエリア'),
+    ])
+    
+    # 階層構造
+    parent = models.ForeignKey(
+        'self', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='children',
+        verbose_name="親エリア"
+    )
+    level = models.IntegerField("階層レベル", default=0, help_text="0:都道府県, 1:市区町村, 2:区, 3:地区, 4:町域")
+    
+    # 地理空間データ（SQLite互換・GeoDjango準備完了）
+    geometry = models.TextField("ポリゴンジオメトリ", null=True, blank=True, help_text="GeoJSON形式のジオメトリデータ")
+    center_point = models.TextField("中心点", null=True, blank=True, help_text="緯度,経度（カンマ区切り）")
+    
+    # GeoDjango本番用フィールド（PostGIS使用時に有効化）
+    # geometry_geo = gis_models.MultiPolygonField("ポリゴンジオメトリ", null=True, blank=True, srid=4326, help_text="MultiPolygon形式の地理データ")
+    # center_point_geo = gis_models.PointField("中心点", null=True, blank=True, srid=4326, help_text="エリアの中心座標")
+    
+    # 追加情報
+    postal_code = models.CharField("郵便番号", max_length=10, blank=True)
+    jis_code = models.CharField("JISコード", max_length=10, blank=True, help_text="行政区域コード")
+    is_active = models.BooleanField("有効", default=True)
+    
+    # メタデータ
+    created_at = models.DateTimeField("作成日", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日", auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='created_areas',
+        verbose_name="作成者"
+    )
+    
+    class Meta:
+        verbose_name = "エリア"
+        verbose_name_plural = "エリア"
+        ordering = ['level', 'name']
+        indexes = [
+            models.Index(fields=['area_type', 'level']),
+            models.Index(fields=['parent', 'is_active']),
+        ]
+        
+    def __str__(self):
+        return self.get_full_name()
+    
+    def get_full_name(self):
+        """階層を含む完全名を取得"""
+        if self.parent:
+            return f"{self.parent.get_full_name()} > {self.name}"
+        return self.name
+    
+    def get_ancestors(self):
+        """祖先エリアのリストを取得"""
+        ancestors = []
+        current = self.parent
+        while current:
+            ancestors.insert(0, current)
+            current = current.parent
+        return ancestors
+    
+    def get_descendants(self):
+        """子孫エリアのQuerySetを取得"""
+        return Area.objects.filter(
+            models.Q(parent=self) |
+            models.Q(parent__parent=self) |
+            models.Q(parent__parent__parent=self) |
+            models.Q(parent__parent__parent__parent=self)
+        )
+    
+    def contains_point(self, latitude, longitude):
+        """指定された緯度経度がこのエリア内に含まれるかチェック"""
+        if not self.geometry:
+            return False
+        
+        try:
+            import json
+            from shapely.geometry import Point as ShapelyPoint, shape
+            
+            # GeoJSONからポリゴンを作成
+            geometry_data = json.loads(self.geometry)
+            polygon = shape(geometry_data)
+            
+            # 点を作成してポリゴンに含まれるかチェック
+            point = ShapelyPoint(longitude, latitude)
+            return polygon.contains(point)
+            
+        except Exception as e:
+            print(f"Error checking point containment: {e}")
+            return False
+    
+    @classmethod
+    def find_areas_containing_point(cls, latitude, longitude):
+        """指定された緯度経度を含むエリアを全て取得"""
+        try:
+            # 全エリアをチェック（最適化可能）
+            matching_areas = []
+            for area in cls.objects.filter(is_active=True, geometry__isnull=False).exclude(geometry__exact=''):
+                if area.contains_point(latitude, longitude):
+                    matching_areas.append(area.id)
+            
+            return cls.objects.filter(id__in=matching_areas).order_by('level')
+            
+        except Exception as e:
+            print(f"Error finding areas containing point: {e}")
+            return cls.objects.none()
+
 # 店舗モデル
 class Shop(models.Model):
 
@@ -91,6 +222,17 @@ class Shop(models.Model):
     # 位置情報フィールドを追加
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    
+    # エリア関連フィールド
+    area = models.ForeignKey(
+        Area, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='shops',
+        verbose_name="所属エリア",
+        help_text="店舗が所属する地理的エリア"
+    )
 
     shop_types = models.ManyToManyField(ShopType, blank=True)
     shop_layouts = models.ManyToManyField(ShopLayout, blank=True)
@@ -123,24 +265,40 @@ class Shop(models.Model):
                 # 住所を結合して完全な住所文字列を作成
                 full_address = f"{self.prefecture or ''} {self.city or ''} {self.street or ''}"
 
-                # OpenCage Geocoding APIを使用して緯度経度を取得
-                api_url = "https://api.opencagedata.com/geocode/v1/json"
+                # Google Maps Geocoding APIを使用して緯度経度を取得
+                api_url = "https://maps.googleapis.com/maps/api/geocode/json"
                 params = {
-                    'q': full_address,
-                    'key': settings.OPENCAGE_API_KEY,
+                    'address': full_address,
+                    'key': settings.GOOGLE_MAPS_API_KEY,
                     'language': 'ja',
+                    'region': 'jp',  # 日本地域を優先
                 }
 
                 response = requests.get(api_url, params=params)
                 if response.status_code == 200:
-                    results = response.json().get('results', [])
-                    if results:
+                    data = response.json()
+                    if data['status'] == 'OK' and data['results']:
                         # 最も関連性の高い結果を使用
-                        location = results[0]['geometry']
+                        location = data['results'][0]['geometry']['location']
                         self.latitude = location['lat']
                         self.longitude = location['lng']
+                        print(f"Geocoding success for '{self.name}': {self.latitude}, {self.longitude}")
+                    else:
+                        print(f"Geocoding failed for '{self.name}': {data.get('status', 'Unknown error')}")
             except Exception as e:
                 print(f"Geocoding error: {e}")
+
+        # エリアの自動判定（緯度経度が設定されている場合）
+        if self.latitude is not None and self.longitude is not None and self.area is None:
+            try:
+                # 緯度経度を含む最も詳細なエリアを取得
+                areas = Area.find_areas_containing_point(self.latitude, self.longitude)
+                if areas.exists():
+                    # 最も詳細なレベル（最大のlevel値）のエリアを選択
+                    self.area = areas.order_by('-level').first()
+                    print(f"Shop '{self.name}' assigned to area: {self.area.get_full_name()}")
+            except Exception as e:
+                print(f"Area auto-detection error: {e}")
 
         super().save(*args, **kwargs)
 
