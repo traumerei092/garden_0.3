@@ -351,6 +351,7 @@ class ProfileVisibilitySettings(models.Model):
     # 常に公開される項目: header_image, avatar, introduction, name, gender
     # 以下は設定可能な項目
     age = models.BooleanField("年齢公開", default=True)
+    my_area = models.BooleanField("マイエリア公開", default=True)
     interests = models.BooleanField("興味公開", default=True)
     blood_type = models.BooleanField("血液型公開", default=True)
     mbti = models.BooleanField("MBTI公開", default=True)

@@ -199,7 +199,186 @@ areas = Area.objects.filter(
 - Django Adminでエリア階層の確認・編集可能
 - ジオメトリデータの可視化（管理画面拡張時）
 
+## ユーザーマイエリア機能
+
+### 概要
+ユーザーが最大10箇所のエリアを選択し、その中から1つをプライマリエリアとして設定できる機能です。Netflix品質の直感的なUIで階層的なエリア選択を実現しています。
+
+### 機能詳細
+
+#### マイエリア選択機能
+- **選択可能数**: 最大10箇所
+- **階層選択**: 都道府県→市区町村→区の3段階選択
+- **プライマリエリア**: 選択したエリアの中から1つをメインエリアとして指定
+
+#### UI/UX特徴
+- **Netflix品質のダークUI**: 現代的で洗練されたダークテーマ
+- **シングルスクリーン設計**: タブなし、検索+アコーディオン形式
+- **人口順ソート**: 主要都市（東京、大阪、神奈川など）を優先表示
+- **区レベル対応**: 政令指定都市では区レベルまで選択可能
+
+### データモデル
+
+#### UserAccountモデル拡張 (accounts/models.py)
+```python
+class UserAccount(AbstractUser):
+    # 既存フィールド...
+    my_areas = models.ManyToManyField(
+        'shops.Area', 
+        blank=True, 
+        related_name='users_in_area',
+        verbose_name="マイエリア"
+    )
+    primary_area = models.ForeignKey(
+        'shops.Area', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='users_as_primary',
+        verbose_name="プライマリエリア"
+    )
+```
+
+#### 公開設定連携
+```python
+class ProfileVisibilitySettings(models.Model):
+    # 既存フィールド...
+    my_area = models.BooleanField("マイエリア公開", default=True)
+```
+
+### API仕様
+
+#### マイエリア管理API
+```python
+# GET /api/accounts/my-areas/
+# 現在のマイエリア情報取得
+{
+    "my_areas": [
+        {
+            "id": 47606,
+            "name": "大阪府",
+            "get_full_name": "大阪府",
+            "level": 0
+        }
+    ],
+    "primary_area": {
+        "id": 48258,
+        "name": "渋谷区", 
+        "get_full_name": "東京都 > 渋谷区",
+        "level": 1
+    }
+}
+
+# PUT /api/accounts/my-areas/
+# マイエリア更新
+{
+    "my_area_ids": [47606, 47648, 48258],
+    "primary_area_id": 48258
+}
+```
+
+#### エリア一覧API拡張
+```python
+# GET /api/shops/areas/
+# 人口順ソート済みエリアデータ
+prefecture_priority = [
+    '東京都', '大阪府', '神奈川県', '愛知県', 
+    '埼玉県', '千葉県', '兵庫県', '福岡県'
+]
+```
+
+### フロントエンド実装
+
+#### 主要コンポーネント
+```typescript
+// MyAreaSelector - メインのエリア選択UI
+components/Account/MyAreaSelector/index.tsx
+
+// BasicInfoEditModal - 基本情報編集との統合
+components/Account/BasicInfoEditModal/index.tsx
+
+// BasicInfo - 選択済みエリア表示
+components/Account/BasicInfo/index.tsx
+```
+
+#### データ管理
+```typescript
+// エリア取得・更新アクション
+actions/areas/areaActions.ts
+
+// 型定義
+types/areas.ts - Area, AreaHierarchy
+types/users.ts - PublicUserProfile (my_areas, primary_area対応)
+```
+
+### プロフィール表示機能
+
+#### PublicProfileView対応
+- **ヒーローセクション**: ユーザー名・年齢の下にマイエリアを表示
+- **詳細セクション**: 従来のカード形式でも表示
+- **プライマリエリア**: 星アイコンでメインエリアを強調
+
+#### ProfilePreviewModal統合
+- **プレビュー機能**: 他ユーザーから見た表示を確認可能
+- **公開設定連携**: 非公開設定時は表示されない
+
+### 公開設定パターン
+
+#### 表示制御
+- **編集時**: SwitchVisibilityコンポーネント（BasicInfoEditModal内）
+- **表示時**: Eye/EyeOffアイコンのみ（BasicInfo内）
+- **API連携**: 他のプロフィール項目と同様の可視性制御
+
+### バリデーション
+
+#### バックエンド検証
+```python
+class MyAreasUpdateSerializer(serializers.Serializer):
+    my_area_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        max_length=10  # 最大10箇所制限
+    )
+    
+    def validate_my_area_ids(self, value):
+        # エリア存在確認
+        # 活性状態チェック
+        return value
+    
+    def validate(self, data):
+        # プライマリエリアがマイエリアに含まれているかチェック
+        return data
+```
+
+### 使用手順
+
+#### 1. マイエリア設定
+```bash
+# BasicInfo画面から「基本情報を編集」をクリック
+# マイエリアセクションで「エリアを選択」ボタン
+# Netflix風UIで都道府県→市区町村→区の順で選択
+# 最大10箇所まで選択可能、1つをプライマリエリアに設定
+```
+
+#### 2. 公開設定
+```bash
+# 同じ編集画面でSwitchVisibilityで公開/非公開を切り替え
+# 非公開時は他ユーザーから見えなくなる
+```
+
+#### 3. プレビュー確認
+```bash
+# ProfilePreviewModalで他ユーザーからの見え方を確認
+# ヒーローセクションと詳細セクション両方に表示
+```
+
 ## 更新履歴
+- 2025-08-24: **ユーザーマイエリア機能実装**
+  - Netflix品質のエリア選択UI実装
+  - 階層的エリア選択（都道府県→市区町村→区）
+  - 最大10箇所+プライマリエリア機能
+  - 公開設定連携（他プロフィール項目と同様パターン）
+  - ProfilePreviewModalヒーローセクション対応
+  - バックエンドAPI・バリデーション完全実装
 - 2025-08-23: 完全版エリア管理機能実装
 - データ整合性問題を全て解決
 - ジオメトリ付きエリアデータの完全実装

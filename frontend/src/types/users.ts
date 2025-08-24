@@ -174,6 +174,7 @@ export interface ProfileOptions {
 // プロフィール公開設定の型定義
 export interface ProfileVisibilitySettings {
   age: boolean;
+  my_area: boolean;
   interests: boolean;
   blood_type: boolean;
   mbti: boolean;
@@ -189,6 +190,8 @@ export interface ProfileVisibilitySettings {
 }
 
 // 他のユーザーから見たプロフィール用の型定義
+import { Area } from './areas';
+
 export interface PublicUserProfile {
   uid: string;
   name: string;
@@ -196,6 +199,8 @@ export interface PublicUserProfile {
   introduction: string | null;
   gender: string | null;
   age?: number;
+  my_areas?: Area[];
+  primary_area?: Area | null;
   interests?: Interest[];
   blood_type?: BloodType | null;
   mbti?: MBTI | null;

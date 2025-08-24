@@ -508,8 +508,58 @@ class AreaTreeSerializer(serializers.ModelSerializer):
         ]
     
     def get_children(self, obj):
-        children = obj.children.filter(is_active=True).order_by('name')
-        return AreaTreeSerializer(children, many=True).data
+        children_qs = obj.children.filter(is_active=True)
+        
+        # 都道府県ごとの市区町村の優先順位を定義
+        city_priorities = {
+            '東京都': [
+                '新宿区', '渋谷区', '港区', '中央区', '千代田区', '品川区', '目黒区',
+                '世田谷区', '杉並区', '中野区', '豊島区', '文京区', '台東区', '墨田区',
+                '江東区', '荒川区', '足立区', '葛飾区', '江戸川区', '大田区', '練馬区',
+                '板橋区', '北区'
+            ],
+            '大阪府': [
+                '大阪市', '堺市', '東大阪市', '枚方市', '豊中市', '高槻市', '吹田市',
+                '茨木市', '八尾市', '寝屋川市', '岸和田市'
+            ],
+            '神奈川県': [
+                '横浜市', '川崎市', '相模原市', '横須賀市', '藤沢市', '茅ヶ崎市',
+                '厚木市', '大和市', '平塚市'
+            ],
+            '愛知県': [
+                '名古屋市', '豊田市', '岡崎市', '一宮市', '豊橋市', '春日井市',
+                '安城市', '豊川市', '西尾市'
+            ],
+            '福岡県': [
+                '福岡市', '北九州市', '久留米市', '大牟田市', '春日市', '糸島市',
+                '飯塚市', '大野城市', '宗像市'
+            ],
+            '北海道': [
+                '札幌市', '旭川市', '函館市', '釧路市', '苫小牧市', '帯広市',
+                '小樽市', '北見市'
+            ],
+            '埼玉県': [
+                'さいたま市', '川越市', '川口市', '所沢市', '越谷市', '草加市',
+                '春日部市', '熊谷市', '上尾市'
+            ],
+            '千葉県': [
+                '千葉市', '船橋市', '松戸市', '市川市', '柏市', '市原市',
+                '八千代市', '流山市', '浦安市'
+            ]
+        }
+        
+        # 親エリア（都道府県）に応じて子エリア（市区町村）をソート
+        parent_name = obj.name
+        if parent_name in city_priorities:
+            priority_list = city_priorities[parent_name]
+            children_list = list(children_qs)
+            children_list.sort(key=lambda x: 
+                priority_list.index(x.name) if x.name in priority_list else 999
+            )
+        else:
+            children_list = list(children_qs.order_by('name'))
+        
+        return AreaTreeSerializer(children_list, many=True).data
 
 
 class AreaGeoJSONSerializer(serializers.ModelSerializer):

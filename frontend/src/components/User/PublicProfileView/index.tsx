@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { PublicUserProfile } from '@/types/users';
 import ChipSelected from '@/components/UI/ChipSelected';
+import { MapPin, Star } from 'lucide-react';
 import styles from './style.module.scss';
 
 interface PublicProfileViewProps {
@@ -110,6 +111,26 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                 </span>
               )}
             </div>
+            {userProfile.my_areas && userProfile.my_areas.length > 0 && (
+              <div className={styles.heroMyAreas}>
+                <div className={styles.heroAreasLabel}>
+                  <MapPin size={16} />
+                  <span>マイエリア</span>
+                </div>
+                <div className={styles.heroAreasList}>
+                  {userProfile.my_areas.map(area => (
+                    <div key={area.id} className={styles.heroAreaChipWrapper}>
+                      <span className={styles.heroAreaChip}>
+                        {area.get_full_name || area.name}
+                      </span>
+                      {userProfile.primary_area?.id === area.id && (
+                        <Star size={12} className={styles.heroPrimaryIcon} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {userProfile.introduction && (
               <p className={styles.userIntroduction}>
                 {userProfile.introduction}
@@ -122,6 +143,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       {/* プロフィール詳細セクション */}
       <section className={styles.profileContent}>
         <div className={styles.profileGrid}>
+
           {/* パーソナリティ */}
           {(userProfile.blood_type?.name || userProfile.mbti?.name) && (
             <div className={styles.profileCard}>

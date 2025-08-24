@@ -24,6 +24,7 @@ from .serializers import (
     VisitPurposeSerializer,
     ProfileVisibilitySettingsSerializer,
     PublicUserProfileSerializer,
+    MyAreasUpdateSerializer,
 )
 from .models import (
     Interest,
@@ -456,11 +457,11 @@ class PublicUserProfileView(APIView):
         try:
             user = User.objects.select_related(
                 'visibility_settings', 'blood_type', 'mbti', 
-                'exercise_frequency', 'dietary_preference'
+                'exercise_frequency', 'dietary_preference', 'primary_area'
             ).prefetch_related(
                 'interests__category', 'alcohol_categories', 'alcohol_brands__category',
                 'drink_styles__category', 'hobbies', 'visit_purposes',
-                'atmosphere_preferences__indicator'
+                'atmosphere_preferences__indicator', 'my_areas'
             ).get(uid=uid)
             
             serializer = PublicUserProfileSerializer(user)
@@ -544,11 +545,11 @@ class PreviewUserProfileView(APIView):
             
             user = User.objects.select_related(
                 'visibility_settings', 'blood_type', 'mbti', 
-                'exercise_frequency', 'dietary_preference'
+                'exercise_frequency', 'dietary_preference', 'primary_area'
             ).prefetch_related(
                 'interests__category', 'alcohol_categories', 'alcohol_brands__category',
                 'drink_styles__category', 'hobbies', 'visit_purposes',
-                'atmosphere_preferences__indicator'
+                'atmosphere_preferences__indicator', 'my_areas'
             ).get(id=request.user.id)
             
             serializer = PublicUserProfileSerializer(user)
@@ -560,5 +561,80 @@ class PreviewUserProfileView(APIView):
             print(f"PreviewUserProfileView traceback: {traceback.format_exc()}")
             return Response(
                 {'error': 'プレビューの取得に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# マイエリア管理API
+class MyAreasManagementView(APIView):
+    """
+    マイエリア管理（取得・更新）API
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        """現在のマイエリア情報を取得"""
+        try:
+            user = request.user
+            from shops.serializers import AreaSerializer
+            
+            # マイエリアを取得
+            my_areas = user.my_areas.all().select_related('parent').order_by('level', 'name')
+            my_areas_data = AreaSerializer(my_areas, many=True).data
+            
+            # プライマリエリアを取得
+            primary_area_data = None
+            if user.primary_area:
+                primary_area_data = AreaSerializer(user.primary_area).data
+            
+            return Response({
+                'my_areas': my_areas_data,
+                'primary_area': primary_area_data,
+                'total_areas': len(my_areas_data)
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'マイエリア情報の取得に失敗しました'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def put(self, request, *args, **kwargs):
+        """マイエリア情報を更新"""
+        try:
+            user = request.user
+            serializer = MyAreasUpdateSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                # エリア情報を更新
+                updated_user = serializer.update_user_areas(user, serializer.validated_data)
+                
+                # 更新後の情報を返す
+                from shops.serializers import AreaSerializer
+                my_areas = updated_user.my_areas.all().select_related('parent').order_by('level', 'name')
+                my_areas_data = AreaSerializer(my_areas, many=True).data
+                
+                primary_area_data = None
+                if updated_user.primary_area:
+                    primary_area_data = AreaSerializer(updated_user.primary_area).data
+                
+                return Response({
+                    'my_areas': my_areas_data,
+                    'primary_area': primary_area_data,
+                    'total_areas': len(my_areas_data),
+                    'message': 'マイエリア情報を更新しました'
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {'errors': serializer.errors}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            import traceback
+            print(f"MyAreasManagementView error: {str(e)}")
+            print(f"MyAreasManagementView traceback: {traceback.format_exc()}")
+            return Response(
+                {'error': 'マイエリア情報の更新に失敗しました'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

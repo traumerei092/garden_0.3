@@ -918,12 +918,28 @@ class AreaViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def tree(self, request):
-        """エリア階層ツリーを取得"""
-        # ルートエリアのみ取得
+        """エリア階層ツリーを取得（都市圏順）"""
+        # 主要都市圏順で都道府県を並び替え
+        prefecture_priority = [
+            '東京都', '大阪府', '神奈川県', '愛知県', '埼玉県', '千葉県', '兵庫県',
+            '福岡県', '北海道', '京都府', '宮城県', '広島県', '静岡県', '茨城県',
+            '岐阜県', '栃木県', '群馬県', '新潟県', '長野県', '三重県', '岡山県',
+            '熊本県', '鹿児島県', '沖縄県', '滋賀県', '奈良県', '愛媛県', '長崎県',
+            '青森県', '岩手県', '秋田県', '山形県', '福島県', '山梨県', '富山県',
+            '石川県', '福井県', '和歌山県', '鳥取県', '島根県', '山口県', '徳島県',
+            '香川県', '高知県', '佐賀県', '大分県', '宮崎県'
+        ]
+        
+        # ルートエリア（都道府県）を人口・都市圏順で取得
         root_areas = Area.objects.filter(
             parent__isnull=True, 
             is_active=True
-        ).order_by('name')
+        )
+        
+        # カスタム順序でソート
+        root_areas = sorted(root_areas, key=lambda x: 
+            prefecture_priority.index(x.name) if x.name in prefecture_priority else 999
+        )
         
         serializer = AreaTreeSerializer(root_areas, many=True)
         return Response(serializer.data)
@@ -1019,3 +1035,75 @@ class AreaViewSet(viewsets.ModelViewSet):
                 {"error": "Invalid parameter format"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+    
+    @action(detail=False, methods=['get'])
+    def popular(self, request):
+        """主要都市エリアを取得"""
+        # 主要都市の都道府県・市区町村を定義
+        popular_prefectures = [
+            '東京都', '大阪府', '愛知県', '福岡県', '北海道', '宮城県', '広島県',
+            '京都府', '神奈川県', '埼玉県', '千葉県', '兵庫県'
+        ]
+        
+        popular_cities = [
+            '渋谷区', '新宿区', '港区', '中央区', '千代田区',  # 東京
+            '大阪市北区', '大阪市中央区', '大阪市浪速区',      # 大阪
+            '名古屋市中区', '名古屋市東区',                    # 名古屋
+            '福岡市中央区', '福岡市博多区',                    # 福岡
+            '札幌市中央区', '札幌市北区',                      # 札幌
+            '仙台市青葉区',                                    # 仙台
+            '広島市中区',                                      # 広島
+            '京都市中京区', '京都市下京区',                    # 京都
+            '横浜市西区', '横浜市中区',                        # 横浜
+        ]
+        
+        # 主要エリアを優先順で取得
+        popular_areas = Area.objects.filter(
+            models.Q(name__in=popular_prefectures, level=0) |
+            models.Q(name__in=popular_cities, level__in=[1, 2]),
+            is_active=True
+        ).select_related('parent').order_by(
+            models.Case(
+                models.When(name__in=['東京都'], then=models.Value(1)),
+                models.When(name__in=['大阪府'], then=models.Value(2)),
+                models.When(name__in=['愛知県'], then=models.Value(3)),
+                models.When(name__in=['福岡県'], then=models.Value(4)),
+                models.When(name__in=popular_cities, then=models.Value(5)),
+                default=models.Value(10),
+                output_field=models.IntegerField()
+            ),
+            'name'
+        )[:20]  # 最大20件
+        
+        serializer = AreaSerializer(popular_areas, many=True)
+        return Response({
+            'popular_areas': serializer.data
+        })
+    
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """エリア名での検索（マイエリア選択用）"""
+        query = request.query_params.get('q', '').strip()
+        
+        if not query or len(query) < 1:
+            return Response({
+                'results': [],
+                'total': 0
+            })
+        
+        # 検索クエリに対する部分一致検索
+        areas = Area.objects.filter(
+            name__icontains=query,
+            is_active=True
+        ).select_related('parent').order_by(
+            'level', 'name'
+        )[:50]  # 最大50件
+        
+        # より詳細な情報を含むシリアライザーを使用
+        serializer = AreaDetailSerializer(areas, many=True)
+        
+        return Response({
+            'results': serializer.data,
+            'total': areas.count(),
+            'query': query
+        })

@@ -18,6 +18,7 @@ from .views import (
     PublicUserProfileView,
     ProfileVisibilitySettingsView,
     PreviewUserProfileView,
+    MyAreasManagementView,
 )
 
 router = DefaultRouter()
@@ -60,6 +61,8 @@ urlpatterns = [
     path("profile-visibility/", ProfileVisibilitySettingsView.as_view(), name="profile-visibility"),
     # プレビュー用プロフィール取得
     path("profile-preview/", PreviewUserProfileView.as_view(), name="profile-preview"),
+    # マイエリア管理
+    path("my-areas/", MyAreasManagementView.as_view(), name="my-areas-management"),
     # ViewSet のルーティング
     path("", include(router.urls)),
 ]

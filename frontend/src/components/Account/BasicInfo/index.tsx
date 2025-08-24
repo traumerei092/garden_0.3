@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input, Button, Link, Textarea } from '@nextui-org/react';
-import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff, Plus, Sparkle } from 'lucide-react';
+import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff, Plus, Sparkle, Star } from 'lucide-react';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import ProfileCompletion from '@/components/UI/ProfileCompletion';
 import styles from './style.module.scss';
@@ -13,6 +13,9 @@ import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getUserClient } from '@/actions/auth/getUserClient';
 import { useProfileVisibility } from '@/hooks/useProfileVisibility';
+import { getMyAreas } from '@/actions/areas/areaActions';
+import { Area } from '@/types/areas';
+import ChipSelected from '@/components/UI/ChipSelected';
 
 // UserInfo型をuseAuthStoreから取得
 interface UserInfo {
@@ -28,7 +31,7 @@ interface UserInfo {
 }
 
 interface BasicInfoProps {
-  userData?: UserType;
+  userData?: any;
   onUserUpdate?: (updatedUser: any) => void;
   profileOptions?: any;
   userAtmospherePreferences?: any[];
@@ -46,6 +49,11 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
   
+  // マイエリア関連の状態
+  const [myAreas, setMyAreas] = useState<Area[]>([]);
+  const [primaryArea, setPrimaryArea] = useState<Area | null>(null);
+  const [isLoadingAreas, setIsLoadingAreas] = useState(false);
+  
   // 公開設定フック
   const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
   
@@ -57,6 +65,28 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
     
     if (!user) {
       fetchUser();
+    }
+  }, [user]);
+
+  // マイエリア情報を取得
+  useEffect(() => {
+    const fetchMyAreas = async () => {
+      setIsLoadingAreas(true);
+      try {
+        const result = await getMyAreas();
+        if (result.success && result.data) {
+          setMyAreas(result.data.my_areas);
+          setPrimaryArea(result.data.primary_area);
+        }
+      } catch (error) {
+        console.error('Failed to fetch my areas:', error);
+      } finally {
+        setIsLoadingAreas(false);
+      }
+    };
+
+    if (user) {
+      fetchMyAreas();
     }
   }, [user]);
   
@@ -71,7 +101,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
     if (!user.introduction) missingFields.push('自己紹介');
     if (!user.gender) missingFields.push('性別');
     if (!user.birthdate) missingFields.push('生年月日');
-    if (!user.my_area) missingFields.push('マイエリア');
+    if (myAreas.length === 0) missingFields.push('マイエリア');
     if (!user.avatar) missingFields.push('プロフィール画像');
     
     if (missingFields.length === 0) return [];
@@ -105,6 +135,19 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
   // ユーザー情報更新ハンドラー
   const handleUserUpdate = (updatedUser: UserInfo) => {
     setUser(updatedUser);
+    // ユーザー情報更新後にマイエリア情報も再読み込み
+    const fetchMyAreas = async () => {
+      try {
+        const result = await getMyAreas();
+        if (result.success && result.data) {
+          setMyAreas(result.data.my_areas);
+          setPrimaryArea(result.data.primary_area);
+        }
+      } catch (error) {
+        console.error('Failed to fetch my areas after user update:', error);
+      }
+    };
+    fetchMyAreas();
   };
 
   // UserInfo型からUser型への変換（編集モーダル用）
@@ -410,18 +453,37 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
               )}
             </div>
           </div>
-          <Input
-            value={user?.my_area || ''}
-            variant="bordered"
-            radius="sm"
-            startContent={<MapPin size={16} />}
-            classNames={{
-              base: styles.inputBase,
-              inputWrapper: styles.inputWrapper,
-              input: styles.input
-            }}
-            readOnly
-          />
+          <div className={styles.myAreasDisplay}>
+            {isLoadingAreas ? (
+              <div className={styles.loadingAreas}>
+                <MapPin size={16} className={styles.loadingIcon} />
+                <span>読み込み中...</span>
+              </div>
+            ) : myAreas.length > 0 ? (
+              <div className={styles.areasContainer}>
+                <div className={styles.areasList}>
+                  {myAreas.map(area => (
+                    <div key={area.id} className={styles.areaChipWrapper}>
+                      <ChipSelected styleName={styles.areaChip}>
+                        {area.get_full_name || area.name}
+                      </ChipSelected>
+                      {primaryArea?.id === area.id && (
+                        <Star size={12} className={styles.primaryIcon} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.areasCount}>
+                  {myAreas.length}箇所選択中
+                </div>
+              </div>
+            ) : (
+              <div className={styles.noAreasDisplay}>
+                <MapPin size={16} className={styles.noAreasIcon} />
+                <span className={styles.noAreasText}>マイエリアが設定されていません</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       

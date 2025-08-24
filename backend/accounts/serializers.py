@@ -159,9 +159,9 @@ class UserSerializer(serializers.ModelSerializer):
     budget_range = BudgetRangeSerializer(read_only=True)
     visit_purposes = VisitPurposeSerializer(many=True, read_only=True)
     
-    # エリア関連フィールド
-    my_areas = serializers.StringRelatedField(many=True, read_only=True)
-    primary_area = serializers.StringRelatedField(read_only=True)
+    # エリア関連フィールド（詳細情報付き）
+    my_areas = serializers.SerializerMethodField()
+    primary_area = serializers.SerializerMethodField()
     
     # 書き込み用のフィールド
     blood_type_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
@@ -287,6 +287,18 @@ class UserSerializer(serializers.ModelSerializer):
         
         # その他のフィールドを更新
         return super().update(instance, validated_data)
+    
+    def get_my_areas(self, obj):
+        """マイエリアの詳細情報を取得"""
+        from shops.serializers import AreaSerializer
+        return AreaSerializer(obj.my_areas.all(), many=True).data
+    
+    def get_primary_area(self, obj):
+        """プライマリエリアの詳細情報を取得"""
+        if obj.primary_area:
+            from shops.serializers import AreaSerializer
+            return AreaSerializer(obj.primary_area).data
+        return None
 
 
 class ProfileVisibilitySettingsSerializer(serializers.ModelSerializer):
@@ -296,7 +308,7 @@ class ProfileVisibilitySettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileVisibilitySettings
         fields = [
-            'age', 'interests', 'blood_type', 'mbti',
+            'age', 'my_area', 'interests', 'blood_type', 'mbti',
             'occupation', 'industry', 'position', 'alcohol_preferences',
             'hobbies', 'exercise_frequency', 'dietary_preference',
             'atmosphere_preferences', 'visit_purposes'
@@ -324,12 +336,14 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     dietary_preference = DietaryPreferenceSerializer(read_only=True)
     visit_purposes = VisitPurposeSerializer(many=True, read_only=True)
     atmosphere_preferences = UserAtmospherePreferenceSerializer(many=True, read_only=True)
+    my_areas = serializers.SerializerMethodField()
+    primary_area = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = [
             'uid', 'name', 'avatar', 'introduction', 'gender', 'age',
-            'interests', 'blood_type', 'mbti', 'occupation', 'industry', 'position',
+            'my_areas', 'primary_area', 'interests', 'blood_type', 'mbti', 'occupation', 'industry', 'position',
             'alcohol_categories', 'alcohol_brands', 'drink_styles', 'hobbies',
             'exercise_frequency', 'dietary_preference', 'atmosphere_preferences',
             'visit_purposes'
@@ -342,6 +356,19 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             today = date.today()
             age = today.year - obj.birthdate.year - ((today.month, today.day) < (obj.birthdate.month, obj.birthdate.day))
             return age
+        return None
+    
+    def get_my_areas(self, obj):
+        """マイエリアを取得して返す"""
+        from shops.serializers import AreaSerializer
+        my_areas = obj.my_areas.all().select_related('parent').order_by('level', 'name')
+        return AreaSerializer(my_areas, many=True).data
+    
+    def get_primary_area(self, obj):
+        """プライマリエリアを取得して返す"""
+        from shops.serializers import AreaSerializer
+        if obj.primary_area:
+            return AreaSerializer(obj.primary_area).data
         return None
     
     def to_representation(self, instance):
@@ -357,6 +384,9 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             # 非公開に設定されている項目を削除
             if not visibility_settings.age:
                 data.pop('age', None)
+            if not visibility_settings.my_area:
+                data.pop('my_areas', None)
+                data.pop('primary_area', None)
             if not visibility_settings.interests:
                 data.pop('interests', None)
             if not visibility_settings.blood_type:
@@ -385,3 +415,77 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
                 data.pop('visit_purposes', None)
         
         return data
+
+
+class MyAreasUpdateSerializer(serializers.Serializer):
+    """
+    マイエリア更新用シリアライザー
+    """
+    my_area_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        max_length=10,
+        required=False,
+        allow_empty=True,
+        help_text="マイエリアのIDリスト（最大10個）"
+    )
+    primary_area_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text="プライマリエリアのID"
+    )
+    
+    def validate_my_area_ids(self, value):
+        """マイエリアIDの検証"""
+        if len(value) > 10:
+            raise serializers.ValidationError("マイエリアは最大10個まで選択できます")
+        
+        # エリアの存在確認
+        from shops.models import Area
+        valid_ids = Area.objects.filter(id__in=value, is_active=True).values_list('id', flat=True)
+        invalid_ids = set(value) - set(valid_ids)
+        
+        if invalid_ids:
+            raise serializers.ValidationError(f"無効なエリアIDが含まれています: {list(invalid_ids)}")
+        
+        return value
+    
+    def validate_primary_area_id(self, value):
+        """プライマリエリアIDの検証"""
+        if value is not None:
+            from shops.models import Area
+            if not Area.objects.filter(id=value, is_active=True).exists():
+                raise serializers.ValidationError("無効なプライマリエリアIDです")
+        return value
+    
+    def validate(self, data):
+        """全体の検証"""
+        my_area_ids = data.get('my_area_ids', [])
+        primary_area_id = data.get('primary_area_id')
+        
+        # プライマリエリアがマイエリアに含まれているかチェック
+        if primary_area_id is not None and primary_area_id not in my_area_ids:
+            raise serializers.ValidationError("プライマリエリアはマイエリアの中から選択してください")
+        
+        return data
+    
+    def update_user_areas(self, user, validated_data):
+        """ユーザーのエリア情報を更新"""
+        my_area_ids = validated_data.get('my_area_ids', [])
+        primary_area_id = validated_data.get('primary_area_id')
+        
+        # マイエリアの更新
+        if 'my_area_ids' in validated_data:
+            from shops.models import Area
+            areas = Area.objects.filter(id__in=my_area_ids)
+            user.my_areas.set(areas)
+        
+        # プライマリエリアの更新
+        if 'primary_area_id' in validated_data:
+            if primary_area_id:
+                from shops.models import Area
+                user.primary_area = Area.objects.get(id=primary_area_id)
+            else:
+                user.primary_area = None
+            user.save()
+        
+        return user
