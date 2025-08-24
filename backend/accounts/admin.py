@@ -36,6 +36,7 @@ class UserAdminCustom(UserAdmin):
                     "email",
                     "password",
                     "avatar",
+                    "header_image",
                     "introduction",
                     "gender",
                     "birthdate",

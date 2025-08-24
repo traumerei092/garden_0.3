@@ -24,6 +24,7 @@ interface UserInfo {
   email: string;
   name: string | null;
   avatar: string | null;
+  header_image?: string | null;
   introduction: string | null;
   gender: string | null;
   birthdate: string | null;
@@ -215,23 +216,27 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
     };
   };
 
-  // const { lastName, firstName } = getNameParts(); // 一時的に無効化
+  const { lastName, firstName } = getNameParts();
   
   return (
     <div className={styles.basicInfoContainer}>
       {/* ヘッダー画像とプロフィール画像 */}
       <div className={styles.profileImages}>
         <div className={styles.headerImageContainer}>
-          <img
-            src="/assets/picture/beach.jpg"
-            alt="ヘッダー画像"
-            className={styles.headerImage}
-          />
+          {user && user.header_image ? (
+            <img
+              src={user.header_image}
+              alt="ヘッダー画像"
+              className={styles.headerImage}
+            />
+          ) : (
+            <div className={styles.headerImagePlaceholder} />
+          )}
           <button 
             className={styles.editHeaderButton}
             onClick={() => setIsHeaderModalOpen(true)}
           >
-            <Camera size={20} />
+            <Camera size={20} strokeWidth={1}/>
           </button>
         </div>
         
@@ -248,7 +253,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
               className={styles.editProfileButton}
               onClick={() => setIsAvatarModalOpen(true)}
             >
-              <Camera size={16} />
+              <Camera size={16} strokeWidth={1} />
             </button>
           </div>
         </div>
@@ -501,6 +506,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
               email: updatedUser.email,
               name: updatedUser.name,
               avatar: updatedUser.avatar,
+              header_image: updatedUser.header_image,
               introduction: updatedUser.introduction,
               gender: updatedUser.gender,
               birthdate: updatedUser.birthdate,
@@ -525,6 +531,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
               email: updatedUser.email,
               name: updatedUser.name,
               avatar: updatedUser.avatar,
+              header_image: updatedUser.header_image,
               introduction: updatedUser.introduction,
               gender: updatedUser.gender,
               birthdate: updatedUser.birthdate,
@@ -548,6 +555,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
           onClose={() => setIsAvatarModalOpen(false)}
           user={user}
           onUpdate={handleUserUpdate}
+          imageType="avatar"
         />
       )}
 
@@ -558,6 +566,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
           onClose={() => setIsHeaderModalOpen(false)}
           user={user}
           onUpdate={handleUserUpdate}
+          imageType="header"
         />
       )}
     </div>

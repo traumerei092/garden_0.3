@@ -12,13 +12,22 @@ export const fetchWithAuth = async (
     ? `${baseUrl}${input}` 
     : input;
 
+  // FormDataの場合はContent-Typeを設定しない（ブラウザが自動設定）
+  const isFormData = init.body instanceof FormData;
+  
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string>), // 既存のヘッダー
+    ...(accessToken ? { Authorization: `JWT ${accessToken}` } : {}),
+  };
+
+  // FormDataでない場合のみContent-Typeを設定
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const mergedInit: RequestInit = {
     ...init,
-    headers: {
-      ...(init.headers as Record<string, string>), // 既存のヘッダー
-      'Content-Type': 'application/json',
-      ...(accessToken ? { Authorization: `JWT ${accessToken}` } : {}),
-    },
+    headers,
     credentials: 'include', // Cookieを送信する
   };
 
@@ -28,11 +37,15 @@ export const fetchWithAuth = async (
   if (res.status === 401) {
     const newAccessToken = await refreshAccessToken();
     if (newAccessToken) {
-      const retryHeaders = {
+      const retryHeaders: Record<string, string> = {
         ...(init.headers as Record<string, string>),
-        'Content-Type': 'application/json',
         Authorization: `JWT ${newAccessToken}`,
       };
+
+      // FormDataでない場合のみContent-Typeを設定
+      if (!isFormData) {
+        retryHeaders['Content-Type'] = 'application/json';
+      }
 
       res = await fetch(url, {
         ...init,

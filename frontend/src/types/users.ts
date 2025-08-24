@@ -7,6 +7,7 @@ export interface User {
   last_name: string;
   name: string;
   avatar: string | null;
+  header_image?: string | null;
   bio: string | null;
   introduction: string | null;
   gender: string | null;
@@ -196,6 +197,7 @@ export interface PublicUserProfile {
   uid: string;
   name: string;
   avatar: string | null;
+  header_image?: string | null;
   introduction: string | null;
   gender: string | null;
   age?: number;

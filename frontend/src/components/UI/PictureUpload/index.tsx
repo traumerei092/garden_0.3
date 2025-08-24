@@ -13,6 +13,7 @@ interface PictureUploadProps {
     onFileChange: (index: number, file: File | null) => void;
     onCaptionChange: (index: number, caption: string) => void;
     hideIconSelect?: boolean;
+    hideCaption?: boolean;
     value?: string;
     name?: string;
     isRequired?: boolean;
@@ -28,6 +29,7 @@ export const PictureUpload = (props: PictureUploadProps) => {
         onFileChange,
         onCaptionChange,
         hideIconSelect = false,
+        hideCaption = false,
         isRequired = false,
         isSelected = false,
         onIconSelect,
@@ -148,17 +150,19 @@ export const PictureUpload = (props: PictureUploadProps) => {
 
                     {file && (
                         <div className={styles.controls}>
-                            <Input
-                                value={caption}
-                                onChange={(e) => onCaptionChange(index, e.target.value)}
-                                placeholder="画像の説明（任意）"
-                                size="sm"
-                                classNames={{
-                                    inputWrapper: styles.formInput,
-                                    input: styles.formInputElement,
-                                    label: styles.formLabel,
-                                }}
-                            />
+                            {!hideCaption && (
+                                <Input
+                                    value={caption}
+                                    onChange={(e) => onCaptionChange(index, e.target.value)}
+                                    placeholder="画像の説明（任意）"
+                                    size="sm"
+                                    classNames={{
+                                        inputWrapper: styles.formInput,
+                                        input: styles.formInputElement,
+                                        label: styles.formLabel,
+                                    }}
+                                />
+                            )}
                             
                             {!hideIconSelect && (
                                 <div className={styles.iconRadioWrapper}>

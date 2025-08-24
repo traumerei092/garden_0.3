@@ -15,6 +15,7 @@ from .views import (
     UpdateVisitPurposesView,
     UpdateHobbiesView,
     UpdateProfileImageView,
+    UpdateHeaderImageView,
     PublicUserProfileView,
     ProfileVisibilitySettingsView,
     PreviewUserProfileView,
@@ -31,6 +32,8 @@ urlpatterns = [
     path("users/me/", UserDetailView.as_view(), name="user-me-detail"),
     # プロフィール画像更新
     path("users/me/avatar/", UpdateProfileImageView.as_view(), name="update-profile-image"),
+    # ヘッダー画像更新
+    path("users/me/header/", UpdateHeaderImageView.as_view(), name="update-header-image"),
     # ユーザー詳細（uidで検索）
     path("users/<str:uid>/", UserDetailView.as_view(), name="user-detail"),
     # パスワード変更

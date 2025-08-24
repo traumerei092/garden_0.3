@@ -144,6 +144,7 @@ class UserAtmospherePreferenceSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     uid = serializers.CharField(read_only=True)
     avatar = Base64ImageField(max_length=None, use_url=True, required=False, allow_null=True)
+    header_image = Base64ImageField(max_length=None, use_url=True, required=False, allow_null=True)
     interests = InterestSerializer(many=True, read_only=True)
     blood_type = BloodTypeSerializer(read_only=True)
     mbti = MBTISerializer(read_only=True)
@@ -179,6 +180,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "avatar",
+            "header_image",
             "introduction",
             "gender",
             "birthdate",
@@ -322,6 +324,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     """
     uid = serializers.CharField(read_only=True)
     avatar = Base64ImageField(max_length=None, use_url=True, required=False, allow_null=True)
+    header_image = Base64ImageField(max_length=None, use_url=True, required=False, allow_null=True)
     age = serializers.SerializerMethodField()
     
     # 関連フィールド
@@ -342,7 +345,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'uid', 'name', 'avatar', 'introduction', 'gender', 'age',
+            'uid', 'name', 'avatar', 'header_image', 'introduction', 'gender', 'age',
             'my_areas', 'primary_area', 'interests', 'blood_type', 'mbti', 'occupation', 'industry', 'position',
             'alcohol_categories', 'alcohol_brands', 'drink_styles', 'hobbies',
             'exercise_frequency', 'dietary_preference', 'atmosphere_preferences',

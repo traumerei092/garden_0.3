@@ -15,6 +15,7 @@ interface UserForImageEdit {
   email: string;
   name: string | null;
   avatar: string | null;
+  header_image?: string | null;
   introduction: string | null;
   gender: string | null;
   birthdate: string | null;
@@ -26,24 +27,38 @@ interface ImageEditModalProps {
   onClose: () => void;
   user: UserForImageEdit;
   onUpdate: (updatedUser: UserForImageEdit) => void;
+  imageType?: 'avatar' | 'header';
 }
 
 const ImageEditModal: React.FC<ImageEditModalProps> = ({
   isOpen,
   onClose,
   user,
-  onUpdate
+  onUpdate,
+  imageType = 'avatar'
 }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [caption, setCaption] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 画像タイプに応じたタイトルと説明を取得
+  const getModalTitle = () => {
+    return imageType === 'header' ? 'ヘッダー画像を変更' : 'プロフィール画像を変更';
+  };
+
+  const getModalDescription = () => {
+    return imageType === 'header' ? '新しいヘッダー画像を選択してください。' : '新しいプロフィール画像を選択してください。';
+  };
+
+  const getCurrentImageUrl = () => {
+    if (imageType === 'header') {
+      // ヘッダー画像のフィールドが追加されるまでは固定画像を表示
+      return user.header_image || '/assets/picture/beach.jpg';
+    }
+    return user.avatar;
+  };
 
   const handleFileChange = (index: number, file: File | null) => {
     setSelectedImage(file);
-  };
-
-  const handleCaptionChange = (index: number, newCaption: string) => {
-    setCaption(newCaption);
   };
 
   const handleSave = async () => {
@@ -55,7 +70,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     setIsLoading(true);
     try {
       console.log('ImageEditModal - Uploading image:', selectedImage.name, selectedImage.size);
-      const result = await updateProfileImage(selectedImage);
+      const result = await updateProfileImage(selectedImage, imageType);
       console.log('ImageEditModal - Upload result:', result);
       
       if (result.success && result.data) {
@@ -66,6 +81,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
           email: result.data.email,
           name: result.data.name,
           avatar: result.data.avatar,
+          header_image: result.data.header_image,
           introduction: result.data.introduction,
           gender: result.data.gender,
           birthdate: result.data.birthdate,
@@ -74,7 +90,6 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
         onUpdate(userInfo);
         showProfileUpdateToast();
         setSelectedImage(null);
-        setCaption('');
         onClose();
       } else {
         console.error('ImageEditModal - Error:', result.error);
@@ -91,7 +106,6 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   const handleCancel = () => {
     if (!isLoading) {
       setSelectedImage(null);
-      setCaption('');
       onClose();
     }
   };
@@ -109,22 +123,37 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     <CustomModal
       isOpen={isOpen}
       onClose={handleCancel}
-      title="プロフィール画像を変更"
+      title={getModalTitle()}
       footer={footer}
       size="md"
     >
       <p className={styles.description}>
-        新しいプロフィール画像を選択してください。
+        {getModalDescription()}
       </p>
+
+      {/* 現在の画像プレビュー */}
+      {getCurrentImageUrl() && (
+        <div className={styles.currentImageSection}>
+          <h4 className={styles.sectionTitle}>現在の画像</h4>
+          <div className={styles.currentImageContainer}>
+            <img 
+              src={getCurrentImageUrl() || ''} 
+              alt={imageType === 'header' ? 'ヘッダー画像' : 'プロフィール画像'} 
+              className={styles.currentImage}
+            />
+          </div>
+        </div>
+      )}
       
       <div className={styles.uploadContainer}>
         <PictureUpload
           file={selectedImage}
-          caption={caption}
+          caption=""
           index={0}
           onFileChange={handleFileChange}
-          onCaptionChange={handleCaptionChange}
+          onCaptionChange={() => {}} // ダミー関数
           hideIconSelect={true}
+          hideCaption={true}
         />
       </div>
       

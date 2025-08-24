@@ -45,9 +45,13 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(
         upload_to="avatar", verbose_name="プロフィール画像", null=True, blank=True
     )
+    header_image = models.ImageField(
+        upload_to="headers", verbose_name="ヘッダー画像", null=True, blank=True
+    )
     introduction = models.TextField("自己紹介", null=True, blank=True)
     gender = models.CharField(max_length=20, blank=True)
     birthdate = models.DateField(null=True, blank=True)
+    
     updated_at = models.DateTimeField("更新日", auto_now=True)
     created_at = models.DateTimeField("作成日", auto_now_add=True)
 

@@ -86,3 +86,39 @@
 .saveButton {
   @apply bg-cyan-500 hover:bg-cyan-600 text-white;
 }
+
+.description {
+  @apply text-gray-300 text-sm mb-6;
+}
+
+.currentImageSection {
+  @apply mb-6;
+}
+
+.sectionTitle {
+  @apply text-white font-medium text-sm mb-3;
+}
+
+.currentImageContainer {
+  @apply flex justify-center;
+}
+
+.currentImage {
+  @apply w-32 h-32 object-cover rounded-lg border border-gray-600;
+}
+
+.uploadContainer {
+  @apply mb-4;
+}
+
+.imageInfo {
+  @apply mt-4 p-3 bg-gray-800 rounded-lg;
+}
+
+.fileName {
+  @apply text-white text-sm font-medium;
+}
+
+.fileSize {
+  @apply text-gray-400 text-xs;
+}

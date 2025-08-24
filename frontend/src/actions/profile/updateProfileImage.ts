@@ -7,7 +7,7 @@ interface UpdateProfileImageResponse {
   error?: string;
 }
 
-export async function updateProfileImage(imageFile: File): Promise<UpdateProfileImageResponse> {
+export async function updateProfileImage(imageFile: File, imageType: 'avatar' | 'header' = 'avatar'): Promise<UpdateProfileImageResponse> {
   try {
     console.log('updateProfileImage - File info:', {
       name: imageFile.name,
@@ -16,9 +16,12 @@ export async function updateProfileImage(imageFile: File): Promise<UpdateProfile
     });
 
     const formData = new FormData();
-    formData.append('avatar', imageFile);
+    const fieldName = imageType === 'header' ? 'header_image' : 'avatar';
+    const endpoint = imageType === 'header' ? '/accounts/users/me/header/' : '/accounts/users/me/avatar/';
+    
+    formData.append(fieldName, imageFile);
 
-    const response = await fetchWithAuth('/accounts/users/me/avatar/', {
+    const response = await fetchWithAuth(endpoint, {
       method: 'POST',
       body: formData,
     });

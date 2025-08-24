@@ -76,6 +76,18 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       {/* ヒーローセクション */}
       <section className={styles.heroSection}>
         <div className={styles.heroBackground}>
+          {userProfile.header_image ? (
+            <Image
+              src={userProfile.header_image}
+              alt={`${userProfile.name}のヘッダー画像`}
+              fill
+              className={styles.headerImage}
+              style={{ objectFit: 'cover' }}
+              priority
+            />
+          ) : (
+            <div className={styles.headerImagePlaceholder} />
+          )}
           <div className={styles.heroGradient} />
         </div>
         <div className={styles.heroContent}>
@@ -98,44 +110,46 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
             )}
           </div>
           <div className={styles.userInfo}>
-            <h1 className={styles.userName}>{userProfile.name}</h1>
-            <div className={styles.userMeta}>
-              {userProfile.age && (
-                <span className={styles.metaItem}>
-                  {userProfile.age}歳
-                </span>
+            <div className={styles.userInfoCard}>
+              <h1 className={styles.userName}>{userProfile.name}</h1>
+              <div className={styles.userMeta}>
+                {userProfile.age && (
+                  <span className={styles.metaItem}>
+                    {userProfile.age}歳
+                  </span>
+                )}
+                {userProfile.gender && (
+                  <span className={styles.metaItem}>
+                    {userProfile.gender === 'male' ? '男性' : userProfile.gender === 'female' ? '女性' : userProfile.gender === 'other' ? 'その他' : userProfile.gender}
+                  </span>
+                )}
+              </div>
+              {userProfile.my_areas && userProfile.my_areas.length > 0 && (
+                <div className={styles.heroMyAreas}>
+                  <div className={styles.heroAreasLabel}>
+                    <MapPin size={16} />
+                    <span>マイエリア</span>
+                  </div>
+                  <div className={styles.heroAreasList}>
+                    {userProfile.my_areas.map(area => (
+                      <div key={area.id} className={styles.heroAreaChipWrapper}>
+                        <span className={styles.heroAreaChip}>
+                          {area.get_full_name || area.name}
+                        </span>
+                        {userProfile.primary_area?.id === area.id && (
+                          <Star size={12} className={styles.heroPrimaryIcon} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
-              {userProfile.gender && (
-                <span className={styles.metaItem}>
-                  {userProfile.gender}
-                </span>
+              {userProfile.introduction && (
+                <p className={styles.userIntroduction}>
+                  {userProfile.introduction}
+                </p>
               )}
             </div>
-            {userProfile.my_areas && userProfile.my_areas.length > 0 && (
-              <div className={styles.heroMyAreas}>
-                <div className={styles.heroAreasLabel}>
-                  <MapPin size={16} />
-                  <span>マイエリア</span>
-                </div>
-                <div className={styles.heroAreasList}>
-                  {userProfile.my_areas.map(area => (
-                    <div key={area.id} className={styles.heroAreaChipWrapper}>
-                      <span className={styles.heroAreaChip}>
-                        {area.get_full_name || area.name}
-                      </span>
-                      {userProfile.primary_area?.id === area.id && (
-                        <Star size={12} className={styles.heroPrimaryIcon} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {userProfile.introduction && (
-              <p className={styles.userIntroduction}>
-                {userProfile.introduction}
-              </p>
-            )}
           </div>
         </div>
       </section>
@@ -214,7 +228,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
           )}
 
           {/* ライフスタイル */}
-          {(userProfile.hobbies?.length > 0 || userProfile.exercise_frequency?.name || userProfile.dietary_preference?.name) && (
+          {((userProfile.hobbies && userProfile.hobbies.length > 0) || userProfile.exercise_frequency?.name || userProfile.dietary_preference?.name) && (
             <div className={styles.profileCard}>
               <h3 className={styles.cardTitle}>ライフスタイル</h3>
               <div className={styles.cardContent}>

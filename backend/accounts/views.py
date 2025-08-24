@@ -444,6 +444,46 @@ class UpdateProfileImageView(APIView):
             )
 
 
+# ヘッダー画像更新
+class UpdateHeaderImageView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        print(f"ヘッダー画像更新リクエスト - ユーザー: {request.user.email}")
+        print(f"受信ファイル: {request.FILES}")
+        
+        user = request.user
+        header_image = request.FILES.get('header_image')
+
+        if not header_image:
+            print("エラー: ヘッダー画像ファイルが見つかりません")
+            return Response(
+                {'error': 'ヘッダー画像ファイルが必要です'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        print(f"アップロードヘッダー画像情報: name={header_image.name}, size={header_image.size}, content_type={header_image.content_type}")
+
+        try:
+            # ヘッダー画像を更新
+            user.header_image = header_image
+            user.save()
+            print(f"ヘッダー画像更新成功: {user.header_image.url if user.header_image else 'None'}")
+            
+            # 更新されたユーザー情報を返す
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"ヘッダー画像更新エラー: {e}")
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': f'ヘッダー画像の更新に失敗しました: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
 # 公開ユーザープロフィール取得
 class PublicUserProfileView(APIView):
     """
