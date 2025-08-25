@@ -178,7 +178,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   transition: all 0.2s ease;
 }
 
@@ -186,7 +186,7 @@
   font-size: 48px;
   font-weight: 600;
   margin: 0 0 16px 0;
-  background: linear-gradient(45deg, #00C2FF, #FF00E5);
+  background: linear-gradient(90deg, #00C2FF, #FF00E5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

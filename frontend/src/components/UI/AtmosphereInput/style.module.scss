@@ -1,0 +1,156 @@
+.atmosphereInput {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  text-align: center;
+  
+  .title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+  }
+  
+  .description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.indicatorsList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.indicatorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(0, 194, 255, 0.3);
+  }
+}
+
+.indicatorHeader {
+  .indicatorName {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 4px 0;
+  }
+}
+
+.footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  
+  .footerNote {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+/* Loading and Error States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  
+  p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  text-align: center;
+}
+
+.errorMessage {
+  font-size: 14px;
+  color: #ef4444;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.retryButton {
+  padding: 8px 16px;
+  background: rgba(0, 194, 255, 0.1);
+  border: 1px solid rgba(0, 194, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(0, 194, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 194, 255, 0.2);
+    border-color: rgba(0, 194, 255, 0.5);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .atmosphereInput {
+    gap: 20px;
+  }
+  
+  .indicatorContainer {
+    padding: 16px;
+  }
+  
+  .header .title {
+    font-size: 18px;
+  }
+  
+  .indicatorHeader .indicatorName {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .atmosphereInput {
+    gap: 16px;
+  }
+  
+  .indicatorContainer {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .header .title {
+    font-size: 16px;
+  }
+  
+  .indicatorHeader .indicatorName {
+    font-size: 14px;
+  }
+}

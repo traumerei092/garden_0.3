@@ -87,7 +87,13 @@ const Header = () => {
                     <>
                         <Dropdown placement="bottom-end" className={styles.dropdownMenu}>
                             <DropdownTrigger className={styles.userAvatar}>
-                                <Image src={"/assets/user/icon_user.png"} alt="avatar" />
+                                {user.avatar ? (
+                                    <Image src={user.avatar} alt="avatar" className={styles.avatarImage} />
+                                ) : (
+                                    <div className={styles.avatarPlaceholder}>
+                                        {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                             </DropdownTrigger>
                             <DropdownMenu>
                                 <DropdownSection showDivider aria-label="Profile" className={styles.divider}>

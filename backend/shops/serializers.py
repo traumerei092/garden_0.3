@@ -3,7 +3,8 @@ from .models import (
     Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
     ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
     ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike,
-    ShopDrink, ShopDrinkReaction, Area
+    ShopDrink, ShopDrinkReaction, Area,
+    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate
 )
 from accounts.models import VisitPurpose, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.contrib.auth import get_user_model
@@ -596,3 +597,91 @@ class AreaGeoJSONSerializer(serializers.ModelSerializer):
                 feature['geometry'] = None
         
         return feature
+
+
+# 雰囲気フィードバックシステム関連のシリアライザー
+class AtmosphereIndicatorSerializer(serializers.ModelSerializer):
+    """雰囲気指標のシリアライザー"""
+    class Meta:
+        model = AtmosphereIndicator
+        fields = ['id', 'name', 'description_left', 'description_right']
+
+
+class ShopAtmosphereFeedbackSerializer(serializers.ModelSerializer):
+    """店舗雰囲気フィードバックのシリアライザー"""
+    user = serializers.StringRelatedField(read_only=True)
+    shop = serializers.StringRelatedField(read_only=True)
+    
+    class Meta:
+        model = ShopAtmosphereFeedback
+        fields = ['id', 'user', 'shop', 'atmosphere_scores', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'shop', 'created_at', 'updated_at']
+
+
+class ShopAtmosphereFeedbackCreateUpdateSerializer(serializers.ModelSerializer):
+    """店舗雰囲気フィードバック登録・更新用のシリアライザー"""
+    
+    class Meta:
+        model = ShopAtmosphereFeedback
+        fields = ['atmosphere_scores']
+    
+    def validate_atmosphere_scores(self, value):
+        """雰囲気スコアの検証"""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("atmosphere_scores must be a dictionary")
+        
+        # 各スコアが-2から+2の範囲内であることを確認
+        for indicator_id, score in value.items():
+            if not isinstance(score, int) or score < -2 or score > 2:
+                raise serializers.ValidationError(f"Score for indicator {indicator_id} must be an integer between -2 and 2")
+        
+        # 指標IDが存在することを確認
+        indicator_ids = AtmosphereIndicator.objects.values_list('id', flat=True)
+        for indicator_id in value.keys():
+            try:
+                if int(indicator_id) not in indicator_ids:
+                    raise serializers.ValidationError(f"Invalid indicator ID: {indicator_id}")
+            except ValueError:
+                raise serializers.ValidationError(f"Indicator ID must be numeric: {indicator_id}")
+        
+        return value
+
+
+class ShopAtmosphereAggregateSerializer(serializers.ModelSerializer):
+    """店舗雰囲気集計データのシリアライザー"""
+    shop = serializers.StringRelatedField(read_only=True)
+    indicators = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ShopAtmosphereAggregate
+        fields = ['shop', 'atmosphere_averages', 'total_feedbacks', 'last_updated', 'indicators']
+        read_only_fields = ['shop', 'atmosphere_averages', 'total_feedbacks', 'last_updated']
+    
+    def get_indicators(self, obj):
+        """指標情報と平均値を組み合わせて返す"""
+        indicators = AtmosphereIndicator.objects.all()
+        result = []
+        
+        for indicator in indicators:
+            indicator_id = str(indicator.id)
+            average_score = obj.atmosphere_averages.get(indicator_id, 0.0)
+            
+            result.append({
+                'id': indicator.id,
+                'name': indicator.name,
+                'description_left': indicator.description_left,
+                'description_right': indicator.description_right,
+                'average_score': average_score,
+                'confidence_level': self._get_confidence_level(obj.total_feedbacks)
+            })
+        
+        return result
+    
+    def _get_confidence_level(self, total_feedbacks):
+        """フィードバック数に基づく信頼度を計算"""
+        if total_feedbacks >= 10:
+            return 'high'
+        elif total_feedbacks >= 5:
+            return 'medium'
+        else:
+            return 'low'

@@ -2,7 +2,13 @@
 
 import React from 'react';
 import styles from './style.module.scss';
-import { AtmosphereIndicator } from '@/types/users';
+// 雰囲気指標の型定義
+interface AtmosphereIndicator {
+  id: number;
+  name: string;
+  description_left: string;
+  description_right: string;
+}
 
 interface AtmosphereSliderProps {
   indicator: AtmosphereIndicator;

@@ -11,7 +11,8 @@ from .models import (
     RelationType, UserShopRelation,
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation,
-    ShopDrink, ShopDrinkReaction, Area
+    ShopDrink, ShopDrinkReaction, Area,
+    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate
 )
 from .serializers import (
     ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
@@ -19,7 +20,9 @@ from .serializers import (
     ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer,
     ShopReviewSerializer, ShopReviewLikeSerializer, ShopDrinkSerializer, ShopDrinkReactionSerializer,
     AlcoholCategorySerializer, AlcoholBrandSerializer, DrinkStyleSerializer, AreaSerializer, AreaDetailSerializer,
-    AreaTreeSerializer, AreaGeoJSONSerializer
+    AreaTreeSerializer, AreaGeoJSONSerializer,
+    AtmosphereIndicatorSerializer, ShopAtmosphereFeedbackSerializer, 
+    ShopAtmosphereFeedbackCreateUpdateSerializer, ShopAtmosphereAggregateSerializer
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -139,6 +142,112 @@ class ShopViewSet(viewsets.ModelViewSet):
                 print(f"Tag in response: id={tag.get('id')}, value={tag.get('value')}, user_has_reacted={tag.get('user_has_reacted')}, is_creator={tag.get('is_creator')}")
                 
         return response
+
+    @action(detail=True, methods=['get'])
+    def atmosphere_indicators(self, request, pk=None):
+        """
+        雰囲気指標の一覧を取得する
+        """
+        indicators = AtmosphereIndicator.objects.all().order_by('id')
+        serializer = AtmosphereIndicatorSerializer(indicators, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def atmosphere_aggregate(self, request, pk=None):
+        """
+        店舗の雰囲気評価集計データを取得する
+        """
+        shop = self.get_object()
+        try:
+            aggregate = shop.atmosphere_aggregate
+            serializer = ShopAtmosphereAggregateSerializer(aggregate)
+            return Response(serializer.data)
+        except ShopAtmosphereAggregate.DoesNotExist:
+            # 集計データがない場合は空のデータを返す
+            indicators = AtmosphereIndicator.objects.all()
+            empty_data = {
+                'shop': shop.name,
+                'atmosphere_averages': {},
+                'total_feedbacks': 0,
+                'last_updated': None,
+                'indicators': [
+                    {
+                        'id': indicator.id,
+                        'name': indicator.name,
+                        'description_left': indicator.description_left,
+                        'description_right': indicator.description_right,
+                        'average_score': 0.0,
+                        'confidence_level': 'low'
+                    }
+                    for indicator in indicators
+                ]
+            }
+            return Response(empty_data)
+
+    @action(detail=True, methods=['post'])
+    def atmosphere_feedback(self, request, pk=None):
+        """
+        店舗の雰囲気フィードバックを登録・更新する
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        shop = self.get_object()
+        serializer = ShopAtmosphereFeedbackCreateUpdateSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    # 既存のフィードバックがあれば更新、なければ作成
+                    feedback, created = ShopAtmosphereFeedback.objects.update_or_create(
+                        user=request.user,
+                        shop=shop,
+                        defaults={'atmosphere_scores': serializer.validated_data['atmosphere_scores']}
+                    )
+                    
+                    # 集計データを更新
+                    aggregate, _ = ShopAtmosphereAggregate.objects.get_or_create(shop=shop)
+                    aggregate.update_aggregates()
+                    
+                    # レスポンス用のシリアライザー
+                    response_serializer = ShopAtmosphereFeedbackSerializer(feedback)
+                    return Response({
+                        'message': '更新しました' if not created else '登録しました',
+                        'data': response_serializer.data
+                    }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+                    
+            except Exception as e:
+                return Response(
+                    {"detail": f"エラーが発生しました: {str(e)}"}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def my_atmosphere_feedback(self, request, pk=None):
+        """
+        ログイン中のユーザーの店舗に対する雰囲気フィードバックを取得する
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        shop = self.get_object()
+        try:
+            feedback = ShopAtmosphereFeedback.objects.get(user=request.user, shop=shop)
+            serializer = ShopAtmosphereFeedbackSerializer(feedback)
+            return Response(serializer.data)
+        except ShopAtmosphereFeedback.DoesNotExist:
+            return Response(
+                {"detail": "フィードバックが見つかりません"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class ShopCreateViewSet(viewsets.GenericViewSet):
     """
@@ -722,7 +831,7 @@ class ShopImageViewSet(viewsets.ModelViewSet):
 class UserShopRelationViewSet(viewsets.ModelViewSet):
     serializer_class = UserShopRelationSerializer
     def get_permissions(self):
-        if self.action in ['shop_stats', 'list', 'retrieve', 'visited_shops', 'wishlist_shops', 'favorite_shops']:
+        if self.action in ['shop_stats']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -835,6 +944,156 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['get'])
+    def visited_shops(self, request):
+        """
+        ユーザーが訪れた店舗の一覧を取得する
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # 'visited' リレーションタイプを取得
+            visited_relation_type = RelationType.objects.get(name='visited')
+            
+            # ユーザーの訪問した店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=visited_relation_type
+            ).select_related('shop', 'shop__area').order_by('-created_at')
+            
+            shops = []
+            for relation in relations:
+                shop = relation.shop
+                # メイン画像を取得（is_icon=Trueまたは最初の画像）
+                main_image = shop.images.filter(is_icon=True).first() or shop.images.first()
+                
+                shops.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': shop.area.name if shop.area else '',
+                    'image_url': main_image.image.url if main_image and main_image.image else None,
+                    'visited_at': relation.created_at.isoformat()
+                })
+            
+            return Response({'shops': shops})
+            
+        except RelationType.DoesNotExist:
+            return Response(
+                {"detail": "訪問リレーションタイプが見つかりません"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def wishlist_shops(self, request):
+        """
+        ユーザーが行きたいと思っている店舗の一覧を取得する
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # 'interested' リレーションタイプを取得
+            interested_relation_type = RelationType.objects.get(name='interested')
+            
+            # ユーザーの興味のある店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=interested_relation_type
+            ).select_related('shop', 'shop__area').order_by('-created_at')
+            
+            shops = []
+            for relation in relations:
+                shop = relation.shop
+                # メイン画像を取得（is_icon=Trueまたは最初の画像）
+                main_image = shop.images.filter(is_icon=True).first() or shop.images.first()
+                
+                shops.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': shop.area.name if shop.area else '',
+                    'image_url': main_image.image.url if main_image and main_image.image else None,
+                    'added_at': relation.created_at.isoformat()
+                })
+            
+            return Response({'shops': shops})
+            
+        except RelationType.DoesNotExist:
+            return Response(
+                {"detail": "興味リレーションタイプが見つかりません"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def favorite_shops(self, request):
+        """
+        ユーザーのお気に入り（行きつけ）店舗の一覧を取得する
+        """
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "認証が必要です"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # 'favorite' リレーションタイプを取得
+            favorite_relation_type = RelationType.objects.get(name='favorite')
+            
+            # ユーザーのお気に入り店舗を取得
+            relations = UserShopRelation.objects.filter(
+                user=request.user,
+                relation_type=favorite_relation_type
+            ).select_related('shop', 'shop__area').order_by('-created_at')
+            
+            shops = []
+            for relation in relations:
+                shop = relation.shop
+                # メイン画像を取得（is_icon=Trueまたは最初の画像）
+                main_image = shop.images.filter(is_icon=True).first() or shop.images.first()
+                
+                shops.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': shop.area.name if shop.area else '',
+                    'image_url': main_image.image.url if main_image and main_image.image else None,
+                    'added_at': relation.created_at.isoformat()
+                })
+            
+            return Response({'shops': shops})
+            
+        except RelationType.DoesNotExist:
+            return Response(
+                {"detail": "お気に入りリレーションタイプが見つかりません"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 

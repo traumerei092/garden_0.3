@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Chip } from '@nextui-org/react';
+import { Button, Input, Chip } from '@nextui-org/react';
+import Modal from '@/components/UI/Modal';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
 
@@ -94,74 +95,74 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} placement="center">
-      <ModalContent className={styles.modalContent}>
-        {(onClose) => (
-          <>
-            <ModalHeader className={styles.modalHeader}>印象タグを追加</ModalHeader>
-            <ModalBody>
-              {!isLoggedIn ? (
-                <div className={styles.loginPrompt}>
-                  <p>タグを追加するにはログインが必要です</p>
-                  <Button color="primary" onClick={handleLoginPrompt}>
-                    ログイン / 新規登録
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Input
-                    label="このお店の印象を一言で"
-                    placeholder="例: マスターが優しい、雰囲気が落ち着く"
-                    value={tagValue}
-                    onChange={(e) => setTagValue(e.target.value)}
-                    className={styles.tagInput}
-                    classNames={{
-                        inputWrapper: styles.tagInputWrapper,
-                        input: styles.tagInputElement,
-                    }}
-                  />
-                  
-                  {suggestions.length > 0 && (
-                    <div className={styles.suggestions}>
-                      <p className={styles.suggestionsTitle}>似たタグ:</p>
-                      <div className={styles.suggestionChips}>
-                        {suggestions.map(tag => (
-                          <Chip
-                            key={tag.id}
-                            onClick={() => handleSuggestionClick(tag.value)}
-                            className={styles.suggestionChip}
-                            variant="flat"
-                            color="primary"
-                          >
-                            {tag.value}
-                          </Chip>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {error && <p className={styles.errorText}>{error}</p>}
-                </>
-              )}
-            </ModalBody>
-            <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
-                キャンセル
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className={styles.modalContainer}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>印象タグを追加</h2>
+        </div>
+        
+        <div className={styles.modalContent}>
+          {!isLoggedIn ? (
+            <div className={styles.loginPrompt}>
+              <p>タグを追加するにはログインが必要です</p>
+              <Button color="primary" onClick={handleLoginPrompt}>
+                ログイン / 新規登録
               </Button>
-              {isLoggedIn && (
-                <Button 
-                  color="primary" 
-                  onPress={handleSubmit}
-                  isLoading={isSubmitting}
-                  isDisabled={!tagValue.trim()}
-                >
-                  追加する
-                </Button>
+            </div>
+          ) : (
+            <>
+              <Input
+                label="このお店の印象を一言で"
+                placeholder="例: マスターが優しい、雰囲気が落ち着く"
+                value={tagValue}
+                onChange={(e) => setTagValue(e.target.value)}
+                className={styles.tagInput}
+                classNames={{
+                    inputWrapper: styles.tagInputWrapper,
+                    input: styles.tagInputElement,
+                }}
+              />
+              
+              {suggestions.length > 0 && (
+                <div className={styles.suggestions}>
+                  <p className={styles.suggestionsTitle}>似たタグ:</p>
+                  <div className={styles.suggestionChips}>
+                    {suggestions.map(tag => (
+                      <Chip
+                        key={tag.id}
+                        onClick={() => handleSuggestionClick(tag.value)}
+                        className={styles.suggestionChip}
+                        variant="flat"
+                        color="primary"
+                      >
+                        {tag.value}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
               )}
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
+              
+              {error && <p className={styles.errorText}>{error}</p>}
+            </>
+          )}
+        </div>
+        
+        <div className={styles.modalFooter}>
+          <Button color="danger" variant="light" onPress={onClose}>
+            キャンセル
+          </Button>
+          {isLoggedIn && (
+            <Button 
+              color="primary" 
+              onPress={handleSubmit}
+              isLoading={isSubmitting}
+              isDisabled={!tagValue.trim()}
+            >
+              追加する
+            </Button>
+          )}
+        </div>
+      </div>
     </Modal>
   );
 };

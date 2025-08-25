@@ -1,0 +1,406 @@
+// CustomModalを使用するため、二重の背景は削除
+.modalContainer {
+  max-width: 700px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  padding: 24px 24px 0 24px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  
+  .modalTitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+  }
+  
+  .modalSubtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 20px 0;
+    line-height: 1.4;
+  }
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  
+  .step {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    
+    &.active {
+      background: linear-gradient(135deg, #00c2ff 0%, #0070f3 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 194, 255, 0.3);
+    }
+    
+    &.completed {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 2px solid #22c55e;
+    }
+    
+    &:not(.active):not(.completed) {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+  
+  .stepConnector {
+    width: 40px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+  }
+}
+
+.modalContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+  
+  /* カスタムスクロールバー */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 194, 255, 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(0, 194, 255, 0.5);
+    }
+  }
+}
+
+.impressionStep {
+  .stepDescription {
+    margin-bottom: 24px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+      line-height: 1.3;
+    }
+    
+    p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+}
+
+.tagInput {
+  margin-bottom: 16px;
+}
+
+.tagInputWrapper {
+  background: rgba(168, 168, 168, 0.1);
+
+  &:hover {
+    background: rgba(168, 168, 168, 0.2);
+  }
+
+  &:focus-within {
+    background-color: rgba(168, 168, 168, 0.2) !important;
+  }
+}
+
+.tagInputElement {
+  color: white !important;
+}
+
+.suggestions {
+  margin-top: 16px;
+  
+  .suggestionsTitle {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+  
+  .suggestionChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .suggestionChip {
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 24px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 24px;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.skipButton {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.backButton {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.submitButton {
+  padding: 10px 24px !important;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  
+  p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+}
+
+/* Error State */
+.errorMessage {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  
+  p {
+    color: #ef4444;
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+/* Login Prompt */
+.loginPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 40px 20px;
+
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modalContainer {
+    width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .modalHeader {
+    padding: 20px 20px 0 20px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    
+    .modalTitle {
+      font-size: 20px;
+    }
+    
+    .modalSubtitle {
+      font-size: 13px;
+    }
+  }
+  
+  .stepIndicator {
+    gap: 8px;
+    
+    .step {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+    
+    .stepConnector {
+      width: 30px;
+    }
+  }
+  
+  .modalContent {
+    padding: 0 20px;
+  }
+  
+  .modalFooter {
+    padding: 16px 20px 20px 20px;
+    margin-top: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    
+    .actionButtons {
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .cancelButton {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    
+    .submitButton {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContainer {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modalHeader {
+    padding: 16px 16px 0 16px;
+    
+    .modalTitle {
+      font-size: 18px;
+    }
+  }
+  
+  .modalContent {
+    padding: 0 16px;
+  }
+  
+  .modalFooter {
+    padding: 16px;
+  }
+}

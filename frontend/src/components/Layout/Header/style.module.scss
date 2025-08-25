@@ -51,6 +51,12 @@
 .userAvatar {
   width: 3rem;
   cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 198, 255, 0.5);
+}
+
+.avatarPlaceholder {
+  border-radius: 50%;
 }
 
 .dropdownMenu {
@@ -66,5 +72,41 @@
   &:hover {
     background: rgba(0, 255, 255, 0.15);
     color: rgba(0, 255, 255, 1);
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 1024px) {
+  .headerCenter {
+    display: none;
+  }
+  
+  .headerLeft {
+    width: auto;
+  }
+  
+  .headerRight {
+    width: auto;
+  }
+  
+  .headerWrapper {
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerCenter {
+    display: none;
+  }
+  
+  .headerLeft {
+    width: auto;
+  }
+  
+  .headerRight {
+    width: auto;
+    padding: 10px;
+    gap: 0.5rem;
   }
 }

@@ -8,7 +8,7 @@ from .models import (
     Shop, ShopType, ShopLayout, ShopOption, 
     BusinessHour, ShopImage, ShopTag, ShopTagReaction,
     UserShopRelation, RelationType, PaymentMethod,
-    AtmosphereIndicator, ShopAtmosphereRating,
+    AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
     ShopDrink, ShopDrinkReaction, Area
 )
 
@@ -210,13 +210,72 @@ class AtmosphereIndicatorAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description_left', 'description_right')
     readonly_fields = ('created_at', 'updated_at')
 
-# 店舗雰囲気評価の管理画面設定
+# 店舗雰囲気評価の管理画面設定（DEPRECATED）
 @admin.register(ShopAtmosphereRating)
 class ShopAtmosphereRatingAdmin(admin.ModelAdmin):
     list_display = ('shop', 'indicator', 'user', 'score', 'created_at')
     list_filter = ('indicator', 'score')
     search_fields = ('shop__name', 'indicator__name', 'user__name')
     readonly_fields = ('created_at',)
+
+# 新しい雰囲気フィードバックシステムの管理画面
+@admin.register(ShopAtmosphereFeedback)
+class ShopAtmosphereFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('user', 'shop', 'formatted_scores', 'created_at', 'updated_at')
+    list_filter = ('created_at', 'updated_at')
+    search_fields = ('shop__name', 'user__name', 'user__email')
+    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ('user', 'shop')
+    
+    def formatted_scores(self, obj):
+        """雰囲気スコアを見やすく表示"""
+        if not obj.atmosphere_scores:
+            return "未設定"
+        
+        indicators = AtmosphereIndicator.objects.all()
+        result = []
+        for indicator in indicators:
+            score = obj.atmosphere_scores.get(str(indicator.id))
+            if score is not None:
+                result.append(f"{indicator.name}: {score}")
+        
+        return ", ".join(result) if result else "データなし"
+    formatted_scores.short_description = '雰囲気スコア'
+
+@admin.register(ShopAtmosphereAggregate)
+class ShopAtmosphereAggregateAdmin(admin.ModelAdmin):
+    list_display = ('shop', 'total_feedbacks', 'formatted_averages', 'last_updated')
+    list_filter = ('total_feedbacks', 'last_updated')
+    search_fields = ('shop__name',)
+    readonly_fields = ('last_updated',)
+    autocomplete_fields = ('shop',)
+    
+    def formatted_averages(self, obj):
+        """平均値を見やすく表示"""
+        if not obj.atmosphere_averages:
+            return "データなし"
+        
+        indicators = AtmosphereIndicator.objects.all()
+        result = []
+        for indicator in indicators:
+            avg = obj.atmosphere_averages.get(str(indicator.id))
+            if avg is not None:
+                result.append(f"{indicator.name}: {avg:.2f}")
+        
+        return ", ".join(result) if result else "データなし"
+    formatted_averages.short_description = '平均スコア'
+    
+    actions = ['update_aggregates']
+    
+    def update_aggregates(self, request, queryset):
+        """選択された集計データを手動更新"""
+        count = 0
+        for aggregate in queryset:
+            aggregate.update_aggregates()
+            count += 1
+        
+        self.message_user(request, f'{count}件の集計データを更新しました。')
+    update_aggregates.short_description = '集計データを更新'
 
 # 店舗ドリンクの管理画面設定
 @admin.register(ShopDrink)

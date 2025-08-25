@@ -524,6 +524,7 @@ class AtmosphereIndicator(models.Model):
 class ShopAtmosphereRating(models.Model):
     """
     店舗の雰囲気評価（ユーザーからの評価を集計）
+    DEPRECATED: 新規開発ではShopAtmosphereFeedbackを使用してください
     """
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='atmosphere_ratings')
     indicator = models.ForeignKey(AtmosphereIndicator, on_delete=models.CASCADE)
@@ -533,11 +534,104 @@ class ShopAtmosphereRating(models.Model):
         help_text="-2から+2の範囲で評価"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+
+##############################################
+# 新しい雰囲気フィードバックシステム
+##############################################
+class ShopAtmosphereFeedback(models.Model):
+    """
+    ユーザーの店舗雰囲気フィードバック（全指標を一括管理）
+    atmosphere_scores: {indicator_id: score} の形式でJSONで保存
+    """
+    user = models.ForeignKey(
+        UserAccount, 
+        on_delete=models.CASCADE, 
+        related_name='atmosphere_feedbacks',
+        verbose_name="評価者"
+    )
+    shop = models.ForeignKey(
+        Shop, 
+        on_delete=models.CASCADE, 
+        related_name='atmosphere_feedbacks',
+        verbose_name="店舗"
+    )
+    atmosphere_scores = models.JSONField(
+        verbose_name="雰囲気スコア",
+        help_text="指標ID をキー、スコア(-2~+2)を値とする辞書",
+        default=dict
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+
     class Meta:
-        unique_together = ('shop', 'indicator', 'user')
-        verbose_name = "店舗雰囲気評価"
-        verbose_name_plural = "店舗雰囲気評価"
+        unique_together = ['user', 'shop']
+        verbose_name = "店舗雰囲気フィードバック"
+        verbose_name_plural = "店舗雰囲気フィードバック"
+        ordering = ['-updated_at']
 
     def __str__(self):
-        return f"{self.shop.name} - {self.indicator.name}: {self.score}"
+        return f"{self.user.name} → {self.shop.name} の雰囲気評価"
+
+
+class ShopAtmosphereAggregate(models.Model):
+    """
+    店舗の雰囲気評価集計データ（パフォーマンス向上のためのキャッシュ）
+    """
+    shop = models.OneToOneField(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name='atmosphere_aggregate',
+        verbose_name="店舗"
+    )
+    atmosphere_averages = models.JSONField(
+        verbose_name="雰囲気平均値",
+        help_text="指標IDをキー、平均スコアを値とする辞書",
+        default=dict
+    )
+    total_feedbacks = models.IntegerField(
+        default=0,
+        verbose_name="総フィードバック数"
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        verbose_name="最終更新日時"
+    )
+
+    class Meta:
+        verbose_name = "店舗雰囲気集計データ"
+        verbose_name_plural = "店舗雰囲気集計データ"
+
+    def __str__(self):
+        return f"{self.shop.name} の雰囲気集計データ (総数: {self.total_feedbacks}件)"
+
+    def update_aggregates(self):
+        """
+        集計データを更新する
+        """
+        feedbacks = ShopAtmosphereFeedback.objects.filter(shop=self.shop)
+        self.total_feedbacks = feedbacks.count()
+        
+        if self.total_feedbacks > 0:
+            # 各指標の平均値を計算
+            averages = {}
+            indicators = AtmosphereIndicator.objects.all()
+            
+            for indicator in indicators:
+                indicator_id = str(indicator.id)
+                scores = []
+                for feedback in feedbacks:
+                    score = feedback.atmosphere_scores.get(indicator_id)
+                    if score is not None:
+                        scores.append(score)
+                
+                if scores:
+                    averages[indicator_id] = sum(scores) / len(scores)
+                else:
+                    averages[indicator_id] = 0.0
+            
+            self.atmosphere_averages = averages
+        else:
+            self.atmosphere_averages = {}
+        
+        self.save()

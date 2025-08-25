@@ -3,19 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button, ScrollShadow, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { ChevronLeft, Plus, MapPin, MapPinPlusInside, Heart, Info, MessageCircle, Wine, Divide, DoorOpen, DoorClosed } from 'lucide-react';
+import { Button, ScrollShadow, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
+import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
-import { Shop, ShopTag, ShopStats } from "@/types/shops";
+import { Shop, ShopStats } from "@/types/shops";
 import Header from "@/components/Layout/Header";
-import ChipCondition from "@/components/UI/ChipCondition";
 import ShopActionButton from '@/components/Shop/ShopActionButton';
 import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
-import ShopRatingBar from '@/components/Shop/ShopRatingBar';
 import ShopMatchRate from '@/components/Shop/ShopMatchRate';
-import ShopActionLink from '@/components/Shop/ShopActionLink';
 import ShopTagModal from '@/components/Shop/ShopTagModal';
+import ShopAtmosphereFeedbackModal from '@/components/Shop/ShopAtmosphereFeedbackModal';
+import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
 import { ShopImageModal } from '@/components/Shop/ShopImageModal';
 import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
 import ShopReviews from '@/components/Shop/ShopReviews';
@@ -30,27 +29,18 @@ import ShopEditModal from '@/components/Shop/ShopEditModal';
 import ShopHistoryModal from '@/components/Shop/ShopHistoryModal';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 
-// サンプルの雰囲気データ
-const SAMPLE_ATMOSPHERE_RATINGS = [
-  { id: 1, label: '話しかけ度', value: 75 },
-  { id: 2, label: '盛り上がり度', value: 60 },
-  { id: 3, label: 'コミュニティ性', value: 85 },
-  { id: 4, label: '他のお客さんとの距離感', value: 70 },
-  { id: 5, label: 'マスターのキャラクター', value: 90 },
-];
 
 const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
-  const [isVisited, setIsVisited] = useState(false);
-  const [isInterested, setIsInterested] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showAddTagModal, setShowAddTagModal] = useState(false);
+  const [showAtmosphereFeedbackModal, setShowAtmosphereFeedbackModal] = useState(false);
+  const [atmosphereKey, setAtmosphereKey] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showShopImageModal, setShowShopImageModal] = useState(false);
-  const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [relationStats, setRelationStats] = useState<ShopStats | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { user } = useAuthStore();
@@ -126,7 +116,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   // 位置情報を取得して距離を計算
   const loadLocationData = async (shopLat: number, shopLng: number) => {
     try {
-      setIsLocationLoading(true);
       const position = await getCurrentPosition();
       const dist = calculateDistance(
         position.coords.latitude,
@@ -137,15 +126,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       setDistance(dist);
     } catch (locError) {
       console.error('位置情報の取得に失敗しました:', locError);
-    } finally {
-      setIsLocationLoading(false);
     }
-  };
-
-  // 位置情報の再取得
-  const handleRefreshLocation = async () => {
-    if (!shop?.latitude || !shop?.longitude) return;
-    await loadLocationData(shop.latitude, shop.longitude);
   };
 
   useEffect(() => {
@@ -255,13 +236,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     return <div className={styles.errorContainer}>{error || '店舗情報が見つかりませんでした'}</div>;
   }
 
-  const renderChips = (items: string[], category: 'type' | 'layout' | 'option') => {
-    return items.map((item, index) => (
-      <ChipCondition key={`${category}-${index}`} category={category}>
-        {item}
-      </ChipCondition>
-    ));
-  };
 
   // 画像追加の処理を行う関数
   const handleAddImage = async (file: File, caption: string) => {
@@ -395,22 +369,19 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
               <ButtonGradientWrapper
                 type='button'
                 anotherStyle={styles.addTagButton}
-                onClick={() => setShowAddTagModal(true)}
+                onClick={() => setShowAtmosphereFeedbackModal(true)}
               >
                 <Plus size={16} />
                 お店に行った方はこちら
               </ButtonGradientWrapper>
             </div>
             
-            <div className={styles.ratingBars}>
-              {SAMPLE_ATMOSPHERE_RATINGS.map((rating) => (
-                <ShopRatingBar
-                  key={rating.id}
-                  label={rating.label}
-                  value={rating.value}
-                />
-              ))}
-            </div>
+            <AtmosphereVisualization 
+              key={atmosphereKey}
+              shopId={shop.id}
+              showTitle={false}
+              showConfidence={true}
+            />
           </div>
 
           <div className={styles.tagSection}>
@@ -502,6 +473,15 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         shopId={shop.id}
         onTagAdded={loadShop}
         existingTags={shop.tags && Array.isArray(shop.tags) ? shop.tags.map(tag => ({ id: tag.id, value: tag.value })) : []}
+      />
+
+      {/* 雰囲気フィードバックモーダル */}
+      <ShopAtmosphereFeedbackModal
+        isOpen={showAtmosphereFeedbackModal}
+        onClose={() => setShowAtmosphereFeedbackModal(false)}
+        shopId={shop.id}
+        shopName={shop.name}
+        onSuccess={() => setAtmosphereKey(prev => prev + 1)}
       />
 
       {/* 画像追加モーダル */}
