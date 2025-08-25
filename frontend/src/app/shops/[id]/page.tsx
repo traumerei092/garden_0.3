@@ -280,6 +280,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           <ChevronLeft size={18} />
           一覧に戻る
         </LinkDefault>
+        <h1 className={styles.headerShopName}>{shop.name}</h1>
         <div className={styles.actionButtons}>
           {relationStats?.counts.map((relationType) => (
             <ShopActionButton
@@ -343,9 +344,8 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
         <div className={styles.shopInfoContainer}>
           <div className={styles.shopNameAndMatch}>
-            <div>
-              <h1 className={styles.shopName}>{shop.name}</h1>
-              <div className={styles.locationInfo}>
+            <div className={styles.locationInfo}>
+              <div className={styles.locationInfoSummary}>
                 {distance !== null && (
                   <div className={styles.distance}>
                     <MapPin size={16} />
@@ -355,6 +355,9 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                 <div className={styles.address}>
                   {shop.prefecture} {shop.city} {shop.area && `${shop.area}`} {shop.street} {shop.building}
                 </div>
+              </div>
+              <div className={styles.regularCustomer}>
+                
               </div>
             </div>
             <div className={styles.matchRateSection}>

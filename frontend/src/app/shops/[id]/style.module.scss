@@ -21,10 +21,20 @@
 .detailHeader {
   width: 100%;
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin: 15px 0 20px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.headerShopName {
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  line-height: 1.2;
+  margin: 0;
+  display: flex;
 }
 
 .actionButtons {
@@ -171,7 +181,12 @@
 .locationInfo {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 15px;
+}
+
+.locationInfoSummary {
+  display: flex;
+  gap: 20px;
 }
 
 .distance {
@@ -185,6 +200,14 @@
 .address {
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.75rem;
+}
+
+.regularCustomer {
+  height: 6rem;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
 }
 
 .tagSection {

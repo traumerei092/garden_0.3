@@ -130,13 +130,12 @@ const AtmosphereInput: React.FC<AtmosphereInputProps> = ({
 
       <div className={styles.indicatorsList}>
         {indicators.map((indicator) => (
-          <div key={indicator.id} className={styles.indicatorContainer}>
-            <AtmosphereSlider
-              indicator={indicator}
-              value={scores[indicator.id.toString()] || 0}
-              onChange={(value) => handleScoreChange(indicator.id, value)}
-            />
-          </div>
+          <AtmosphereSlider
+            key={indicator.id}
+            indicator={indicator}
+            value={scores[indicator.id.toString()] || 0}
+            onChange={(value) => handleScoreChange(indicator.id, value)}
+          />
         ))}
       </div>
 

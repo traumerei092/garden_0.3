@@ -122,14 +122,14 @@ const ShopAtmosphereFeedbackModal: React.FC<ShopAtmosphereFeedbackModalProps> = 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="雰囲気評価">
+    <Modal isOpen={isOpen} onClose={handleClose} title="雰囲気フィードバック">
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
-            {shopName} の雰囲気評価
+            {shopName} の雰囲気フィードバック
           </h2>
           <p className={styles.modalSubtitle}>
-            {isEditing ? '既存の評価を更新できます' : '新しく雰囲気を評価します'}
+            {isEditing ? '既存のフィードバックを更新できます' : '新しく雰囲気をフィードバックします'}
           </p>
         </div>
 

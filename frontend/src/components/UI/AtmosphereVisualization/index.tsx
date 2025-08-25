@@ -97,10 +97,10 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
     const rightPercentage = scoreToRightPercentage(score);
     if (rightPercentage > 50) {
       // 右側（ピンク）が優勢
-      return 'rgba(235, 14, 242, 0.6)';
+      return 'rgba(235, 14, 242, 0.8)';
     } else {
       // 左側（シアン）が優勢
-      return 'rgba(0, 194, 255, 0.6)';
+      return 'rgba(0, 194, 255, 0.8)';
     }
   };
 
@@ -170,13 +170,13 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
     );
   }
 
-  if (!aggregate || !aggregate.atmosphere_averages || indicators.length === 0) {
+  if (!aggregate || !aggregate.atmosphere_averages || indicators.length === 0 || aggregate.total_feedbacks === 0) {
     return (
       <div className={`${styles.container} ${className}`}>
         <div className={styles.noDataContainer}>
-          <p>まだ雰囲気の評価がありません</p>
+          <p>まだ雰囲気のフィードバックがありません</p>
           <p className={styles.noDataSubtext}>
-            最初の評価を追加して、他のユーザーの参考にしましょう！
+            最初のフィードバックを追加して、他のユーザーの参考にしましょう！
           </p>
         </div>
       </div>
@@ -215,7 +215,8 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
                   style={{
                     color: 'rgba(255, 255, 255, 0.7)',
                     borderColor: getScoreColor(score),
-                    backgroundColor: `${getScoreColor(score)}15`
+                    backgroundColor: `${getScoreColor(score)}15`,
+                    fontSize: '9px'
                   }}
                 >
                   {getScoreText(score, indicator.description_left, indicator.description_right)}

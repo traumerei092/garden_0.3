@@ -47,9 +47,9 @@
 }
 
 .indicators {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
 }
 
 .indicatorItem {
@@ -253,6 +253,7 @@
   }
   
   .indicators {
+    grid-template-columns: 1fr;
     gap: 10px;
   }
   
