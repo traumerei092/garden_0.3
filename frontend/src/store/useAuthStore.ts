@@ -1,19 +1,7 @@
 // src/store/authStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-// UserAccountモデルに合わせたユーザー情報の型定義
-interface UserInfo {
-  id: number;
-  uid: string;
-  email: string;
-  name: string | null;
-  avatar: string | null;
-  introduction: string | null;
-  gender: string | null;
-  birthdate: string | null;
-  my_area: string | null;
-}
+import { UserInfo } from '@/types/users';
 
 interface AuthState {
   accessToken: string | null;

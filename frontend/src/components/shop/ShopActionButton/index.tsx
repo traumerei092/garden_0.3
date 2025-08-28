@@ -23,6 +23,13 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
     loading = false,
     showCount = true
 }) => {
+    // デバッグ用：ShopActionButtonが受け取ったpropsを確認
+    console.log(`ShopActionButton [${type.name}]:`, {
+        typeName: type.name,
+        typeId: type.id,
+        isActive,
+        count
+    });
     const getIcon = () => {
         switch (type.name) {
             case 'favorite':

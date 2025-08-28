@@ -1,3 +1,17 @@
+// UserAccountモデルに合わせたユーザー情報の型定義（useAuthStore用）
+export interface UserInfo {
+  id: number;
+  uid: string;
+  email: string;
+  name: string | null;
+  avatar: string | null;
+  header_image?: string | null;
+  introduction: string | null;
+  gender: string | null;
+  birthdate: string | null;
+  my_area: string | null;
+}
+
 export interface User {
   id: number;
   uid: string;

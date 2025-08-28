@@ -22,7 +22,7 @@ const VisitedPage: React.FC = () => {
 
   // デフォルトのリレーションタイプ
   const favoriteRelation: RelationType = {
-    id: 3,
+    id: 1,
     name: 'favorite',
     label: '行きつけ',
     count: 0,
@@ -30,7 +30,7 @@ const VisitedPage: React.FC = () => {
   };
 
   const visitedRelation: RelationType = {
-    id: 1,
+    id: 2,
     name: 'visited',
     label: '行った',
     count: 0,
@@ -38,7 +38,7 @@ const VisitedPage: React.FC = () => {
   };
 
   const interestedRelation: RelationType = {
-    id: 2,
+    id: 3,
     name: 'interested',
     label: '行きたい',
     count: 0,
@@ -81,6 +81,21 @@ const VisitedPage: React.FC = () => {
 
   const handleBackClick = () => {
     router.back();
+  };
+
+  const handleRelationToggle = async (shopId: number, relationTypeId: number) => {
+    try {
+      await toggleShopRelation(shopId.toString(), relationTypeId);
+      
+      // 該当する店舗の統計データを再取得
+      const updatedStats = await fetchShopStats(shopId.toString());
+      setShopStats(prev => ({
+        ...prev,
+        [shopId]: updatedStats
+      }));
+    } catch (error) {
+      console.error('関係の切り替えに失敗しました:', error);
+    }
   };
 
   if (loading) {
@@ -163,6 +178,7 @@ const VisitedPage: React.FC = () => {
                   visitedRelation={visitedRelation}
                   interestedRelation={interestedRelation}
                   userRelations={userRelations}
+                  onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
                 />
                 {shop.visited_at && (
                   <div className={styles.visitedDate}>

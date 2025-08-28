@@ -41,15 +41,23 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
 }) => {
   const router = useRouter();
   const [loadingRelations, setLoadingRelations] = useState<{ [key: number]: boolean }>({});
-  const [currentUserRelations, setCurrentUserRelations] = useState(userRelations);
+  
+  // userRelationsは{ [relationTypeId]: boolean }形式
+  const isFavorite = userRelations[favoriteRelation?.id || 0] || false;
+  const isVisited = userRelations[visitedRelation?.id || 0] || false;
+  const isInterested = userRelations[interestedRelation?.id || 0] || false;
 
   // デバッグ用：リレーション状態をログ出力
   console.log(`ShopGridCard ${name} (ID: ${id}):`, {
     userRelations,
-    currentUserRelations,
-    favoriteRelation,
-    visitedRelation,
-    interestedRelation
+    favoriteRelation: { id: favoriteRelation?.id, name: favoriteRelation?.name },
+    visitedRelation: { id: visitedRelation?.id, name: visitedRelation?.name },
+    interestedRelation: { id: interestedRelation?.id, name: interestedRelation?.name },
+    calculations: {
+      isFavorite: `userRelations[${favoriteRelation?.id}] = ${userRelations[favoriteRelation?.id || 0]}`,
+      isVisited: `userRelations[${visitedRelation?.id}] = ${userRelations[visitedRelation?.id || 0]}`,
+      isInterested: `userRelations[${interestedRelation?.id}] = ${userRelations[interestedRelation?.id || 0]}`
+    }
   });
 
   const handleClick = () => {
@@ -71,10 +79,6 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
       } else {
         await toggleShopRelation(id.toString(), relationType.id);
       }
-      setCurrentUserRelations(prev => ({
-        ...prev,
-        [relationType.id]: !prev[relationType.id]
-      }));
     } catch (error) {
       console.error('関係の切り替えに失敗しました:', error);
     } finally {
@@ -110,7 +114,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                 <ShopActionButton
                   type={favoriteRelation}
                   count={0}
-                  isActive={currentUserRelations[favoriteRelation.id] || false}
+                  isActive={isFavorite}
                   onClick={() => handleRelationToggle(favoriteRelation)}
                   loading={loadingRelations[favoriteRelation.id] || false}
                   showCount={false}
@@ -122,7 +126,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                 <ShopActionButton
                   type={visitedRelation}
                   count={0}
-                  isActive={currentUserRelations[visitedRelation.id] || false}
+                  isActive={isVisited}
                   onClick={() => handleRelationToggle(visitedRelation)}
                   loading={loadingRelations[visitedRelation.id] || false}
                   showCount={false}
@@ -134,7 +138,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                 <ShopActionButton
                   type={interestedRelation}
                   count={0}
-                  isActive={currentUserRelations[interestedRelation.id] || false}
+                  isActive={isInterested}
                   onClick={() => handleRelationToggle(interestedRelation)}
                   loading={loadingRelations[interestedRelation.id] || false}
                   showCount={false}

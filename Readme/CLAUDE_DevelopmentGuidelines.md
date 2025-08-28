@@ -28,6 +28,24 @@
 - 認証: JWT トークン
 - 状態管理: Zustand
 
+## 型定義の管理方針
+
+### 型定義の集約ルール
+- **必ず** `frontend/src/types/` ディレクトリに型定義を集約する
+- ユーザー関連: `types/users.ts`
+- 店舗関連: `types/shops.ts`
+- エリア関連: `types/areas.ts`
+
+### ルール違反例
+❌ コンポーネント内での独自型定義
+❌ `useAuthStore.ts` 内での`UserInfo`定義
+❌ 同じ型の重複定義
+
+### 正しい例
+✅ `import { User } from '@/types/users'`
+✅ 型定義の一元管理
+✅ 既存型の再利用
+
 ## コマンド
 - lint: `npm run lint`  
 - typecheck: `npm run typecheck`

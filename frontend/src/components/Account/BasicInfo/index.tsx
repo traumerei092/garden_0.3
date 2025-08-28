@@ -16,20 +16,7 @@ import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import { getMyAreas } from '@/actions/areas/areaActions';
 import { Area } from '@/types/areas';
 import ChipSelected from '@/components/UI/ChipSelected';
-
-// UserInfo型をuseAuthStoreから取得
-interface UserInfo {
-  id: number;
-  uid: string;
-  email: string;
-  name: string | null;
-  avatar: string | null;
-  header_image?: string | null;
-  introduction: string | null;
-  gender: string | null;
-  birthdate: string | null;
-  my_area: string | null;
-}
+import { UserInfo } from '@/types/users';
 
 interface BasicInfoProps {
   userData?: any;

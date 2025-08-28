@@ -178,7 +178,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
 
     // デフォルトのリレーションタイプ
     const favoriteRelation = {
-        id: 3,
+        id: 1,
         name: 'favorite',
         label: '行きつけ',
         count: 0,
@@ -186,7 +186,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
     };
 
     const visitedRelation = {
-        id: 1,
+        id: 2,
         name: 'visited',
         label: '行った',
         count: 0,
@@ -194,7 +194,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list' }) => {
     };
 
     const interestedRelation = {
-        id: 2,
+        id: 3,
         name: 'interested',
         label: '行きたい',
         count: 0,

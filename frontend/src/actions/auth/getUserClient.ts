@@ -37,9 +37,11 @@ export const getUserClient = async () => {
       email: userData.email || '',
       name: userData.name || null,
       avatar: userData.avatar || null,
+      header_image: userData.header_image || null,
       introduction: userData.introduction || null,
       gender: userData.gender || '',
-      birthdate: userData.birthdate || null
+      birthdate: userData.birthdate || null,
+      my_area: userData.my_area || null
     };
     
     useAuthStore.getState().setUser(user); // Zustand に保存
