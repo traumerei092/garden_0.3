@@ -18,6 +18,8 @@ import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
 import { ShopImageModal } from '@/components/Shop/ShopImageModal';
 import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
 import ShopReviews from '@/components/Shop/ShopReviews';
+import RegularsSnapshot from '@/components/Shop/RegularsSnapshot';
+import RegularsAnalysisModal from '@/components/Shop/RegularsAnalysisModal';
 import ShopDrinks from '@/components/Shop/ShopDrinks';
 import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
@@ -41,6 +43,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [atmosphereKey, setAtmosphereKey] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showShopImageModal, setShowShopImageModal] = useState(false);
+  const [showRegularsModal, setShowRegularsModal] = useState(false);
   const [relationStats, setRelationStats] = useState<ShopStats | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { user } = useAuthStore();
@@ -280,7 +283,20 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           <ChevronLeft size={18} />
           一覧に戻る
         </LinkDefault>
-        <h1 className={styles.headerShopName}>{shop.name}</h1>
+        <div className={styles.headerInfo}>
+          <h1 className={styles.headerShopName}>{shop.name}</h1>
+          <div className={styles.headerLocationInfo}>
+            {distance !== null && (
+              <div className={styles.headerDistance}>
+                <MapPin size={14} />
+                現在地から {formatDistance(distance)}
+              </div>
+            )}
+            <div className={styles.headerAddress}>
+              {shop.prefecture} {shop.city} {shop.area && `${shop.area}`}
+            </div>
+          </div>
+        </div>
         <div className={styles.actionButtons}>
           {relationStats?.counts.map((relationType) => (
             <ShopActionButton
@@ -344,21 +360,11 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
         <div className={styles.shopInfoContainer}>
           <div className={styles.shopNameAndMatch}>
-            <div className={styles.locationInfo}>
-              <div className={styles.locationInfoSummary}>
-                {distance !== null && (
-                  <div className={styles.distance}>
-                    <MapPin size={16} />
-                    現在地から {formatDistance(distance)}
-                  </div>
-                )}
-                <div className={styles.address}>
-                  {shop.prefecture} {shop.city} {shop.area && `${shop.area}`} {shop.street} {shop.building}
-                </div>
-              </div>
-              <div className={styles.regularCustomer}>
-                
-              </div>
+            <div className={styles.regularCustomerSection}>
+              <RegularsSnapshot 
+                shopId={parseInt(params.id)} 
+                onViewDetails={() => setShowRegularsModal(true)} 
+              />
             </div>
             <div className={styles.matchRateSection}>
               <ShopMatchRate rate={70} />
@@ -527,6 +533,14 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
       {/* 編集履歴モーダル */}
       <ShopHistoryModal shop={shop} />
+
+      {/* 常連客分析モーダル */}
+      <RegularsAnalysisModal 
+        isOpen={showRegularsModal}
+        onClose={() => setShowRegularsModal(false)}
+        shopId={shop.id}
+        shopName={shop.name}
+      />
     </div>
   );
 };

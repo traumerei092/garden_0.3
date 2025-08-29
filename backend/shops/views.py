@@ -1366,3 +1366,433 @@ class AreaViewSet(viewsets.ModelViewSet):
             'total': areas.count(),
             'query': query
         })
+
+
+# === 常連客分析API ===
+
+from django.db.models import Count, Avg, Q
+from datetime import date, datetime
+from collections import Counter
+import json
+
+
+class RegularsAnalysisAPIView(generics.GenericAPIView):
+    """
+    店舗の常連客分析API
+    """
+    permission_classes = [AllowAny]
+
+    def get_regulars_queryset(self, shop_id):
+        """
+        指定店舗の常連客（行きつけ登録した人）を取得
+        """
+        # RelationType で name='favorite' のものを取得
+        try:
+            favorite_relation = RelationType.objects.get(name='favorite')
+        except RelationType.DoesNotExist:
+            return None
+            
+        return UserShopRelation.objects.filter(
+            shop_id=shop_id,
+            relation_type=favorite_relation
+        ).select_related('user')
+
+    def calculate_age_group(self, birthdate):
+        """
+        生年月日から年代を計算
+        """
+        if not birthdate:
+            return None
+            
+        today = date.today()
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        
+        if age < 20:
+            return "10代"
+        elif age < 30:
+            return "20代"
+        elif age < 40:
+            return "30代"  
+        elif age < 50:
+            return "40代"
+        elif age < 60:
+            return "50代"
+        else:
+            return "60代以上"
+
+    def get_atmosphere_summary(self, regulars):
+        """
+        常連客の雰囲気好みを要約
+        """
+        from accounts.models import UserAtmospherePreference
+        
+        # 常連客の雰囲気好みを集計
+        atmosphere_data = []
+        for relation in regulars:
+            try:
+                prefs = UserAtmospherePreference.objects.filter(user=relation.user)
+                for pref in prefs:
+                    atmosphere_data.append({
+                        'indicator_id': pref.atmosphere_indicator_id,
+                        'score': pref.score,
+                        'indicator_name': pref.atmosphere_indicator.name if pref.atmosphere_indicator else None,
+                        'description_left': pref.atmosphere_indicator.description_left if pref.atmosphere_indicator else None,
+                        'description_right': pref.atmosphere_indicator.description_right if pref.atmosphere_indicator else None,
+                    })
+            except:
+                continue
+
+        if not atmosphere_data:
+            return "アットホームな雰囲気を好む傾向があります。"
+
+        # 指標別に平均スコアを計算
+        indicator_scores = {}
+        for data in atmosphere_data:
+            indicator_id = data['indicator_id']
+            if indicator_id not in indicator_scores:
+                indicator_scores[indicator_id] = {
+                    'scores': [],
+                    'name': data['indicator_name'],
+                    'description_left': data['description_left'],
+                    'description_right': data['description_right']
+                }
+            indicator_scores[indicator_id]['scores'].append(data['score'])
+
+        # 各指標の平均を計算
+        for indicator_id in indicator_scores:
+            scores = indicator_scores[indicator_id]['scores']
+            indicator_scores[indicator_id]['average'] = sum(scores) / len(scores)
+
+        # 最も低いスコア（左側の傾向）と最も高いスコア（右側の傾向）を取得
+        sorted_indicators = sorted(indicator_scores.items(), key=lambda x: x[1]['average'])
+        
+        if len(sorted_indicators) >= 2:
+            lowest = sorted_indicators[0][1]
+            highest = sorted_indicators[-1][1]
+            
+            left_desc = lowest['description_left'] or "落ち着いた"
+            right_desc = highest['description_right'] or "活気のある"
+            
+            return f"{left_desc}スタイルで、{right_desc}空間を好む傾向があります。"
+        
+        return "バランスの取れた雰囲気を好む傾向があります。"
+
+    def get_top_interests(self, regulars, top_n=3):
+        """
+        常連客の興味Top N を取得
+        """
+        interests_counter = Counter()
+        
+        for relation in regulars:
+            user = relation.user
+            if hasattr(user, 'interests') and user.interests:
+                # interests が JSON文字列の場合はパース、リストの場合はそのまま使用
+                try:
+                    if isinstance(user.interests, str):
+                        interests_list = json.loads(user.interests)
+                    elif isinstance(user.interests, list):
+                        interests_list = user.interests
+                    else:
+                        continue
+                        
+                    for interest in interests_list:
+                        if interest and interest.strip():
+                            interests_counter[interest.strip()] += 1
+                except (json.JSONDecodeError, TypeError):
+                    continue
+        
+        # Top N を取得
+        return [interest for interest, count in interests_counter.most_common(top_n)]
+
+
+class RegularsSnapshotAPIView(RegularsAnalysisAPIView):
+    """
+    常連客のスナップショット情報を取得
+    """
+    
+    def get(self, request, shop_id):
+        # 常連客を取得
+        regulars = self.get_regulars_queryset(shop_id)
+        if regulars is None:
+            return Response({
+                "detail": "関係タイプが見つかりません"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        regulars_list = list(regulars)
+        total_regulars = len(regulars_list)
+
+        # データ不足の場合
+        if total_regulars == 0:
+            return Response({
+                "core_group": {"age_group": "データなし", "gender": "データなし"},
+                "atmosphere_summary": "十分なデータがありません。",
+                "top_interests": [],
+                "total_regulars": 0
+            })
+
+        # 1. 中心層の計算（年齢層・性別）
+        age_groups = []
+        genders = []
+        
+        for relation in regulars_list:
+            user = relation.user
+            
+            # 年齢層
+            if user.birthdate:
+                age_group = self.calculate_age_group(user.birthdate)
+                if age_group:
+                    age_groups.append(age_group)
+            
+            # 性別
+            if user.gender:
+                genders.append(user.gender)
+
+        # 最頻値を取得
+        most_common_age = Counter(age_groups).most_common(1)[0][0] if age_groups else "データ不足"
+        most_common_gender = Counter(genders).most_common(1)[0][0] if genders else "データ不足"
+
+        # 2. 雰囲気の要約
+        atmosphere_summary = self.get_atmosphere_summary(regulars_list)
+
+        # 3. 興味のTop3
+        top_interests = self.get_top_interests(regulars_list, 3)
+
+        return Response({
+            "core_group": {
+                "age_group": most_common_age,
+                "gender": most_common_gender
+            },
+            "atmosphere_summary": atmosphere_summary,
+            "top_interests": top_interests,
+            "total_regulars": total_regulars
+        })
+
+
+class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
+    """
+    常連客の詳細分析API - 指定された軸での分布を取得
+    """
+    
+    def get(self, request, shop_id):
+        # 分析軸を取得
+        axis = request.GET.get('axis', 'age_group')
+        
+        # 常連客を取得
+        regulars = self.get_regulars_queryset(shop_id)
+        if regulars is None:
+            return Response({
+                "detail": "関係タイプが見つかりません"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        regulars_list = list(regulars)
+        total_regulars = len(regulars_list)
+
+        # データ不足の場合
+        if total_regulars == 0:
+            return Response({
+                "axis": axis,
+                "distribution": [],
+                "total_regulars": 0
+            })
+
+        # 軸ごとの分析処理
+        distribution_data = self.analyze_by_axis(axis, regulars_list)
+
+        return Response({
+            "axis": axis,
+            "distribution": distribution_data,
+            "total_regulars": total_regulars
+        })
+
+    def analyze_by_axis(self, axis, regulars_list):
+        """
+        指定された軸での分析を実行
+        """
+        if axis == 'age_group':
+            return self.analyze_age_group(regulars_list)
+        elif axis == 'gender':
+            return self.analyze_gender(regulars_list)
+        elif axis == 'occupation':
+            return self.analyze_occupation(regulars_list)
+        elif axis == 'industry':
+            return self.analyze_industry(regulars_list)
+        elif axis == 'mbti':
+            return self.analyze_mbti(regulars_list)
+        elif axis == 'primary_area':
+            return self.analyze_primary_area(regulars_list)
+        elif axis == 'interests':
+            return self.analyze_interests(regulars_list)
+        elif axis == 'hobbies':
+            return self.analyze_hobbies(regulars_list)
+        elif axis == 'alcohols':
+            return self.analyze_alcohols(regulars_list)
+        elif axis == 'visit_purposes':
+            return self.analyze_visit_purposes(regulars_list)
+        else:
+            return []
+
+    def analyze_age_group(self, regulars_list):
+        """年齢層分析"""
+        age_groups = []
+        for relation in regulars_list:
+            if relation.user.birthdate:
+                age_group = self.calculate_age_group(relation.user.birthdate)
+                if age_group:
+                    age_groups.append(age_group)
+        
+        return self.create_distribution(age_groups)
+
+    def analyze_gender(self, regulars_list):
+        """性別分析"""
+        genders = []
+        for relation in regulars_list:
+            if relation.user.gender:
+                genders.append(relation.user.gender)
+        
+        return self.create_distribution(genders)
+
+    def analyze_occupation(self, regulars_list):
+        """職業分析"""
+        occupations = []
+        for relation in regulars_list:
+            if relation.user.occupation:
+                occupations.append(relation.user.occupation)
+        
+        return self.create_distribution(occupations)
+
+    def analyze_industry(self, regulars_list):
+        """業種分析"""
+        industries = []
+        for relation in regulars_list:
+            if relation.user.industry:
+                industries.append(relation.user.industry)
+        
+        return self.create_distribution(industries)
+
+    def analyze_mbti(self, regulars_list):
+        """MBTI分析"""
+        mbtis = []
+        for relation in regulars_list:
+            if relation.user.mbti:
+                mbtis.append(relation.user.mbti)
+        
+        return self.create_distribution(mbtis)
+
+    def analyze_primary_area(self, regulars_list):
+        """メインエリア分析"""
+        areas = []
+        for relation in regulars_list:
+            if relation.user.my_area:
+                areas.append(relation.user.my_area)
+        
+        return self.create_distribution(areas)
+
+    def analyze_interests(self, regulars_list):
+        """興味分析"""
+        interests_list = []
+        for relation in regulars_list:
+            user = relation.user
+            if hasattr(user, 'interests') and user.interests:
+                try:
+                    if isinstance(user.interests, str):
+                        interests = json.loads(user.interests)
+                    elif isinstance(user.interests, list):
+                        interests = user.interests
+                    else:
+                        continue
+                        
+                    for interest in interests:
+                        if interest and interest.strip():
+                            interests_list.append(interest.strip())
+                except (json.JSONDecodeError, TypeError):
+                    continue
+        
+        return self.create_distribution(interests_list)
+
+    def analyze_hobbies(self, regulars_list):
+        """趣味分析"""
+        hobbies_list = []
+        for relation in regulars_list:
+            user = relation.user
+            if hasattr(user, 'hobbies') and user.hobbies:
+                try:
+                    if isinstance(user.hobbies, str):
+                        hobbies = json.loads(user.hobbies)
+                    elif isinstance(user.hobbies, list):
+                        hobbies = user.hobbies
+                    else:
+                        continue
+                        
+                    for hobby in hobbies:
+                        if hobby and hobby.strip():
+                            hobbies_list.append(hobby.strip())
+                except (json.JSONDecodeError, TypeError):
+                    continue
+        
+        return self.create_distribution(hobbies_list)
+
+    def analyze_alcohols(self, regulars_list):
+        """好きなお酒分析"""
+        alcohols_list = []
+        for relation in regulars_list:
+            user = relation.user
+            if hasattr(user, 'favorite_alcohols') and user.favorite_alcohols:
+                try:
+                    if isinstance(user.favorite_alcohols, str):
+                        alcohols = json.loads(user.favorite_alcohols)
+                    elif isinstance(user.favorite_alcohols, list):
+                        alcohols = user.favorite_alcohols
+                    else:
+                        continue
+                        
+                    for alcohol in alcohols:
+                        if alcohol and alcohol.strip():
+                            alcohols_list.append(alcohol.strip())
+                except (json.JSONDecodeError, TypeError):
+                    continue
+        
+        return self.create_distribution(alcohols_list)
+
+    def analyze_visit_purposes(self, regulars_list):
+        """利用目的分析"""
+        purposes_list = []
+        for relation in regulars_list:
+            user = relation.user
+            if hasattr(user, 'visit_purposes') and user.visit_purposes:
+                try:
+                    if isinstance(user.visit_purposes, str):
+                        purposes = json.loads(user.visit_purposes)
+                    elif isinstance(user.visit_purposes, list):
+                        purposes = user.visit_purposes
+                    else:
+                        continue
+                        
+                    for purpose in purposes:
+                        if purpose and purpose.strip():
+                            purposes_list.append(purpose.strip())
+                except (json.JSONDecodeError, TypeError):
+                    continue
+        
+        return self.create_distribution(purposes_list)
+
+    def create_distribution(self, data_list):
+        """
+        データリストから分布情報を作成
+        """
+        if not data_list:
+            return []
+            
+        # カウントして分布を作成
+        counter = Counter(data_list)
+        total_count = len(data_list)
+        
+        distribution = []
+        for label, count in counter.most_common():
+            percentage = (count / total_count) * 100
+            distribution.append({
+                "label": label,
+                "count": count,
+                "percentage": round(percentage, 1)
+            })
+        
+        return distribution

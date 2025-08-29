@@ -27,14 +27,39 @@
   align-items: center;
 }
 
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
 .headerShopName {
-  justify-content: center;
   font-size: 2rem;
   font-weight: bold;
   color: white;
   line-height: 1.2;
   margin: 0;
+}
+
+.headerLocationInfo {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headerDistance {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.headerAddress {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
 }
 
 .actionButtons {
@@ -202,12 +227,9 @@
   font-size: 0.75rem;
 }
 
-.regularCustomer {
-  height: 6rem;
-  width: 30rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+.regularCustomerSection {
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 .tagSection {

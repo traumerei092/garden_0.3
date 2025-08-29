@@ -6,7 +6,7 @@ from .views import (
     ShopTagViewSet, ShopTagReactionViewSet, ShopImageViewSet,
     ShopUpdateAPIView, ShopEditHistoryListAPIView, HistoryEvaluationAPIView,
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet,
-    AreaViewSet
+    AreaViewSet, RegularsSnapshotAPIView, RegularsDetailedAnalysisAPIView
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -33,4 +33,8 @@ urlpatterns = [
     path('shops/<int:pk>/update/', ShopUpdateAPIView.as_view(), name='shop-update'),
     path('shops/<int:pk>/history/', ShopEditHistoryListAPIView.as_view(), name='shop-history-list'),
     path('history/<int:pk>/evaluate/', HistoryEvaluationAPIView.as_view(), name='history-evaluate'),
+    
+    # 常連客分析API
+    path('shops/<int:shop_id>/regulars/snapshot/', RegularsSnapshotAPIView.as_view(), name='regulars-snapshot'),
+    path('shops/<int:shop_id>/regulars/analysis/', RegularsDetailedAnalysisAPIView.as_view(), name='regulars-analysis'),
 ]

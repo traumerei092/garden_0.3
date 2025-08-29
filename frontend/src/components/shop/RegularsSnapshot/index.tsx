@@ -1,0 +1,188 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { User, MessageCircle, Gamepad2, TrendingUp } from 'lucide-react';
+import { Button } from '@nextui-org/react';
+import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import styles from './style.module.scss';
+
+interface RegularsCoreGroup {
+  age_group: string;
+  gender: string;
+}
+
+interface RegularsSnapshotData {
+  core_group: RegularsCoreGroup;
+  atmosphere_summary: string;
+  top_interests: string[];
+  total_regulars: number;
+}
+
+interface RegularsSnapshotProps {
+  shopId: number;
+  onViewDetails: () => void;
+  className?: string;
+}
+
+const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({ 
+  shopId, 
+  onViewDetails,
+  className = '' 
+}) => {
+  const [data, setData] = useState<RegularsSnapshotData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regulars/snapshot/`,
+          {
+            method: 'GET',
+            cache: 'no-store'
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const snapshotData = await response.json();
+        setData(snapshotData);
+      } catch (err) {
+        console.error('Failed to fetch regulars snapshot:', err);
+        setError('データの取得に失敗しました');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [shopId]);
+
+  if (loading) {
+    return (
+      <div className={`${styles.container} ${className}`}>
+        <div className={styles.loadingState}>
+          <div className={styles.shimmer}>
+            <div className={styles.shimmerTitle}></div>
+            <div className={styles.shimmerContent}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className={`${styles.container} ${className}`}>
+        <div className={styles.errorState}>
+          <p>📊 常連さんのデータがありません</p>
+          <span className={styles.errorSubtext}>
+            もう少し評価が集まると、傾向を分析できます
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // データ不足の場合の表示
+  if (data.total_regulars < 3) {
+    return (
+      <div className={`${styles.container} ${className}`}>
+        <div className={styles.insufficientData}>
+          <h3 className={styles.title}>
+            <TrendingUp className={styles.titleIcon} />
+            常連さんの傾向
+          </h3>
+          <p className={styles.insufficientMessage}>
+            もう少し「行きつけ」登録が増えると、<br />
+            常連さんの傾向を分析できます
+          </p>
+          <div className={styles.progressContainer}>
+            <div className={styles.progressBar}>
+              <div 
+                className={styles.progressFill} 
+                style={{ width: `${(data.total_regulars / 3) * 100}%` }}
+              ></div>
+            </div>
+            <span className={styles.progressText}>
+              {data.total_regulars}/3人の登録
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${styles.container} ${className}`}>
+      <div className={styles.header}>
+        <h3 className={styles.title}>
+          <TrendingUp className={styles.titleIcon} />
+          常連さんの傾向
+        </h3>
+        <span className={styles.regularsCount}>
+          {data.total_regulars}人のデータより
+        </span>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.insights}>
+          {/* 中心層 */}
+          <div className={styles.insightItem}>
+            <div className={styles.insightIcon}>
+              <User size={18} />
+            </div>
+            <div className={styles.insightContent}>
+              <span className={styles.insightLabel}>中心層</span>
+              <span className={styles.insightValue}>
+                {data.core_group.age_group}{data.core_group.gender}
+              </span>
+            </div>
+          </div>
+
+          {/* 好みの雰囲気 */}
+          <div className={styles.insightItem}>
+            <div className={styles.insightIcon}>
+              <MessageCircle size={18} />
+            </div>
+            <div className={styles.insightContent}>
+              <span className={styles.insightLabel}>好みの雰囲気</span>
+              <span className={styles.insightValue}>
+                {data.atmosphere_summary}
+              </span>
+            </div>
+          </div>
+
+          {/* 主な興味 */}
+          <div className={styles.insightItem}>
+            <div className={styles.insightIcon}>
+              <Gamepad2 size={18} />
+            </div>
+            <div className={styles.insightContent}>
+              <span className={styles.insightLabel}>主な興味</span>
+              <span className={styles.insightValue}>
+                {data.top_interests.join(' • ')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.actionArea}>
+          <Button
+            size="sm"
+            className={styles.detailsButton}
+            onPress={onViewDetails}
+          >
+            詳しく見る
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegularsSnapshot;
