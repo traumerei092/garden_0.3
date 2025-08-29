@@ -1,0 +1,160 @@
+.autocomplete {
+  min-width: 140px;
+  font-size: 11px;
+  color: white;
+  border: none;
+  
+  // グローバルスタイルで強制的に背景を透明にする
+  :global(.nextui-input-wrapper),
+  :global([data-slot="input-wrapper"]),
+  :global([data-slot="inner-wrapper"]),
+  :global([data-slot="input"]) {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  // Input field styling
+  input {
+    color: white !important;
+    font-size: 11px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  // Remove focus outline
+  &:focus-within {
+    outline: none;
+  }
+}
+
+.autocompleteInput {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: white !important;
+  font-size: 11px !important;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+.autocompleteInputWrapper {
+  --nextui-default-50: transparent !important;
+  --nextui-default-100: transparent !important;
+  --nextui-default-200: transparent !important;
+  --nextui-background: transparent !important;
+  
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  min-height: 28px !important;
+  max-width: 250px;
+  
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+  
+  &:focus-within {
+    border-color: rgba(0, 255, 255, 0.6) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1) !important;
+  }
+  
+  // 全ての子要素の背景を強制的に透明にする
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  // NextUI specific classes with :global
+  :global([data-slot="input-wrapper"]),
+  :global([data-slot="inner-wrapper"]),
+  :global([data-slot="input"]),
+  :global(.nextui-input-wrapper),
+  :global(.nextui-input),
+  :global(.nextui-input-content),
+  :global(.nextui-input-field) {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  input {
+    color: white !important;
+    font-size: 11px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+  }
+}
+
+.autocompletePopoverContent {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px !important;
+}
+
+.autocompleteListboxWrapper {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0, 255, 255, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.autocompleteEndContentWrapper {
+  color: white !important;
+  
+  // 下矢印ボタンのスタイル
+  button {
+    color: white !important;
+    
+    svg {
+      color: white !important;
+    }
+  }
+  
+  // セレクタボタン全体
+  [data-slot="selector-button"],
+  [data-slot="clear-button"] {
+    color: white !important;
+    
+    svg {
+      color: white !important;
+    }
+  }
+}
+
+.autocompleteItem {
+  font-size: 10px !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s ease !important;
+  border-radius: 6px !important;
+  margin: 2px !important;
+
+  &:hover {
+    background-color: rgba(0, 255, 255, 0.12) !important;
+    color: rgba(0, 255, 255, 1) !important;
+  }
+  
+  &[data-selected="true"] {
+    background-color: rgba(0, 255, 255, 0.2) !important;
+    color: rgba(0, 255, 255, 1) !important;
+  }
+  
+  &:focus {
+    background-color: rgba(0, 255, 255, 0.15) !important;
+    outline: none !important;
+  }
+}

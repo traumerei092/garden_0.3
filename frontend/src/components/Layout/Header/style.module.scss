@@ -52,11 +52,24 @@
   width: 3rem;
   cursor: pointer;
   border-radius: 50%;
-  border: 1px solid rgba(0, 198, 255, 0.5);
+}
+
+.avatarImage {
+  width: 2.7rem;
+  height: 2.7rem;
 }
 
 .avatarPlaceholder {
+  width: 2.7rem;
+  height: 2.7rem;
   border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 198, 255, 0.3), rgba(235, 14, 242, 0.3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
 .dropdownMenu {

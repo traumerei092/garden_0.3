@@ -66,39 +66,7 @@
   gap: 0.5rem;
 }
 
-.autocomplete {
-  min-width: 200px;
-  font-size: 10px;
-  color: white;
-  border: none;
-}
-
-.autocompleteInputWrapper {
-  background: rgba(10,11,28,1);
-  border: none;
-  padding: 4px 8px;
-  font-size: 10px;
-}
-
-.autocompletePopoverContent {
-  background: transparent;
-  border: none;
-}
-
-.autocompleteListboxWrapper {
-  background-color: rgba(53, 131, 200, 0.1);
-  border-radius: 10px;
-}
-
-.autocompleteItem {
-  font-size: 10px;
-  color: white;
-
-  &:hover {
-    background-color: rgba(0, 255, 255, 0.15);
-    color: rgba(0, 255, 255, 1);
-  }
-}
+// Autocomplete関連のスタイルはStyledAutocompleteコンポーネントに移動しました
 
 .tooltip {
   background-color: rgba(53, 131, 200, 0.5);
