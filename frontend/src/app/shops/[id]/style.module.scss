@@ -31,7 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .headerShopName {
@@ -44,8 +44,9 @@
 
 .headerLocationInfo {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 30px;
+  font-weight: 150;
 }
 
 .headerDistance {
@@ -57,7 +58,7 @@
 }
 
 .headerAddress {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.3;
 }
@@ -185,7 +186,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   gap: 20px;
 }
 

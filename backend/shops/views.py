@@ -1426,24 +1426,28 @@ class RegularsAnalysisAPIView(generics.GenericAPIView):
         """
         from accounts.models import UserAtmospherePreference
         
+        print(f"DEBUG: get_atmosphere_summary called with {len(regulars)} regulars")
+        
         # 常連客の雰囲気好みを集計
         atmosphere_data = []
         for relation in regulars:
             try:
-                prefs = UserAtmospherePreference.objects.filter(user=relation.user)
+                prefs = UserAtmospherePreference.objects.filter(user_profile=relation.user)
+                print(f"DEBUG: User {relation.user.name} has {prefs.count()} atmosphere prefs")
                 for pref in prefs:
                     atmosphere_data.append({
-                        'indicator_id': pref.atmosphere_indicator_id,
+                        'indicator_id': pref.indicator.id,
                         'score': pref.score,
-                        'indicator_name': pref.atmosphere_indicator.name if pref.atmosphere_indicator else None,
-                        'description_left': pref.atmosphere_indicator.description_left if pref.atmosphere_indicator else None,
-                        'description_right': pref.atmosphere_indicator.description_right if pref.atmosphere_indicator else None,
+                        'indicator_name': pref.indicator.name,
+                        'description_left': pref.indicator.description_left,
+                        'description_right': pref.indicator.description_right,
                     })
-            except:
+            except Exception as e:
+                print(f"DEBUG: Error processing user {relation.user.name}: {e}")
                 continue
 
         if not atmosphere_data:
-            return "アットホームな雰囲気を好む傾向があります。"
+            return "空気や雰囲気に合わせて、フラットに楽しまれる方が多いようです。"
 
         # 指標別に平均スコアを計算
         indicator_scores = {}
@@ -1463,19 +1467,43 @@ class RegularsAnalysisAPIView(generics.GenericAPIView):
             scores = indicator_scores[indicator_id]['scores']
             indicator_scores[indicator_id]['average'] = sum(scores) / len(scores)
 
-        # 最も低いスコア（左側の傾向）と最も高いスコア（右側の傾向）を取得
-        sorted_indicators = sorted(indicator_scores.items(), key=lambda x: x[1]['average'])
+        if not indicator_scores:
+            return "空気や雰囲気に合わせて、フラットに楽しまれる方が多いようです。"
+
+        # 平均スコアが最も高い指標（最もプラス側）と最も低い指標（最もマイナス側）を特定
+        sorted_by_score = sorted(indicator_scores.items(), key=lambda x: x[1]['average'])
+        lowest_indicator = sorted_by_score[0][1]  # 最もマイナス側
+        highest_indicator = sorted_by_score[-1][1]  # 最もプラス側
         
-        if len(sorted_indicators) >= 2:
-            lowest = sorted_indicators[0][1]
-            highest = sorted_indicators[-1][1]
-            
-            left_desc = lowest['description_left'] or "落ち着いた"
-            right_desc = highest['description_right'] or "活気のある"
-            
-            return f"{left_desc}スタイルで、{right_desc}空間を好む傾向があります。"
+        lowest_avg = lowest_indicator['average']
+        highest_avg = highest_indicator['average']
         
-        return "バランスの取れた雰囲気を好む傾向があります。"
+        # デバッグログ（プロダクションでは削除）
+        print(f"DEBUG: Shop ID {regulars[0].shop.id if regulars else 'N/A'}")
+        print(f"DEBUG: Indicators count: {len(indicator_scores)}")
+        print(f"DEBUG: Highest avg: {highest_avg:.2f} ({highest_indicator.get('name', 'N/A')})")
+        print(f"DEBUG: Lowest avg: {lowest_avg:.2f} ({lowest_indicator.get('name', 'N/A')})")
+        
+        # 閾値1.0を基準に4つのケースに分岐
+        if highest_avg >= 1.0 and lowest_avg <= -1.0:
+            # Case A: プラス側とマイナス側の両方の傾向が強い場合
+            plus_desc = highest_indicator['description_right'] or "積極的な雰囲気"
+            minus_desc = lowest_indicator['description_left'] or "落ち着いた雰囲気"
+            return f"{plus_desc}一方で、{minus_desc}ことを重視する、メリハリを求める方が多いようです。"
+            
+        elif highest_avg >= 1.0 and lowest_avg > -1.0:
+            # Case B: プラス側の傾向のみが強い場合
+            plus_desc = highest_indicator['description_right'] or "積極的な雰囲気"
+            return f"{plus_desc}ことを特に好む傾向があります。"
+            
+        elif highest_avg < 1.0 and lowest_avg <= -1.0:
+            # Case C: マイナス側の傾向のみが強い場合
+            minus_desc = lowest_indicator['description_left'] or "落ち着いた雰囲気"
+            return f"{minus_desc}ことを重視する、落ち着いた環境を求める方が多いようです。"
+            
+        else:
+            # Case D: 強い傾向がない場合
+            return "空気や雰囲気に合わせて、フラットに楽しみ方をする方が多いようです。"
 
     def get_top_interests(self, regulars, top_n=3):
         """

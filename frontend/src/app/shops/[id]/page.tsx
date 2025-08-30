@@ -293,7 +293,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
               </div>
             )}
             <div className={styles.headerAddress}>
-              {shop.prefecture} {shop.city} {shop.area && `${shop.area}`}
+              {shop.area || `${shop.prefecture} ${shop.city}`}
             </div>
           </div>
         </div>

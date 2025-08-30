@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, MessageCircle, Gamepad2, TrendingUp } from 'lucide-react';
-import { Button } from '@nextui-org/react';
+import { User, DoorOpen, Gamepad2, TrendingUp } from 'lucide-react';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
 
 interface RegularsCoreGroup {
@@ -121,12 +121,16 @@ const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({
     <div className={`${styles.container} ${className}`}>
       <div className={styles.header}>
         <h3 className={styles.title}>
-          <TrendingUp className={styles.titleIcon} />
+          <TrendingUp className={styles.titleIcon} strokeWidth={1} />
           常連さんの傾向
         </h3>
-        <span className={styles.regularsCount}>
-          {data.total_regulars}人のデータより
-        </span>
+        <ButtonGradientWrapper
+          type='button'
+          anotherStyle={styles.detailsButton}
+          onClick={onViewDetails}
+        >
+          詳しく見る
+        </ButtonGradientWrapper>
       </div>
 
       <div className={styles.content}>
@@ -134,36 +138,22 @@ const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({
           {/* 中心層 */}
           <div className={styles.insightItem}>
             <div className={styles.insightIcon}>
-              <User size={18} />
+              <User size={14} strokeWidth={1}/>
             </div>
             <div className={styles.insightContent}>
-              <span className={styles.insightLabel}>中心層</span>
               <span className={styles.insightValue}>
-                {data.core_group.age_group}{data.core_group.gender}
+                {data.core_group.age_group}の{data.core_group.gender}
               </span>
-            </div>
-          </div>
-
-          {/* 好みの雰囲気 */}
-          <div className={styles.insightItem}>
-            <div className={styles.insightIcon}>
-              <MessageCircle size={18} />
-            </div>
-            <div className={styles.insightContent}>
-              <span className={styles.insightLabel}>好みの雰囲気</span>
-              <span className={styles.insightValue}>
-                {data.atmosphere_summary}
-              </span>
+              <span className={styles.insightValue}>が多い</span>
             </div>
           </div>
 
           {/* 主な興味 */}
           <div className={styles.insightItem}>
             <div className={styles.insightIcon}>
-              <Gamepad2 size={18} />
+              <Gamepad2 size={14} strokeWidth={1} />
             </div>
             <div className={styles.insightContent}>
-              <span className={styles.insightLabel}>主な興味</span>
               <span className={styles.insightValue}>
                 {data.top_interests.join(' • ')}
               </span>
@@ -171,14 +161,18 @@ const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({
           </div>
         </div>
 
-        <div className={styles.actionArea}>
-          <Button
-            size="sm"
-            className={styles.detailsButton}
-            onPress={onViewDetails}
-          >
-            詳しく見る
-          </Button>
+        {/* 好みの雰囲気（1列表示） */}
+        <div className={styles.atmosphereItem}>
+          <div className={styles.insightIcon}>
+            <DoorOpen size={14} strokeWidth={1} />
+          </div>
+          <div className={styles.atmosphereContent}>
+            <div className={styles.atmosphereValueContainer}>
+              <span className={styles.atmosphereValue}>
+                {data.atmosphere_summary}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

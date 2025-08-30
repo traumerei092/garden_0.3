@@ -148,12 +148,13 @@ class ShopSerializer(serializers.ModelSerializer):
     payment_methods = PaymentMethodSerializer(many=True, read_only=True)
     created_by = serializers.PrimaryKeyRelatedField(read_only=True)
     tags = serializers.SerializerMethodField()
+    area = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Shop
         fields = [
             'id', 'name', 'zip_code', 'address', 'prefecture', 'city',
-            'street', 'building', 'capacity', 'shop_types',
+            'street', 'building', 'area', 'capacity', 'shop_types',
             'shop_layouts', 'shop_options', 'business_hours',
             'images', 'created_by', 'latitude', 'longitude', 'tags',
             'phone_number', 'access', 'payment_methods',
