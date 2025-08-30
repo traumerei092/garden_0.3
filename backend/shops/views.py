@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status, generics
+from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -1420,90 +1421,16 @@ class RegularsAnalysisAPIView(generics.GenericAPIView):
         else:
             return "60代以上"
 
-    def get_atmosphere_summary(self, regulars):
+    def get_welcome_count(self, shop_id):
         """
-        常連客の雰囲気好みを要約
+        店舗のウェルカム数を取得（常連客分析とは独立）
         """
-        from accounts.models import UserAtmospherePreference
+        from .models import WelcomeAction
         
-        print(f"DEBUG: get_atmosphere_summary called with {len(regulars)} regulars")
+        # 全てのウェルカムアクション数を取得（常連客に限定しない）
+        welcome_count = WelcomeAction.objects.filter(shop_id=shop_id).count()
         
-        # 常連客の雰囲気好みを集計
-        atmosphere_data = []
-        for relation in regulars:
-            try:
-                prefs = UserAtmospherePreference.objects.filter(user_profile=relation.user)
-                print(f"DEBUG: User {relation.user.name} has {prefs.count()} atmosphere prefs")
-                for pref in prefs:
-                    atmosphere_data.append({
-                        'indicator_id': pref.indicator.id,
-                        'score': pref.score,
-                        'indicator_name': pref.indicator.name,
-                        'description_left': pref.indicator.description_left,
-                        'description_right': pref.indicator.description_right,
-                    })
-            except Exception as e:
-                print(f"DEBUG: Error processing user {relation.user.name}: {e}")
-                continue
-
-        if not atmosphere_data:
-            return "空気や雰囲気に合わせて、フラットに楽しまれる方が多いようです。"
-
-        # 指標別に平均スコアを計算
-        indicator_scores = {}
-        for data in atmosphere_data:
-            indicator_id = data['indicator_id']
-            if indicator_id not in indicator_scores:
-                indicator_scores[indicator_id] = {
-                    'scores': [],
-                    'name': data['indicator_name'],
-                    'description_left': data['description_left'],
-                    'description_right': data['description_right']
-                }
-            indicator_scores[indicator_id]['scores'].append(data['score'])
-
-        # 各指標の平均を計算
-        for indicator_id in indicator_scores:
-            scores = indicator_scores[indicator_id]['scores']
-            indicator_scores[indicator_id]['average'] = sum(scores) / len(scores)
-
-        if not indicator_scores:
-            return "空気や雰囲気に合わせて、フラットに楽しまれる方が多いようです。"
-
-        # 平均スコアが最も高い指標（最もプラス側）と最も低い指標（最もマイナス側）を特定
-        sorted_by_score = sorted(indicator_scores.items(), key=lambda x: x[1]['average'])
-        lowest_indicator = sorted_by_score[0][1]  # 最もマイナス側
-        highest_indicator = sorted_by_score[-1][1]  # 最もプラス側
-        
-        lowest_avg = lowest_indicator['average']
-        highest_avg = highest_indicator['average']
-        
-        # デバッグログ（プロダクションでは削除）
-        print(f"DEBUG: Shop ID {regulars[0].shop.id if regulars else 'N/A'}")
-        print(f"DEBUG: Indicators count: {len(indicator_scores)}")
-        print(f"DEBUG: Highest avg: {highest_avg:.2f} ({highest_indicator.get('name', 'N/A')})")
-        print(f"DEBUG: Lowest avg: {lowest_avg:.2f} ({lowest_indicator.get('name', 'N/A')})")
-        
-        # 閾値1.0を基準に4つのケースに分岐
-        if highest_avg >= 1.0 and lowest_avg <= -1.0:
-            # Case A: プラス側とマイナス側の両方の傾向が強い場合
-            plus_desc = highest_indicator['description_right'] or "積極的な雰囲気"
-            minus_desc = lowest_indicator['description_left'] or "落ち着いた雰囲気"
-            return f"{plus_desc}一方で、{minus_desc}ことを重視する、メリハリを求める方が多いようです。"
-            
-        elif highest_avg >= 1.0 and lowest_avg > -1.0:
-            # Case B: プラス側の傾向のみが強い場合
-            plus_desc = highest_indicator['description_right'] or "積極的な雰囲気"
-            return f"{plus_desc}ことを特に好む傾向があります。"
-            
-        elif highest_avg < 1.0 and lowest_avg <= -1.0:
-            # Case C: マイナス側の傾向のみが強い場合
-            minus_desc = lowest_indicator['description_left'] or "落ち着いた雰囲気"
-            return f"{minus_desc}ことを重視する、落ち着いた環境を求める方が多いようです。"
-            
-        else:
-            # Case D: 強い傾向がない場合
-            return "空気や雰囲気に合わせて、フラットに楽しみ方をする方が多いようです。"
+        return welcome_count
 
     def get_top_interests(self, regulars, top_n=3):
         """
@@ -1553,7 +1480,6 @@ class RegularsSnapshotAPIView(RegularsAnalysisAPIView):
         if total_regulars == 0:
             return Response({
                 "core_group": {"age_group": "データなし", "gender": "データなし"},
-                "atmosphere_summary": "十分なデータがありません。",
                 "top_interests": [],
                 "total_regulars": 0
             })
@@ -1579,10 +1505,7 @@ class RegularsSnapshotAPIView(RegularsAnalysisAPIView):
         most_common_age = Counter(age_groups).most_common(1)[0][0] if age_groups else "データ不足"
         most_common_gender = Counter(genders).most_common(1)[0][0] if genders else "データ不足"
 
-        # 2. 雰囲気の要約
-        atmosphere_summary = self.get_atmosphere_summary(regulars_list)
-
-        # 3. 興味のTop3
+        # 2. 興味のTop3
         top_interests = self.get_top_interests(regulars_list, 3)
 
         return Response({
@@ -1590,7 +1513,6 @@ class RegularsSnapshotAPIView(RegularsAnalysisAPIView):
                 "age_group": most_common_age,
                 "gender": most_common_gender
             },
-            "atmosphere_summary": atmosphere_summary,
             "top_interests": top_interests,
             "total_regulars": total_regulars
         })
@@ -1824,3 +1746,105 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
             })
         
         return distribution
+
+
+##############################################
+# ウェルカム機能API
+##############################################
+
+class ShopWelcomeAPIView(APIView):
+    """
+    店舗のウェルカム機能 - ウェルカム数取得とウェルカムボタン
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, shop_id):
+        """
+        ウェルカム数を取得
+        """
+        try:
+            shop = Shop.objects.get(id=shop_id)
+        except Shop.DoesNotExist:
+            return Response({
+                "detail": "店舗が見つかりません"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        from .models import WelcomeAction, UserShopRelation
+        
+        # ウェルカム数を取得
+        welcome_count = WelcomeAction.objects.filter(shop_id=shop_id).count()
+        
+        # 現在のユーザーが既にウェルカムしているかチェック
+        user_welcomed = WelcomeAction.objects.filter(
+            shop_id=shop_id,
+            user=request.user
+        ).exists()
+        
+        # 現在のユーザーがこの店舗の常連（favorite=1）かチェック
+        is_regular = UserShopRelation.objects.filter(
+            user=request.user,
+            shop_id=shop_id,
+            relation_type_id=1  # favorite
+        ).exists()
+
+        return Response({
+            "welcome_count": welcome_count,
+            "user_welcomed": user_welcomed,
+            "is_regular": is_regular,
+            "show_welcome_button": is_regular  # 常連なら常に表示
+        })
+
+    def post(self, request, shop_id):
+        """
+        ウェルカムボタンを押す（常連のみ）
+        """
+        try:
+            shop = Shop.objects.get(id=shop_id)
+        except Shop.DoesNotExist:
+            return Response({
+                "detail": "店舗が見つかりません"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        from .models import WelcomeAction, UserShopRelation
+        
+        # 常連（favorite=1）かチェック
+        is_regular = UserShopRelation.objects.filter(
+            user=request.user,
+            shop_id=shop_id,
+            relation_type_id=1  # favorite
+        ).exists()
+        
+        if not is_regular:
+            return Response({
+                "detail": "この機能は常連のお客様のみご利用いただけます"
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # ウェルカム状態をトグル
+        welcome_action = WelcomeAction.objects.filter(
+            user=request.user,
+            shop=shop
+        ).first()
+        
+        if welcome_action:
+            # 既存のウェルカムを削除（トグルオフ）
+            welcome_action.delete()
+            user_welcomed = False
+            message = "ウェルカムを取り消しました"
+        else:
+            # 新しいウェルカムを作成（トグルオン）
+            WelcomeAction.objects.create(
+                user=request.user,
+                shop=shop
+            )
+            user_welcomed = True
+            message = "ウェルカムしました！"
+        
+        # 更新されたウェルカム数を返す
+        welcome_count = WelcomeAction.objects.filter(shop_id=shop_id).count()
+        
+        return Response({
+            "welcome_count": welcome_count,
+            "user_welcomed": user_welcomed,
+            "message": message,
+            "show_welcome_button": True  # 常連は常にボタンを表示
+        })

@@ -9,7 +9,7 @@ from .models import (
     BusinessHour, ShopImage, ShopTag, ShopTagReaction,
     UserShopRelation, RelationType, PaymentMethod,
     AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
-    ShopDrink, ShopDrinkReaction, Area
+    ShopDrink, ShopDrinkReaction, Area, WelcomeAction
 )
 
 # AreaモデルのカスタムフォームでGeoJSON編集機能を追加
@@ -332,6 +332,19 @@ class ShopAdmin(admin.ModelAdmin):
         return '---'
     area_display.short_description = 'エリア'
     area_display.admin_order_field = 'area'
+
+# ウェルカムアクションの管理画面設定
+@admin.register(WelcomeAction)
+class WelcomeActionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'shop', 'created_at')
+    list_filter = ('created_at', 'shop')
+    search_fields = ('user__name', 'user__email', 'shop__name')
+    readonly_fields = ('created_at',)
+    autocomplete_fields = ('user', 'shop')
+    date_hierarchy = 'created_at'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'shop')
 
 # Register your models here.
 admin.site.register(ShopType)

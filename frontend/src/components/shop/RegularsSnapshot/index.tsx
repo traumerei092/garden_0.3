@@ -155,25 +155,15 @@ const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({
             </div>
             <div className={styles.insightContent}>
               <span className={styles.insightValue}>
-                {data.top_interests.join(' • ')}
+                {data.top_interests.length > 0 
+                  ? data.top_interests.join(' • ') 
+                  : 'データ不足'
+                }
               </span>
             </div>
           </div>
         </div>
-
-        {/* 好みの雰囲気（1列表示） */}
-        <div className={styles.atmosphereItem}>
-          <div className={styles.insightIcon}>
-            <DoorOpen size={14} strokeWidth={1} />
-          </div>
-          <div className={styles.atmosphereContent}>
-            <div className={styles.atmosphereValueContainer}>
-              <span className={styles.atmosphereValue}>
-                {data.atmosphere_summary}
-              </span>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

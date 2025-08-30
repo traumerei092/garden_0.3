@@ -20,6 +20,7 @@ import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
 import ShopReviews from '@/components/Shop/ShopReviews';
 import RegularsSnapshot from '@/components/Shop/RegularsSnapshot';
 import RegularsAnalysisModal from '@/components/Shop/RegularsAnalysisModal';
+import WelcomeSection from '@/components/Shop/WelcomeSection';
 import ShopDrinks from '@/components/Shop/ShopDrinks';
 import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
@@ -46,6 +47,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [showRegularsModal, setShowRegularsModal] = useState(false);
   const [relationStats, setRelationStats] = useState<ShopStats | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [welcomeRefreshTrigger, setWelcomeRefreshTrigger] = useState(0);
   const { user } = useAuthStore();
   const isLoggedIn = !!user;
 
@@ -106,6 +108,11 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       try {
         const newStats = await fetchShopStats(params.id);
         setRelationStats(newStats);
+        
+        // favorite関係性（id=3）が変更された場合、ウェルカムセクションを更新
+        if (relationTypeId === 3) {
+          setWelcomeRefreshTrigger(prev => prev + 1);
+        }
       } catch (statsErr) {
         console.error('統計データの更新に失敗:', statsErr);
       }
@@ -359,6 +366,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         </div>
 
         <div className={styles.shopInfoContainer}>
+          {/* ウェルカムセクション - 常連さんの傾向の上に配置 */}
+          <WelcomeSection 
+            shopId={parseInt(params.id)}
+            refreshTrigger={welcomeRefreshTrigger}
+          />
+          
           <div className={styles.shopNameAndMatch}>
             <div className={styles.regularCustomerSection}>
               <RegularsSnapshot 

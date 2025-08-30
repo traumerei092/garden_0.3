@@ -635,3 +635,23 @@ class ShopAtmosphereAggregate(models.Model):
             self.atmosphere_averages = {}
         
         self.save()
+
+
+##############################################
+# ウェルカム機能
+##############################################
+class WelcomeAction(models.Model):
+    """常連客の「歓迎する」という意思表示を記録するモデル"""
+    user = models.ForeignKey('accounts.UserAccount', on_delete=models.CASCADE, related_name='welcomed_actions')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='welcome_actions')
+    created_at = models.DateTimeField("歓迎日", auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'shop')  # 1ユーザー1店舗につき1回のアクション
+        verbose_name = "歓迎アクション"
+        verbose_name_plural = "歓迎アクション"
+
+    def __str__(self):
+        return f"{self.user.name} welcomes {self.shop.name}"
+
+
