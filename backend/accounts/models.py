@@ -388,3 +388,23 @@ def create_profile_visibility_settings(sender, instance, created, **kwargs):
     """
     if created:
         ProfileVisibilitySettings.objects.create(user=instance)
+
+
+# --- Dashboard Models ---
+
+class ShopViewHistory(models.Model):
+    """
+    ユーザーの店舗閲覧履歴を記録
+    """
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='view_history')
+    shop = models.ForeignKey('shops.Shop', on_delete=models.CASCADE, related_name='view_history')
+    viewed_at = models.DateTimeField("閲覧日時", auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "店舗閲覧履歴"
+        verbose_name_plural = "店舗閲覧履歴"
+        ordering = ['-viewed_at']
+        unique_together = ['user', 'shop', 'viewed_at']  # 同じ時刻の重複を防ぐ
+    
+    def __str__(self):
+        return f"{self.user.name} - {self.shop.name} ({self.viewed_at})"

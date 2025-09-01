@@ -21,6 +21,14 @@ from .views import (
     PreviewUserProfileView,
     MyAreasManagementView,
 )
+from .dashboard_views import (
+    DashboardSummaryView,
+    ViewHistoryView,
+    ReviewHistoryView,
+    RecentActivityView,
+    AtmosphereFeedbackHistoryView,
+    TagReactionHistoryView,
+)
 
 router = DefaultRouter()
 
@@ -66,6 +74,15 @@ urlpatterns = [
     path("profile-preview/", PreviewUserProfileView.as_view(), name="profile-preview"),
     # マイエリア管理
     path("my-areas/", MyAreasManagementView.as_view(), name="my-areas-management"),
+    
+    # ダッシュボード関連
+    path("profile/dashboard/summary/", DashboardSummaryView.as_view(), name="dashboard-summary"),
+    path("profile/dashboard/view-history/", ViewHistoryView.as_view(), name="dashboard-view-history"),
+    path("profile/dashboard/review-history/", ReviewHistoryView.as_view(), name="dashboard-review-history"),
+    path("profile/dashboard/recent-activity/", RecentActivityView.as_view(), name="dashboard-recent-activity"),
+    path("profile/dashboard/atmosphere-feedback-history/", AtmosphereFeedbackHistoryView.as_view(), name="dashboard-atmosphere-feedback-history"),
+    path("profile/dashboard/tag-reaction-history/", TagReactionHistoryView.as_view(), name="dashboard-tag-reaction-history"),
+    
     # ViewSet のルーティング
     path("", include(router.urls)),
 ]

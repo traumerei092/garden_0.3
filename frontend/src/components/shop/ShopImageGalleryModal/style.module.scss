@@ -1,0 +1,315 @@
+.modal {
+  .modalContent {
+    background: rgba(13, 15, 23, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    max-height: 85vh;
+  }
+}
+
+.header {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 24px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.uploadButton {
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  color: rgba(0, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  gap: 6px;
+  padding: 8px 16px;
+  height: auto;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.3);
+    color: rgba(0, 255, 255, 1);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+  }
+}
+
+.closeButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+  }
+}
+
+.body {
+  padding: 0;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(0, 255, 255, 0.5);
+    }
+  }
+}
+
+// 空の状態
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  
+  p {
+    margin: 16px 0 24px;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+}
+
+.emptyUploadButton {
+  border-color: rgba(0, 255, 255, 0.3);
+  color: rgba(0, 255, 255, 0.9);
+  font-weight: 500;
+  gap: 8px;
+  
+  &:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.5);
+    color: rgba(0, 255, 255, 1);
+  }
+}
+
+// Masonry Grid
+.masonryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 24px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    padding: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+}
+
+.gridItem {
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+  }
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gridImage {
+  transition: all 0.3s ease;
+  
+  .gridItem:hover & {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+}
+
+.imageCaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 20px 16px 12px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  
+  span {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Lightbox Modal
+.lightboxModal {
+  .lightboxContent {
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    border: none;
+    border-radius: 0;
+    max-width: none;
+    max-height: none;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+  }
+}
+
+.lightboxHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(rgba(0, 0, 0, 0.8), transparent);
+  z-index: 10;
+}
+
+.lightboxCounter {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lightboxCloseButton {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 40px;
+  height: 40px;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.lightboxImageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px 40px;
+}
+
+.lightboxImage {
+  border-radius: 8px;
+}
+
+.lightboxCaption {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+// モバイル対応
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 20px;
+  }
+  
+  .title {
+    font-size: 1.1rem;
+  }
+  
+  .headerActions {
+    gap: 8px;
+  }
+  
+  .uploadButton {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .lightboxHeader {
+    padding: 16px 20px;
+  }
+  
+  .lightboxImageContainer {
+    padding: 60px 20px 20px;
+  }
+  
+  .lightboxCaption {
+    bottom: 20px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    max-width: 90%;
+  }
+}

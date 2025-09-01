@@ -1,36 +1,253 @@
 .dashboardContainer {
   width: 100%;
   color: #fff;
+  contain: layout style;
+  overflow-x: hidden;
 }
 
-// 統計情報のグリッド
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+// サマリーリスト（縦並び）
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.summaryCard {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+}
+
+// 履歴セクション2列グリッド
+.historyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   margin-bottom: 32px;
   
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (max-width: 576px) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 }
 
-.statCard {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 20px;
+.favoriteCard {
+  background: linear-gradient(135deg, rgba(0, 194, 255, 0.1) 0%, rgba(255, 0, 229, 0.1) 100%);
+  border: 1px solid rgba(0, 194, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 194, 255, 0.1);
+}
+
+// アコーディオンセクション
+.accordionSection {
+  margin-top: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  contain: layout style;
+  overflow: hidden;
+}
+
+.accordionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.accordionTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accordionContent {
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
+.accordionIcon {
+  color: #00C2FF;
+}
+
+// 店舗リスト
+.shopList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shopItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.shopName {
+  font-size: 14px;
+  color: rgba(0, 255, 255, 1);
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.shopStatus {
+  display: flex;
+  align-items: center;
+}
+
+// 雰囲気比較
+.atmosphereComparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  contain: layout style;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparisonSection {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.comparisonTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+
+.preferenceBars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preferenceBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.indicatorLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.scoreBar {
+  flex-grow: 1;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  contain: layout style;
+}
+
+.scoreValue {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(90deg, #00C2FF 0%, #FF00E5 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  min-width: 30px;
+  max-width: 100%;
+  transition: width 0.3s ease;
+  box-sizing: border-box;
+  width: 0; /* デフォルト幅を明示的に設定 */
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
+.detailButton {
+  font-size: 12px;
+  padding: 4px 12px;
+  margin-left: auto;
+}
+
+.favoriteDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcomeInfo {
+  display: flex;
+  align-items: center;
+}
+
+.welcomeCount {
+  font-size: 14px;
+  color: #00ffff;
+  font-weight: 500;
+}
+
+.feedbackAlert {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.alertText {
+  font-size: 12px;
+  color: rgba(255, 193, 7, 0.9);
+}
+
+.atmosphereGap {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.gapLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .statIcon {
-  color: #00C2FF;
-  background: rgba(0, 194, 255, 0.1);
+  background: linear-gradient(135deg, rgba(0, 194, 255, 0.2) 0%, rgba(255, 0, 229, 0.2) 100%);
   padding: 12px;
   border-radius: 50%;
   display: flex;
@@ -68,6 +285,33 @@
   display: flex;
   align-items: center;
   margin-bottom: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 8px;
+}
+
+.toggleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00C2FF;
+  transition: transform 0.2s ease;
+  
+  &.rotated {
+    transform: rotate(180deg);
+  }
 }
 
 .sectionIcon {
@@ -98,10 +342,24 @@
 }
 
 // 履歴リスト
-.historyList {
+.historyList, .reviewList, .atmosphereList, .tagsList {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: all 0.3s ease;
+  
+  &.collapsed {
+    max-height: 250px;
+    overflow: hidden;
+  }
+}
+
+.moreIndicator {
+  text-align: center;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-style: italic;
 }
 
 .historyItem {
@@ -122,19 +380,13 @@
   font-size: 16px;
   font-weight: 500;
   margin: 0;
+  color: rgba(0, 255, 255, 1);
 }
 
 .historyTime {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
-}
-
-// 口コミリスト
-.reviewList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .reviewItem {
@@ -159,6 +411,7 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0;
+  color: rgba(0, 255, 255, 1);
 }
 
 .reviewTime {
@@ -174,9 +427,103 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.reviewRating {
-  color: #FFD700;
+.reviewPurpose {
+  margin-top: 8px;
+}
+
+// 雰囲気フィードバック履歴
+.atmosphereItem {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.atmosphereHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.atmosphereShop {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: rgba(0, 255, 255, 1);
+}
+
+.atmosphereTime {
   font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.atmosphereScores {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scoreChip {
+  background: rgba(0, 194, 255, 0.2);
+  border: 1px solid rgba(0, 194, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.scoreValue {
+  color: #00C2FF;
+  font-weight: 500;
+}
+
+.moreScores {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-style: italic;
+}
+
+// タグ履歴
+.tagItem {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.tagHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tagShop {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: rgba(0, 255, 255, 1);
+}
+
+.tagTime {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.tagContent {
+  display: flex;
+  align-items: center;
 }
 
 // アクティビティリスト
@@ -235,13 +582,50 @@
   margin: 0;
 }
 
+// エラーメッセージ
+.errorMessage {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: rgba(239, 68, 68, 0.9);
+  font-size: 14px;
+  margin: 20px 0;
+}
+
+// 空の状態
+.emptyState {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
 @media (max-width: 768px) {
-  .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
+  .summaryCard {
+    padding: 16px;
   }
   
-  .statCard {
-    padding: 16px;
+  .cardHeader {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .detailButton {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+  
+  .favoriteDetails, .visitedDetails {
+    padding-top: 12px;
   }
   
   .statValue {
@@ -251,19 +635,68 @@
   .historySection, .activitySection {
     padding: 16px;
   }
+  
+  .atmosphereScores {
+    gap: 6px;
+  }
+  
+  .scoreChip {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  
+  .accordionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .shopItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
 @media (max-width: 576px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-  
   .sectionHeader {
-    flex-wrap: wrap;
+    padding: 6px;
   }
   
-  .viewMoreButton {
-    margin-top: 8px;
-    margin-left: 48px;
+  .sectionTitle {
+    font-size: 16px;
+  }
+  
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .detailButton {
+    align-self: flex-end;
+    margin-top: 0;
+  }
+  
+  .favoriteDetails, .visitedDetails {
+    gap: 6px;
+  }
+  
+  .accordionTitle {
+    font-size: 12px;
+  }
+  
+  .atmosphereHeader, .tagHeader, .reviewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .atmosphereComparison {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .comparisonSection {
+    padding: 12px;
   }
 }

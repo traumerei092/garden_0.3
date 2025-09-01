@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Button, ScrollShadow, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
+import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
 import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
@@ -22,6 +21,8 @@ import RegularsSnapshot from '@/components/Shop/RegularsSnapshot';
 import RegularsAnalysisModal from '@/components/Shop/RegularsAnalysisModal';
 import WelcomeSection from '@/components/Shop/WelcomeSection';
 import ShopDrinks from '@/components/Shop/ShopDrinks';
+import ShopImageCarousel from '@/components/Shop/ShopImageCarousel';
+import ShopImageGalleryModal from '@/components/Shop/ShopImageGalleryModal';
 import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -38,12 +39,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showAddTagModal, setShowAddTagModal] = useState(false);
   const [showAtmosphereFeedbackModal, setShowAtmosphereFeedbackModal] = useState(false);
   const [atmosphereKey, setAtmosphereKey] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showShopImageModal, setShowShopImageModal] = useState(false);
+  const [showImageGalleryModal, setShowImageGalleryModal] = useState(false);
   const [showRegularsModal, setShowRegularsModal] = useState(false);
   const [relationStats, setRelationStats] = useState<ShopStats | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -320,49 +321,13 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
       <div className={styles.mainContent}>
         <div className={styles.shopImageContainer}>
-          <div className={styles.shopImageWrapper}>
-            <Image
-              src={shop?.images && Array.isArray(shop.images) && shop.images.length > 0
-                ? shop.images[activeImageIndex].image_url.startsWith('http')
-                  ? shop.images[activeImageIndex].image_url
-                  : `${process.env.NEXT_PUBLIC_API_URL}${shop.images[activeImageIndex].image_url}`
-                : typeof shop?.images === 'string'
-                  ? shop.images
-                  : '/assets/picture/no-image.jpg'}
-              alt={shop?.name || '店舗画像'}
-              className={styles.shopImage}
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              style={{ objectFit: 'cover' }}
-            />
-          </div>
-          <ScrollShadow orientation="horizontal" hideScrollBar className={styles.subImageWrapper}>
-            {shop?.images && Array.isArray(shop.images) && shop.images.length > 0 ? (
-              <>
-                {shop.images.map((image, index) => (
-                  <div
-                    key={image.id || index}
-                    className={`${styles.thumbnailImage} ${activeImageIndex === index ? styles.activeThumbnail : ''}`}
-                    onClick={() => setActiveImageIndex(index)}
-                  >
-                    <Image
-                      src={image.image_url.startsWith('http')
-                        ? image.image_url
-                        : `${process.env.NEXT_PUBLIC_API_URL}${image.image_url}`}
-                      alt={`${shop?.name}の画像 ${index + 1}`}
-                      fill
-                      sizes="100px"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                ))}
-              </>
-            ) : null}
-            <button className={styles.addImageButton} onClick={() => setShowShopImageModal(true)}>
-              <Plus size={24} strokeWidth={1} />
-            </button>
-          </ScrollShadow>
+          <ShopImageCarousel
+            images={shop?.images && Array.isArray(shop.images) ? shop.images : []}
+            shopName={shop?.name || ''}
+            onImageUpload={() => setShowShopImageModal(true)}
+            onViewAll={() => setShowImageGalleryModal(true)}
+            className={styles.imageCarousel}
+          />
         </div>
 
         <div className={styles.shopInfoContainer}>
@@ -408,7 +373,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
           <div className={styles.tagSection}>
             <div className={styles.sectionTitle}>
-              雰囲気・印象
+              印象
               <ButtonGradientWrapper
                 type='button'
                 anotherStyle={styles.addTagButton}
@@ -512,6 +477,22 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           onClose={() => setShowShopImageModal(false)}
           onSubmit={handleAddImage}
           shopId={params.id}
+      />
+
+      {/* 画像ギャラリーモーダル */}
+      <ShopImageGalleryModal
+        isOpen={showImageGalleryModal}
+        onClose={() => setShowImageGalleryModal(false)}
+        images={shop?.images && Array.isArray(shop.images) ? shop.images : []}
+        shopName={shop?.name || ''}
+        onImageUpload={() => {
+          setShowImageGalleryModal(false);
+          setShowShopImageModal(true);
+        }}
+        onImageClick={(_index) => {
+          setShowImageGalleryModal(false);
+          // 必要に応じてメインカルーセルの該当画像にスライド
+        }}
       />
       
       {/* ログインモーダル */}

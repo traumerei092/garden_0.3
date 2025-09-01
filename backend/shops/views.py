@@ -15,6 +15,7 @@ from .models import (
     ShopDrink, ShopDrinkReaction, Area,
     AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate
 )
+from accounts.dashboard_views import track_shop_view
 from .serializers import (
     ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
     ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
@@ -135,6 +136,11 @@ class ShopViewSet(viewsets.ModelViewSet):
             print("User is not authenticated")
             
         response = super().retrieve(request, *args, **kwargs)
+        
+        # 閲覧履歴を記録
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            shop = self.get_object()
+            track_shop_view(request.user, shop)
         
         # レスポンスデータのタグ情報をログに出力
         if 'tags' in response.data:

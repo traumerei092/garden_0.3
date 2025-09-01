@@ -8,7 +8,7 @@ import styles from "./style.module.scss";
 interface ShopImageModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit?: (file: File, caption: string) => void;
+    onSubmit?: (file: File, caption: string, isIcon?: boolean) => void;
     shopId?: string;
 }
 
@@ -17,6 +17,7 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
     const [caption, setCaption] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isIconSelected, setIsIconSelected] = useState(false);
 
     const handleSubmit = async () => {
         if (!file) return;
@@ -27,9 +28,10 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
         try {
             // 親コンポーネントからonSubmitが渡されている場合はそれを使用
             if (onSubmit) {
-                onSubmit(file, caption);
+                onSubmit(file, caption, isIconSelected);
                 setFile(null);
                 setCaption("");
+                setIsIconSelected(false);
                 onClose();
                 return;
             }
@@ -65,6 +67,7 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
             // 成功したらモーダルを閉じる
             setFile(null);
             setCaption("");
+            setIsIconSelected(false);
             onClose();
             
             // 必要に応じて画面をリロード
@@ -80,6 +83,7 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
     const handleClose = () => {
         setFile(null);
         setCaption("");
+        setIsIconSelected(false);
         onClose();
     };
 
@@ -101,8 +105,10 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
                             index={0}
                             onFileChange={(_, newFile) => setFile(newFile)}
                             onCaptionChange={(_, newCaption) => setCaption(newCaption)}
-                            hideIconSelect={true}
+                            hideIconSelect={false}
                             isRequired={false}
+                            isSelected={isIconSelected}
+                            onIconSelect={() => setIsIconSelected(!isIconSelected)}
                         />
                     </ModalBody>
                     <ModalFooter>

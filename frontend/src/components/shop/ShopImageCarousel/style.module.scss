@@ -1,0 +1,296 @@
+.carouselContainer {
+  width: 100%;
+  position: relative;
+}
+
+.mainCarousel {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    height: 280px;
+  }
+}
+
+.mainSwiper {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.shopImage {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+// ナビゲーションボタン
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(0, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+}
+
+.navButtonPrev {
+  left: 16px;
+}
+
+.navButtonNext {
+  right: 16px;
+}
+
+// 画像追加ボタン（控えめ）
+.uploadButton {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-color: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+  }
+}
+
+// 一覧表示ボタン
+.viewAllButton {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 8px 12px;
+  height: auto;
+  min-width: auto;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  
+  span {
+    line-height: 1;
+  }
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+}
+
+// インジケーター
+.indicators {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 4px 12px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.indicatorText {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+// サムネイルギャラリー
+.thumbsContainer {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.thumbsSwiper {
+  width: 100%;
+  height: 100px;
+  
+  .swiper-slide {
+    width: auto !important;
+  }
+}
+
+.thumbSlide {
+  width: 120px;
+  height: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.thumbWrapper {
+  position: relative;
+  width: 120px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  
+  &.active {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  
+  &:hover:not(.active) {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.thumbImage {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  .thumbWrapper.active & {
+    transform: scale(1.05);
+  }
+}
+
+// 追加ボタン（サムネイル末尾）
+.addThumbWrapper {
+  width: 120px;
+  height: 80px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.1);
+  }
+}
+
+// モバイル対応
+@media (max-width: 768px) {
+  .navButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .navButtonPrev {
+    left: 12px;
+  }
+  
+  .navButtonNext {
+    right: 12px;
+  }
+  
+  .uploadButton {
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .viewAllButton {
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+  
+  .indicators {
+    bottom: 12px;
+    left: 12px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+  }
+  
+  .thumbSlide {
+    width: 100px;
+    height: 66px;
+  }
+  
+  .thumbWrapper,
+  .addThumbWrapper {
+    width: 100px;
+    height: 66px;
+  }
+  
+  .thumbsSwiper {
+    height: 66px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainCarousel {
+    height: 240px;
+  }
+  
+  .thumbSlide {
+    width: 80px;
+    height: 56px;
+  }
+  
+  .thumbWrapper,
+  .addThumbWrapper {
+    width: 80px;
+    height: 56px;
+  }
+  
+  .thumbsSwiper {
+    height: 56px;
+  }
+}

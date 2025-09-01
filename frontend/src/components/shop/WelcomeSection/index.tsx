@@ -129,12 +129,12 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   const welcomeMessage = data.welcome_count === 1
     ? (
         <>
-          <span className={styles.highlightCount}>1人</span>の常連さんが初来店のお客様に「ウェルカム！」と言っています。
+          <span className={styles.highlightCount}>1人</span>の常連さんが、初来店のお客様に「ウェルカム！」と言っています。
         </>
       )
     : (
         <>
-          <span className={styles.highlightCount}>{data.welcome_count}人</span>の常連さんが初来店のお客様に「ウェルカム！」と言っています。
+          <span className={styles.highlightCount}>{data.welcome_count}人</span>の常連さんが、初来店のお客様に「ウェルカム！」と言っています。
         </>
       );
 
