@@ -16,7 +16,6 @@ export interface DashboardSummary {
 export interface FavoriteShopDetail {
   shop_id: number;
   shop_name: string;
-  welcome_count: number;
   is_welcomed_by_user: boolean;
   atmosphere_scores: Record<string, number>;
 }

@@ -182,11 +182,10 @@
   flex: 1;
 }
 
-.shopNameAndMatch {
+.snapshotAndMatch {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   gap: 20px;
 }
 
@@ -230,7 +229,6 @@
 
 .regularCustomerSection {
   width: 100%;
-  margin-bottom: 15px;
 }
 
 .tagSection {

@@ -62,9 +62,9 @@ class DashboardSummaryView(APIView):
         
         for relation in favorite_shops:
             shop = relation.shop
-            welcome_count = WelcomeAction.objects.filter(shop=shop).count()
-            total_welcome_count += welcome_count
             is_welcomed_by_user = shop.id in user_welcomed_shop_ids
+            if is_welcomed_by_user:
+                total_welcome_count += 1
             
             # 店舗の雰囲気集計データを取得
             try:
@@ -76,7 +76,6 @@ class DashboardSummaryView(APIView):
             favorite_shops_data.append({
                 'shop_id': shop.id,
                 'shop_name': shop.name,
-                'welcome_count': welcome_count,
                 'is_welcomed_by_user': is_welcomed_by_user,
                 'atmosphere_scores': shop_atmosphere
             })

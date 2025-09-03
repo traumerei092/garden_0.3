@@ -83,6 +83,185 @@
   color: #00C2FF;
 }
 
+// NextUI Accordion ダークテーマ - 最強のセレクタで強制的に適用
+.accordion {
+  margin-top: 16px;
+  background: transparent !important;
+  border-radius: 10px;
+  gap: 10px;
+
+  // 全ての子要素の白い背景を強制的に置き換え
+  * {
+    &[style*="background"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    &[style*="rgb(255, 255, 255)"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
+  
+  // span要素のテキスト色
+  span {
+    color: #fff !important;
+    
+    &:last-child {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+  }
+  
+  // svg要素（アイコン）
+  svg {
+    color: #00C2FF !important;
+  }
+}
+
+.accordionItem {
+  background: rgba(0, 0, 0, 0.3) !important;
+  
+  // ホバーエフェクト無効化
+  &:hover {
+    background: rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+// CSS Modules の pure selector エラーを回避するため、グローバルセレクタを削除
+// JavaScriptによる動的スタイル適用に依存
+
+// グローバルレベルでの強制適用を削除してエラーを回避
+
+// 新しい雰囲気比較
+.atmosphereComparisonNew {
+  padding: 16px 0;
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.comparisonColumn {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionHeading {
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  color: #fff;
+  text-align: center;
+}
+
+.atmosphereGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px;
+}
+
+.atmosphereItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.atmosphereLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.atmosphereIndicator {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+  
+  &.positive {
+    background: linear-gradient(135deg, #00C2FF 0%, #0080FF 100%);
+  }
+  
+  &.negative {
+    background: linear-gradient(135deg, #FF00E5 0%, #FF4080 100%);
+  }
+  
+  &.hasGap {
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+    border: 2px solid rgba(255, 193, 7, 0.8);
+  }
+}
+
+.gapWarning {
+  color: #ffc107;
+}
+
+.gapInsight {
+  background: rgba(0, 194, 255, 0.1);
+  border: 1px solid rgba(0, 194, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.insightText {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(0, 194, 255, 0.9);
+}
+
+// フィードバック統計
+.feedbackStats {
+  margin-bottom: 20px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00C2FF 0%, #00FF94 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progressText {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  text-align: center;
+}
+
+.feedbackButton {
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
 // 店舗リスト
 .shopList {
   display: flex;
@@ -117,6 +296,20 @@
 .shopStatus {
   display: flex;
   align-items: center;
+}
+
+.welcomedChip {
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #00ffff;
+  padding: 4px 8px;
+}
+
+.unWelcomedChip {
+  background: rgba(255, 0, 255, 0.1);
+  border: 1px solid rgba(255, 0, 255, 0.3);
+  color: #ff00e5;
+  padding: 4px 8px;
 }
 
 // 雰囲気比較
@@ -431,6 +624,13 @@
   margin-top: 8px;
 }
 
+.reviewChip {
+  background: rgba(0, 194, 255, 0.15);
+  border: 1px solid rgba(0, 194, 255, 0.4);
+  color: rgba(0, 194, 255, 0.6);
+  padding: 4px 8px;
+}
+
 // 雰囲気フィードバック履歴
 .atmosphereItem {
   background: rgba(255, 255, 255, 0.05);
@@ -524,6 +724,13 @@
 .tagContent {
   display: flex;
   align-items: center;
+}
+
+.tagChip {
+  background: rgba(0, 194, 255, 0.15);
+  border: 1px solid rgba(0, 194, 255, 0.4);
+  color: rgba(0, 194, 255, 0.6);
+  padding: 4px 8px;
 }
 
 // アクティビティリスト

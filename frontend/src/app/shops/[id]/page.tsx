@@ -337,7 +337,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
             refreshTrigger={welcomeRefreshTrigger}
           />
           
-          <div className={styles.shopNameAndMatch}>
+          <div className={styles.snapshotAndMatch}>
             <div className={styles.regularCustomerSection}>
               <RegularsSnapshot 
                 shopId={parseInt(params.id)} 

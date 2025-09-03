@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Link, Chip } from '@nextui-org/react';
+import { Link, Chip, Accordion, AccordionItem } from '@nextui-org/react';
 import { Crown, Star, Heart, Eye, MessageSquare, Clock, ChevronRight, ChevronDown, BarChart3, Tag, ChartBar, HeartHandshake, ClipboardList } from 'lucide-react';
 import { 
   fetchDashboardSummary, 
@@ -72,6 +72,60 @@ const Dashboard = () => {
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  // NextUI Accordionの白い背景を強制的に変更
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const accordionItems = document.querySelectorAll('[data-slot="base"]');
+      accordionItems.forEach(item => {
+        if (item instanceof HTMLElement) {
+          item.style.setProperty('background', 'rgba(255, 255, 255, 0.05)', 'important');
+          item.style.setProperty('background-color', 'rgba(255, 255, 255, 0.05)', 'important');
+          item.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.1)', 'important');
+          item.style.setProperty('border-radius', '12px', 'important');
+          item.style.setProperty('box-shadow', 'none', 'important');
+        }
+      });
+
+      const triggers = document.querySelectorAll('[data-slot="trigger"]');
+      triggers.forEach(trigger => {
+        if (trigger instanceof HTMLElement) {
+          trigger.style.setProperty('background', 'transparent', 'important');
+          trigger.style.setProperty('color', '#fff', 'important');
+          // ホバーエフェクトを無効化
+          trigger.addEventListener('mouseenter', () => {
+            trigger.style.setProperty('background', 'transparent', 'important');
+          });
+          trigger.addEventListener('mouseleave', () => {
+            trigger.style.setProperty('background', 'transparent', 'important');
+          });
+        }
+      });
+
+      const titles = document.querySelectorAll('[data-slot="title"]');
+      titles.forEach(title => {
+        if (title instanceof HTMLElement) {
+          title.style.setProperty('color', '#fff', 'important');
+        }
+      });
+
+      const subtitles = document.querySelectorAll('[data-slot="subtitle"]');
+      subtitles.forEach(subtitle => {
+        if (subtitle instanceof HTMLElement) {
+          subtitle.style.setProperty('color', 'rgba(255, 255, 255, 0.7)', 'important');
+        }
+      });
+
+      const indicators = document.querySelectorAll('[data-slot="indicator"]');
+      indicators.forEach(indicator => {
+        if (indicator instanceof HTMLElement) {
+          indicator.style.setProperty('color', '#00C2FF', 'important');
+        }
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [summary]);
 
   // Format time helper
   const formatTimeAgo = (dateString: string) => {
@@ -162,81 +216,75 @@ const Dashboard = () => {
           
           {summary && summary.favorite_shops_count > 0 && (
             <div className={styles.favoriteDetails}>
-              {/* ウェルカムアコーディオン */}
-              <div className={styles.accordionSection}>
-                <div 
-                  className={styles.accordionHeader}
-                  onClick={() => toggleSection('welcome')}
+              <Accordion 
+                variant="splitted" 
+                className={styles.accordion}
+                style={{
+                  '--nextui-background': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-default-50': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-default-100': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-content1': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-content2': 'rgba(255, 255, 255, 0.05)',
+                } as React.CSSProperties}
+              >
+                <AccordionItem
+                  key="welcome"
+                  aria-label="ウェルカム状況"
+                  startContent={<HeartHandshake size={16} strokeWidth={1} className={styles.accordionIcon} />}
+                  title={`行きつけの店舗：${summary.favorite_shops_count}件　そのうち${summary.total_welcome_count}件でウェルカム済み`}
+                  subtitle={`行きつけの店でのウェルカム状況を確認しましょう`}
+                  className={styles.accordionItem}
                 >
-                  <span className={styles.accordionTitle}>
-                    <HeartHandshake size={16} strokeWidth={1} className={styles.accordionIcon} />
-                    {summary.total_welcome_count}件のお店でウェルカム
-                  </span>
-                  <ChevronDown 
-                    size={16} 
-                    className={expandedSections.welcome ? styles.rotated : ''}
-                  />
-                </div>
-                {expandedSections.welcome && (
-                  <div className={styles.accordionContent}>
-                    <div className={styles.shopList}>
-                      {summary.favorite_shops_details.map(shop => (
-                        <div key={shop.shop_id} className={styles.shopItem}>
-                          <Link href={`/shops/${shop.shop_id}`} className={styles.shopName}>
-                            {shop.shop_name}
-                          </Link>
-                          <div className={styles.shopStatus}>
-                            {shop.is_welcomed_by_user ? (
-                              <Chip size="sm" color="success" variant="flat">
-                                ウェルカム済
-                              </Chip>
-                            ) : (
-                              <Chip size="sm" color="default" variant="flat">
-                                未ウェルカム
-                              </Chip>
-                            )}
-                          </div>
+                  <div className={styles.shopList}>
+                    {summary.favorite_shops_details.map(shop => (
+                      <div key={shop.shop_id} className={styles.shopItem}>
+                        <Link href={`/shops/${shop.shop_id}`} className={styles.shopName}>
+                          {shop.shop_name}
+                        </Link>
+                        <div className={styles.shopStatus}>
+                          {shop.is_welcomed_by_user ? (
+                            <Chip size="sm" variant="flat" className={styles.welcomedChip}>
+                              ウェルカム済
+                            </Chip>
+                          ) : (
+                            <Chip size="sm" variant="flat" className={styles.unWelcomedChip}>
+                              未ウェルカム
+                            </Chip>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              
-              {/* 雰囲気ギャップ分析アコーディオン */}
-              <div className={styles.accordionSection}>
-                <div 
-                  className={styles.accordionHeader}
-                  onClick={() => toggleSection('atmosphere-gap')}
+                </AccordionItem>
+
+                <AccordionItem
+                  key="atmosphere-gap"
+                  aria-label="雰囲気ギャップ分析"
+                  startContent={<ChartBar size={16} strokeWidth={1} className={styles.accordionIcon} />}
+                  title="あなたの好みと実際のギャップ"
+                  subtitle="行きつけの店があなたの理想と合っているかチェック"
+                  className={styles.accordionItem}
                 >
-                  <span className={styles.accordionTitle}>
-                    <ChartBar size={16} strokeWidth={1} className={styles.accordionIcon} />
-                    雰囲気ギャップ分析
-                  </span>
-                  <ChevronDown 
-                    size={16} 
-                    className={expandedSections['atmosphere-gap'] ? styles.rotated : ''}
-                  />
-                </div>
-                {expandedSections['atmosphere-gap'] && (
-                  <div className={styles.accordionContent}>
-                    <div className={styles.atmosphereComparison}>
-                      <div className={styles.comparisonSection}>
-                        <h4 className={styles.comparisonTitle}>あなたの好み</h4>
-                        <div className={styles.preferenceBars}>
+                  <div className={styles.atmosphereComparisonNew}>
+                    <div className={styles.comparisonGrid}>
+                      <div className={styles.comparisonColumn}>
+                        <h4 className={styles.sectionHeading}>設定した好みの雰囲気</h4>
+                        <div className={styles.atmosphereGrid}>
                           {Object.entries(summary.user_atmosphere_preferences || {}).map(([indicatorId, score]) => {
                             const safeScore = typeof score === 'number' ? score : 0;
-                            const safeWidth = Math.max(0, Math.min(100, ((safeScore + 2) / 4) * 100));
+                            const intensity = Math.abs(safeScore) / 2;
+                            const isPositive = safeScore > 0;
                             return (
-                              <div key={indicatorId} className={styles.preferenceBar}>
-                                <span className={styles.indicatorLabel}>指標{indicatorId}</span>
-                                <div className={styles.scoreBar}>
-                                  <div 
-                                    className={styles.scoreValue}
-                                    style={{ width: `${safeWidth}%` }}
-                                  >
-                                    {safeScore}
-                                  </div>
+                              <div key={indicatorId} className={styles.atmosphereItem}>
+                                <div className={styles.atmosphereLabel}>指標{indicatorId}</div>
+                                <div 
+                                  className={`${styles.atmosphereIndicator} ${isPositive ? styles.positive : styles.negative}`}
+                                  style={{ 
+                                    opacity: Math.max(0.3, intensity),
+                                    transform: `scale(${0.8 + intensity * 0.4})`
+                                  }}
+                                >
+                                  {safeScore > 0 ? '+' : ''}{safeScore}
                                 </div>
                               </div>
                             );
@@ -244,22 +292,30 @@ const Dashboard = () => {
                         </div>
                       </div>
                       
-                      <div className={styles.comparisonSection}>
-                        <h4 className={styles.comparisonTitle}>行きつけの店平均</h4>
-                        <div className={styles.preferenceBars}>
+                      <div className={styles.comparisonColumn}>
+                        <h4 className={styles.sectionHeading}>行きつけの店舗の平均</h4>
+                        <div className={styles.atmosphereGrid}>
                           {Object.entries(summary.favorite_shops_atmosphere_average || {}).map(([indicatorId, score]) => {
                             const safeScore = typeof score === 'number' ? score : 0;
-                            const safeWidth = Math.max(0, Math.min(100, ((safeScore + 2) / 4) * 100));
+                            const intensity = Math.abs(safeScore) / 2;
+                            const isPositive = safeScore > 0;
+                            const userScore = summary.user_atmosphere_preferences?.[indicatorId] || 0;
+                            const gap = Math.abs(safeScore - userScore);
+                            const hasLargeGap = gap > 1;
                             return (
-                              <div key={indicatorId} className={styles.preferenceBar}>
-                                <span className={styles.indicatorLabel}>指標{indicatorId}</span>
-                                <div className={styles.scoreBar}>
-                                  <div 
-                                    className={styles.scoreValue}
-                                    style={{ width: `${safeWidth}%` }}
-                                  >
-                                    {safeScore.toFixed(1)}
-                                  </div>
+                              <div key={indicatorId} className={styles.atmosphereItem}>
+                                <div className={styles.atmosphereLabel}>
+                                  指標{indicatorId}
+                                  {hasLargeGap && <span className={styles.gapWarning}>⚠️</span>}
+                                </div>
+                                <div 
+                                  className={`${styles.atmosphereIndicator} ${isPositive ? styles.positive : styles.negative} ${hasLargeGap ? styles.hasGap : ''}`}
+                                  style={{ 
+                                    opacity: Math.max(0.3, intensity),
+                                    transform: `scale(${0.8 + intensity * 0.4})`
+                                  }}
+                                >
+                                  {safeScore > 0 ? '+' : ''}{safeScore.toFixed(1)}
                                 </div>
                               </div>
                             );
@@ -267,9 +323,15 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className={styles.gapInsight}>
+                      <p className={styles.insightText}>
+                        💡 ⚠️マークがある項目は大きなギャップあり！新しい発見のチャンスかも
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
+                </AccordionItem>
+              </Accordion>
             </div>
           )}
         </div>
@@ -294,51 +356,64 @@ const Dashboard = () => {
           
           {summary && summary.visited_shops_count > 0 && (
             <div className={styles.visitedDetails}>
-              {/* フィードバック状況アコーディオン */}
-              <div className={styles.accordionSection}>
-                <div 
-                  className={styles.accordionHeader}
-                  onClick={() => toggleSection('feedback-status')}
+              <Accordion 
+                variant="splitted" 
+                className={styles.accordion}
+                style={{
+                  '--nextui-background': 'rgba(0, 0, 0, 0.8)',
+                  '--nextui-default-50': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-default-100': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-content1': 'rgba(255, 255, 255, 0.05)',
+                  '--nextui-content2': 'rgba(255, 255, 255, 0.05)',
+                } as React.CSSProperties}
+              >
+                <AccordionItem
+                  key="feedback-status"
+                  aria-label="フィードバック状況"
+                  startContent={<ClipboardList size={16} strokeWidth={1} className={styles.accordionIcon} />}
+                  title={`雰囲気フィードバック完了率: ${Math.round(((summary.visited_shops_count - summary.visited_without_feedback_count) / summary.visited_shops_count) * 100)}%`}
+                  subtitle={`${summary.visited_shops_count - summary.visited_without_feedback_count}/${summary.visited_shops_count}店でフィードバック完了`}
+                  className={styles.accordionItem}
                 >
-                  <span className={styles.accordionTitle}>
-                    <ClipboardList size={16} strokeWidth={1} className={styles.accordionIcon} />
-                    行った店のフィードバック状況
-                  </span>
-                  {summary.visited_without_feedback_count > 0 && (
-                    <Chip size="sm" color="warning" variant="flat">
-                      {summary.visited_without_feedback_count}店未完了
-                    </Chip>
-                  )}
-                  <ChevronDown 
-                    size={16} 
-                    className={expandedSections['feedback-status'] ? styles.rotated : ''}
-                  />
-                </div>
-                {expandedSections['feedback-status'] && (
-                  <div className={styles.accordionContent}>
-                    <div className={styles.shopList}>
-                      {summary.visited_shops_details.map(shop => (
-                        <div key={shop.shop_id} className={styles.shopItem}>
-                          <Link href={`/shops/${shop.shop_id}`} className={styles.shopName}>
-                            {shop.shop_name}
-                          </Link>
-                          <div className={styles.shopStatus}>
-                            {shop.has_feedback ? (
-                              <Chip size="sm" color="success" variant="flat">
-                                フィードバック済
-                              </Chip>
-                            ) : (
-                              <Chip size="sm" color="warning" variant="flat">
-                                未フィードバック
-                              </Chip>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                  <div className={styles.feedbackStats}>
+                    <div className={styles.progressBar}>
+                      <div 
+                        className={styles.progressFill}
+                        style={{ 
+                          width: `${((summary.visited_shops_count - summary.visited_without_feedback_count) / summary.visited_shops_count) * 100}%` 
+                        }}
+                      />
                     </div>
+                    <p className={styles.progressText}>
+                      あと{summary.visited_without_feedback_count}店でフィードバック完了！
+                    </p>
                   </div>
-                )}
-              </div>
+
+                  <div className={styles.shopList}>
+                    {summary.visited_shops_details.map(shop => (
+                      <div key={shop.shop_id} className={styles.shopItem}>
+                        <Link href={`/shops/${shop.shop_id}`} className={styles.shopName}>
+                          {shop.shop_name}
+                        </Link>
+                        <div className={styles.shopStatus}>
+                          {shop.has_feedback ? (
+                            <Chip size="sm" color="success" variant="flat">
+                              ✅ 完了
+                            </Chip>
+                          ) : (
+                            <ButtonGradientWrapper 
+                              anotherStyle={styles.feedbackButton}
+                              onClick={() => router.push(`/shops/${shop.shop_id}?action=feedback`)}
+                            >
+                              フィードバックする
+                            </ButtonGradientWrapper>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionItem>
+              </Accordion>
             </div>
           )}
         </div>
@@ -440,7 +515,7 @@ const Dashboard = () => {
                   </p>
                   {item.visit_purpose && item.visit_purpose.name && (
                     <div className={styles.reviewPurpose}>
-                      <Chip size="sm" variant="flat" color="primary">
+                      <Chip size="sm" className={styles.reviewChip}>
                         {item.visit_purpose.name}
                       </Chip>
                     </div>
@@ -544,7 +619,7 @@ const Dashboard = () => {
                     <p className={styles.tagTime}>{formatTimeAgo(item.reacted_at)}</p>
                   </div>
                   <div className={styles.tagContent}>
-                    <Chip size="sm" variant="flat" color="secondary">
+                    <Chip size="sm" className={styles.tagChip}>
                       {item.tag_text}
                     </Chip>
                   </div>
