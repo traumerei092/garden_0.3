@@ -65,6 +65,8 @@ GET /api/accounts/profile/dashboard/tag-reaction-history/
 **ファイル**: 
 - `frontend/src/components/Account/Dashboard/index.tsx`
 - `frontend/src/components/Account/Dashboard/style.module.scss`
+- `frontend/src/components/UI/DarkAccordion/index.tsx` ⭐ **新規作成**
+- `frontend/src/components/UI/DarkAccordion/style.module.scss` ⭐ **新規作成**
 - `frontend/src/actions/profile/fetchDashboardData.ts`
 
 #### TypeScriptインターフェース
@@ -84,8 +86,33 @@ interface DashboardSummary {
 
 #### 主要コンポーネント
 - `Dashboard`: メインダッシュボードコンポーネント
+- `DarkAccordion`: ⭐ **新規** - ダークテーマ対応のAccordionコンポーネント
+- `DarkAccordionItem`: NextUIのAccordionItemラッパー
 - アコーディオン式UI（開閉アニメーション付き）
 - レスポンシブ対応（デスクトップ・タブレット・モバイル）
+
+#### ⭐ 新規 - DarkAccordionコンポーネント仕様
+```typescript
+// 使用方法
+import DarkAccordion, { DarkAccordionItem } from '@/components/UI/DarkAccordion';
+
+<DarkAccordion variant="splitted" className={styles.accordion}>
+  <DarkAccordionItem 
+    key="example" 
+    title="タイトル" 
+    subtitle="サブタイトル"
+    startContent={<Icon size={16} />}
+  >
+    コンテンツ
+  </DarkAccordionItem>
+</DarkAccordion>
+```
+
+**特徴**:
+- NextUI Accordionの白い背景問題を解決
+- JavaScript動的スタイリングによる確実なダークテーマ適用
+- CSS変数とインラインスタイルによる多重プロテクション
+- ホバーエフェクトの無効化（統一感のあるUI）
 
 ### UIデザイン
 - **デザインシステム**: Netflix品質のサイバーパンク風
@@ -156,6 +183,19 @@ const toggleSection = (sectionId: string) => {
 - エクスポート機能（CSV・PDF）
 
 ## 開発ガイドライン
+
+### ⭐ DarkAccordionコンポーネントの使用
+他のプロジェクトでNextUI Accordionを使用する際は、必ず `DarkAccordion` を使用してください：
+
+```typescript
+// ❌ 避けるべき
+import { Accordion, AccordionItem } from '@nextui-org/react';
+
+// ✅ 推奨
+import DarkAccordion, { DarkAccordionItem } from '@/components/UI/DarkAccordion';
+```
+
+**理由**: NextUIのAccordionは頑固な白い背景を持ち、通常のCSSでは変更困難。
 
 ### 新しい履歴セクション追加時
 1. バックエンドAPIビューを作成

@@ -300,14 +300,14 @@
 
 .welcomedChip {
   background: rgba(0, 255, 255, 0.1);
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(0, 255, 255, 0.7);
   color: #00ffff;
   padding: 4px 8px;
 }
 
 .unWelcomedChip {
   background: rgba(255, 0, 255, 0.1);
-  border: 1px solid rgba(255, 0, 255, 0.3);
+  border: 1px solid rgba(255, 0, 255, 0.7);
   color: #ff00e5;
   padding: 4px 8px;
 }
@@ -454,16 +454,223 @@
 }
 
 .statValue {
-  font-size: 28px;
+  font-size: 1.3rem;
   font-weight: 700;
   margin: 0;
   color: #fff;
+}
+
+.statFavoriteCount {
+  font-size: 2rem;
+  color: #00ffff;
+}
+
+.statVisitedCount {
+  font-size: 2rem;
+  color: #ffc107;
+}
+
+.statInterestedCount {
+  font-size: 2rem;
+  color: #ef4444;
 }
 
 .statLabel {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
+}
+
+// モダンな履歴セクション
+.modernHistorySection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 255, 255, 0.15);
+  }
+}
+
+.modernSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  
+  .sectionIcon {
+    color: #00C2FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0, 194, 255, 0.15);
+  }
+  
+  .sectionTitle {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.historyPreview {
+  margin-bottom: 16px;
+}
+
+.previewList {
+  gap: 12px;
+}
+
+.previewItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.previewShopName {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #00C2FF;
+  }
+}
+
+.previewMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  
+  svg {
+    opacity: 0.7;
+  }
+}
+
+.previewTime {
+  font-size: 12px;
+}
+
+.emptyPreview {
+  padding: 24px 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.expandButton {
+  width: 100%;
+  background: linear-gradient(135deg, #00C2FF 0%, #FF00E5 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 194, 255, 0.3);
+  }
+}
+
+.expandIcon {
+  transition: transform 0.3s ease;
+  
+  
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.expandedContent {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+.scrollableList {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+  
+  // カスタムスクロールバー
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #00C2FF, #FF00E5);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #00D4FF, #FF1AE5);
+  }
+}
+
+.expandedItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.expandedShopName {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 400;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #00C2FF;
+  }
+}
+
+.expandedMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  
+  svg {
+    opacity: 0.7;
+  }
 }
 
 // 履歴セクション共通スタイル
@@ -559,13 +766,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   
+  &:first-child {
+    padding-top: 0;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 -8px;
   }
 }
 
@@ -583,13 +802,25 @@
 }
 
 .reviewItem {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   
+  &:first-child {
+    padding-top: 0;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 -8px;
   }
 }
 
@@ -633,13 +864,25 @@
 
 // 雰囲気フィードバック履歴
 .atmosphereItem {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   
+  &:first-child {
+    padding-top: 0;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 -8px;
   }
 }
 
@@ -691,13 +934,25 @@
 
 // タグ履歴
 .tagItem {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   
+  &:first-child {
+    padding-top: 0;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 -8px;
   }
 }
 
@@ -865,6 +1120,171 @@
   }
 }
 
+// Modern history sections
+.modernHistorySection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 255, 255, 0.15);
+  }
+}
+
+.previewList {
+  margin-bottom: 20px;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 16px auto 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+  }
+}
+
+.collapseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 16px auto 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+  }
+}
+
+.scrollableList {
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 20px 0 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  
+  .historyItem, .reviewItem, .atmosphereItem, .tagItem, .activityItem {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.2s ease;
+    
+    &:first-child {
+      padding-top: 0;
+    }
+    
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding-left: 12px;
+      padding-right: 12px;
+      margin: 0 -12px;
+    }
+  }
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4));
+    border-radius: 3px;
+    transition: background 0.3s ease;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.6), rgba(255, 0, 255, 0.6));
+  }
+}
+
+.modernActivitySection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 255, 255, 0.15);
+  }
+  
+  .previewList {
+    .activityItem {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      
+      &:first-child {
+        padding-top: 0;
+      }
+      
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        padding-left: 8px;
+        padding-right: 8px;
+        margin: 0 -8px;
+      }
+    }
+  }
+}
+
+.detailsLink {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 @media (max-width: 576px) {
   .sectionHeader {
     padding: 6px;
@@ -905,5 +1325,15 @@
   
   .comparisonSection {
     padding: 12px;
+  }
+  
+  .modernHistorySection, .modernActivitySection {
+    padding: 16px;
+  }
+  
+  .previewList {
+    .historyItem, .reviewItem, .atmosphereItem, .tagItem, .activityItem {
+      padding: 16px 0;
+    }
   }
 }

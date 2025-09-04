@@ -1,0 +1,44 @@
+// DarkAccordion - ダークテーマ対応Accordionコンポーネント
+.darkAccordion {
+  margin-top: 16px;
+  background: transparent !important;
+  border-radius: 10px;
+  gap: 10px;
+
+  // 全ての子要素の白い背景を強制的に置き換え
+  * {
+    &[style*="background"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    &[style*="rgb(255, 255, 255)"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
+  
+  // span要素のテキスト色
+  span {
+    color: #fff !important;
+    
+    &:last-child {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+  }
+  
+  // svg要素（アイコン）
+  svg {
+    color: #00C2FF !important;
+  }
+}
+
+// AccordionItemのスタイル
+.darkAccordionItem {
+  background: rgba(0, 0, 0, 0.3) !important;
+  
+  // ホバーエフェクト無効化
+  &:hover {
+    background: rgba(0, 0, 0, 0.4) !important;
+  }
+}

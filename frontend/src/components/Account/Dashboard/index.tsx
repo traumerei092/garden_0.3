@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Link, Chip, Accordion, AccordionItem } from '@nextui-org/react';
-import { Crown, Star, Heart, Eye, MessageSquare, Clock, ChevronRight, ChevronDown, BarChart3, Tag, ChartBar, HeartHandshake, ClipboardList } from 'lucide-react';
+import { Link, Chip } from '@nextui-org/react';
+import DarkAccordion, { DarkAccordionItem } from '@/components/UI/DarkAccordion';
+import { Crown, Star, Heart, Eye, MessageSquare, Clock, ChevronRight, ChevronDown, ChevronUp, BarChart3, Tag, ChartBar, HeartHandshake, ClipboardList } from 'lucide-react';
 import { 
   fetchDashboardSummary, 
   fetchViewHistory, 
@@ -37,7 +38,7 @@ const Dashboard = () => {
   const [atmosphereFeedbackHistory, setAtmosphereFeedbackHistory] = useState<AtmosphereFeedbackHistoryItem[]>([]);
   const [tagReactionHistory, setTagReactionHistory] = useState<TagReactionHistoryItem[]>([]);
   
-  // Accordion states
+  // Expandable sections states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   // Data fetching
@@ -73,59 +74,6 @@ const Dashboard = () => {
     loadDashboardData();
   }, []);
 
-  // NextUI Accordionの白い背景を強制的に変更
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const accordionItems = document.querySelectorAll('[data-slot="base"]');
-      accordionItems.forEach(item => {
-        if (item instanceof HTMLElement) {
-          item.style.setProperty('background', 'rgba(255, 255, 255, 0.05)', 'important');
-          item.style.setProperty('background-color', 'rgba(255, 255, 255, 0.05)', 'important');
-          item.style.setProperty('border', '1px solid rgba(255, 255, 255, 0.1)', 'important');
-          item.style.setProperty('border-radius', '12px', 'important');
-          item.style.setProperty('box-shadow', 'none', 'important');
-        }
-      });
-
-      const triggers = document.querySelectorAll('[data-slot="trigger"]');
-      triggers.forEach(trigger => {
-        if (trigger instanceof HTMLElement) {
-          trigger.style.setProperty('background', 'transparent', 'important');
-          trigger.style.setProperty('color', '#fff', 'important');
-          // ホバーエフェクトを無効化
-          trigger.addEventListener('mouseenter', () => {
-            trigger.style.setProperty('background', 'transparent', 'important');
-          });
-          trigger.addEventListener('mouseleave', () => {
-            trigger.style.setProperty('background', 'transparent', 'important');
-          });
-        }
-      });
-
-      const titles = document.querySelectorAll('[data-slot="title"]');
-      titles.forEach(title => {
-        if (title instanceof HTMLElement) {
-          title.style.setProperty('color', '#fff', 'important');
-        }
-      });
-
-      const subtitles = document.querySelectorAll('[data-slot="subtitle"]');
-      subtitles.forEach(subtitle => {
-        if (subtitle instanceof HTMLElement) {
-          subtitle.style.setProperty('color', 'rgba(255, 255, 255, 0.7)', 'important');
-        }
-      });
-
-      const indicators = document.querySelectorAll('[data-slot="indicator"]');
-      indicators.forEach(indicator => {
-        if (indicator instanceof HTMLElement) {
-          indicator.style.setProperty('color', '#00C2FF', 'important');
-        }
-      });
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [summary]);
 
   // Format time helper
   const formatTimeAgo = (dateString: string) => {
@@ -166,13 +114,22 @@ const Dashboard = () => {
     }
   };
 
-  // Accordion toggle handler
+  // Section toggle handler
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => ({
       ...prev,
       [sectionId]: !prev[sectionId]
     }));
   };
+
+  // Remove duplicates from recent activity
+  const uniqueRecentActivity = recentActivity.filter((item, index, self) => 
+    index === self.findIndex(t => (
+      t.type === item.type && 
+      t.shop_id === item.shop_id && 
+      t.content === item.content
+    ))
+  );
 
   if (loading) {
     return (
@@ -203,36 +160,27 @@ const Dashboard = () => {
               <Crown size={18} fill='#00ffff' strokeWidth={0}/>
             </div>
             <div className={styles.statInfo}>
-              <h3 className={styles.statValue}>{summary?.favorite_shops_count || 0}</h3>
-              <p className={styles.statLabel}>行きつけの店</p>
+              <h3 className={styles.statValue}>行きつけの店舗数：
+                <span className={styles.statFavoriteCount}>{summary?.favorite_shops_count || 0}</span>
+              </h3>
             </div>
             <ButtonGradientWrapper 
               anotherStyle={styles.detailButton} 
               onClick={() => handleViewMoreClick('favorite')}
             >
               詳しく見る
+              <ChevronRight size={12} />
             </ButtonGradientWrapper>
           </div>
           
           {summary && summary.favorite_shops_count > 0 && (
             <div className={styles.favoriteDetails}>
-              <Accordion 
-                variant="splitted" 
-                className={styles.accordion}
-                style={{
-                  '--nextui-background': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-default-50': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-default-100': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-content1': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-content2': 'rgba(255, 255, 255, 0.05)',
-                } as React.CSSProperties}
-              >
-                <AccordionItem
+              <DarkAccordion variant="splitted" className={styles.accordion}>
+                <DarkAccordionItem
                   key="welcome"
                   aria-label="ウェルカム状況"
                   startContent={<HeartHandshake size={16} strokeWidth={1} className={styles.accordionIcon} />}
                   title={`行きつけの店舗：${summary.favorite_shops_count}件　そのうち${summary.total_welcome_count}件でウェルカム済み`}
-                  subtitle={`行きつけの店でのウェルカム状況を確認しましょう`}
                   className={styles.accordionItem}
                 >
                   <div className={styles.shopList}>
@@ -255,14 +203,13 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
-                </AccordionItem>
+                </DarkAccordionItem>
 
-                <AccordionItem
+                <DarkAccordionItem
                   key="atmosphere-gap"
                   aria-label="雰囲気ギャップ分析"
                   startContent={<ChartBar size={16} strokeWidth={1} className={styles.accordionIcon} />}
                   title="あなたの好みと実際のギャップ"
-                  subtitle="行きつけの店があなたの理想と合っているかチェック"
                   className={styles.accordionItem}
                 >
                   <div className={styles.atmosphereComparisonNew}>
@@ -330,49 +277,40 @@ const Dashboard = () => {
                       </p>
                     </div>
                   </div>
-                </AccordionItem>
-              </Accordion>
+                </DarkAccordionItem>
+              </DarkAccordion>
             </div>
           )}
         </div>
         
         {/* 行った店 */}
-        <div className={styles.summaryCard}>
+        <div className={`${styles.summaryCard} ${styles.favoriteCard}`}>
           <div className={styles.cardHeader}>
             <div className={styles.statIcon}>
               <Star size={18} fill='#ffc107' strokeWidth={0}/>
             </div>
             <div className={styles.statInfo}>
-              <h3 className={styles.statValue}>{summary?.visited_shops_count || 0}</h3>
-              <p className={styles.statLabel}>行った店</p>
+              <h3 className={styles.statValue}>行った店舗数：
+                <span className={styles.statVisitedCount}>{summary?.visited_shops_count || 0}</span>
+              </h3>
             </div>
             <ButtonGradientWrapper 
               anotherStyle={styles.detailButton} 
               onClick={() => handleViewMoreClick('visited')}
             >
               詳しく見る
+              <ChevronRight size={12} />
             </ButtonGradientWrapper>
           </div>
           
           {summary && summary.visited_shops_count > 0 && (
             <div className={styles.visitedDetails}>
-              <Accordion 
-                variant="splitted" 
-                className={styles.accordion}
-                style={{
-                  '--nextui-background': 'rgba(0, 0, 0, 0.8)',
-                  '--nextui-default-50': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-default-100': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-content1': 'rgba(255, 255, 255, 0.05)',
-                  '--nextui-content2': 'rgba(255, 255, 255, 0.05)',
-                } as React.CSSProperties}
-              >
-                <AccordionItem
+              <DarkAccordion variant="splitted" className={styles.accordion}>
+                <DarkAccordionItem
                   key="feedback-status"
                   aria-label="フィードバック状況"
                   startContent={<ClipboardList size={16} strokeWidth={1} className={styles.accordionIcon} />}
                   title={`雰囲気フィードバック完了率: ${Math.round(((summary.visited_shops_count - summary.visited_without_feedback_count) / summary.visited_shops_count) * 100)}%`}
-                  subtitle={`${summary.visited_shops_count - summary.visited_without_feedback_count}/${summary.visited_shops_count}店でフィードバック完了`}
                   className={styles.accordionItem}
                 >
                   <div className={styles.feedbackStats}>
@@ -412,27 +350,29 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
-                </AccordionItem>
-              </Accordion>
+                </DarkAccordionItem>
+              </DarkAccordion>
             </div>
           )}
         </div>
         
         {/* 気になる店 */}
-        <div className={styles.summaryCard}>
+        <div className={`${styles.summaryCard} ${styles.favoriteCard}`}>
           <div className={styles.cardHeader}>
             <div className={styles.statIcon}>
               <Heart size={18} fill='#ef4444' strokeWidth={0}/>
             </div>
             <div className={styles.statInfo}>
-              <h3 className={styles.statValue}>{summary?.interested_shops_count || 0}</h3>
-              <p className={styles.statLabel}>気になる店</p>
+              <h3 className={styles.statValue}>気になる店舗数：
+                <span className={styles.statInterestedCount}>{summary?.interested_shops_count || 0}</span>
+              </h3>
             </div>
             <ButtonGradientWrapper 
               anotherStyle={styles.detailButton} 
               onClick={() => handleViewMoreClick('wishlist')}
             >
               詳しく見る
+              <ChevronRight size={12} />
             </ButtonGradientWrapper>
           </div>
         </div>
@@ -441,28 +381,17 @@ const Dashboard = () => {
       {/* 履歴セクション - 2列グリッド */}
       <div className={styles.historyGrid}>
         {/* 閲覧履歴 */}
-        <div className={styles.historySection}>
-          <div 
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('view')}
-          >
+        <div className={styles.modernHistorySection}>
+          <div className={styles.sectionHeader}>
             <div className={styles.sectionIcon}>
               <Eye size={18} strokeWidth={1}/>
             </div>
             <h3 className={styles.sectionTitle}>閲覧履歴</h3>
-            <div className={styles.headerActions}>
-              <span className={styles.toggleIcon}>
-                <ChevronDown 
-                  size={16} 
-                  className={expandedSections.view ? styles.rotated : ''}
-                />
-              </span>
-            </div>
           </div>
           
-          <div className={`${styles.historyList} ${!expandedSections.view ? styles.collapsed : ''}`}>
+          <div className={styles.previewList}>
             {viewHistory.length > 0 ? (
-              viewHistory.slice(0, expandedSections.view ? viewHistory.length : 3).map(item => (
+              viewHistory.slice(0, 3).map(item => (
                 <div key={item.id} className={styles.historyItem}>
                   <Link href={`/shops/${item.shop_id}`} className={styles.historyName}>{item.shop_name}</Link>
                   <p className={styles.historyTime}>{formatTimeAgo(item.viewed_at)}</p>
@@ -473,38 +402,51 @@ const Dashboard = () => {
                 <p>まだ閲覧履歴がありません</p>
               </div>
             )}
-            
-            {!expandedSections.view && viewHistory.length > 3 && (
-              <div className={styles.moreIndicator}>
-                <span>他 {viewHistory.length - 3}件</span>
-              </div>
-            )}
           </div>
+          
+          {viewHistory.length > 3 && (
+            <>
+              {!expandedSections.view ? (
+                <button 
+                  className={styles.expandButton}
+                  onClick={() => toggleSection('view')}
+                >
+                  <ChevronDown size={20} className={styles.expandIcon}/>
+                </button>
+              ) : (
+                <>
+                  <div className={styles.scrollableList}>
+                    {viewHistory.slice(3).map(item => (
+                      <div key={item.id} className={styles.historyItem}>
+                        <Link href={`/shops/${item.shop_id}`} className={styles.historyName}>{item.shop_name}</Link>
+                        <p className={styles.historyTime}>{formatTimeAgo(item.viewed_at)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    className={styles.collapseButton}
+                    onClick={() => toggleSection('view')}
+                  >
+                    <ChevronUp size={20} />
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       
         {/* 口コミ履歴 */}
-        <div className={styles.historySection}>
-          <div 
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('review')}
-          >
+        <div className={styles.modernHistorySection}>
+          <div className={styles.sectionHeader}>
             <div className={styles.sectionIcon}>
               <MessageSquare size={18} strokeWidth={1}/>
             </div>
             <h3 className={styles.sectionTitle}>口コミ履歴</h3>
-            <div className={styles.headerActions}>
-              <span className={styles.toggleIcon}>
-                <ChevronDown 
-                  size={16} 
-                  className={expandedSections.review ? styles.rotated : ''}
-                />
-              </span>
-            </div>
           </div>
           
-          <div className={`${styles.reviewList} ${!expandedSections.review ? styles.collapsed : ''}`}>
+          <div className={styles.previewList}>
             {reviewHistory.length > 0 ? (
-              reviewHistory.slice(0, expandedSections.review ? reviewHistory.length : 3).map(item => (
+              reviewHistory.slice(0, 3).map(item => (
                 <div key={item.id} className={styles.reviewItem}>
                   <div className={styles.reviewHeader}>
                     <Link href={`/shops/${item.shop_id}`} className={styles.reviewShop}>{item.shop_name}</Link>
@@ -527,38 +469,63 @@ const Dashboard = () => {
                 <p>まだ口コミがありません</p>
               </div>
             )}
-            
-            {!expandedSections.review && reviewHistory.length > 3 && (
-              <div className={styles.moreIndicator}>
-                <span>他 {reviewHistory.length - 3}件</span>
-              </div>
-            )}
           </div>
+          
+          {reviewHistory.length > 3 && (
+            <>
+              {!expandedSections.review ? (
+                <button 
+                  className={styles.expandButton}
+                  onClick={() => toggleSection('review')}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              ) : (
+                <>
+                  <div className={styles.scrollableList}>
+                    {reviewHistory.slice(3).map(item => (
+                      <div key={item.id} className={styles.reviewItem}>
+                        <div className={styles.reviewHeader}>
+                          <Link href={`/shops/${item.shop_id}`} className={styles.reviewShop}>{item.shop_name}</Link>
+                          <p className={styles.reviewTime}>{formatTimeAgo(item.created_at)}</p>
+                        </div>
+                        <p className={styles.reviewContent}>
+                          {item.content.length > 50 ? `${item.content.slice(0, 50)}...` : item.content}
+                        </p>
+                        {item.visit_purpose && item.visit_purpose.name && (
+                          <div className={styles.reviewPurpose}>
+                            <Chip size="sm" className={styles.reviewChip}>
+                              {item.visit_purpose.name}
+                            </Chip>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    className={styles.collapseButton}
+                    onClick={() => toggleSection('review')}
+                  >
+                    <ChevronUp size={20} />
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       
         {/* 雰囲気フィードバック履歴 */}
-        <div className={styles.historySection}>
-          <div 
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('atmosphere')}
-          >
+        <div className={styles.modernHistorySection}>
+          <div className={styles.sectionHeader}>
             <div className={styles.sectionIcon}>
               <BarChart3 size={18} strokeWidth={1}/>
             </div>
             <h3 className={styles.sectionTitle}>雰囲気フィードバック履歴</h3>
-            <div className={styles.headerActions}>
-              <span className={styles.toggleIcon}>
-                <ChevronDown 
-                  size={16} 
-                  className={expandedSections.atmosphere ? styles.rotated : ''}
-                />
-              </span>
-            </div>
           </div>
           
-          <div className={`${styles.atmosphereList} ${!expandedSections.atmosphere ? styles.collapsed : ''}`}>
+          <div className={styles.previewList}>
             {atmosphereFeedbackHistory.length > 0 ? (
-              atmosphereFeedbackHistory.slice(0, expandedSections.atmosphere ? atmosphereFeedbackHistory.length : 3).map(item => (
+              atmosphereFeedbackHistory.slice(0, 3).map(item => (
                 <div key={item.id} className={styles.atmosphereItem}>
                   <div className={styles.atmosphereHeader}>
                     <Link href={`/shops/${item.shop_id}`} className={styles.atmosphereShop}>{item.shop_name}</Link>
@@ -581,38 +548,63 @@ const Dashboard = () => {
                 <p>まだ雰囲気フィードバックがありません</p>
               </div>
             )}
-            
-            {!expandedSections.atmosphere && atmosphereFeedbackHistory.length > 3 && (
-              <div className={styles.moreIndicator}>
-                <span>他 {atmosphereFeedbackHistory.length - 3}件</span>
-              </div>
-            )}
           </div>
+          
+          {atmosphereFeedbackHistory.length > 3 && (
+            <>
+              {!expandedSections.atmosphere ? (
+                <button 
+                  className={styles.expandButton}
+                  onClick={() => toggleSection('atmosphere')}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              ) : (
+                <>
+                  <div className={styles.scrollableList}>
+                    {atmosphereFeedbackHistory.slice(3).map(item => (
+                      <div key={item.id} className={styles.atmosphereItem}>
+                        <div className={styles.atmosphereHeader}>
+                          <Link href={`/shops/${item.shop_id}`} className={styles.atmosphereShop}>{item.shop_name}</Link>
+                          <p className={styles.atmosphereTime}>{formatTimeAgo(item.created_at)}</p>
+                        </div>
+                        <div className={styles.atmosphereScores}>
+                          {Object.entries(item.atmosphere_scores).slice(0, 3).map(([key, value]) => (
+                            <div key={key} className={styles.scoreChip}>
+                              <span className={styles.scoreValue}>{value}</span>
+                            </div>
+                          ))}
+                          {Object.keys(item.atmosphere_scores).length > 3 && (
+                            <span className={styles.moreScores}>+{Object.keys(item.atmosphere_scores).length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    className={styles.collapseButton}
+                    onClick={() => toggleSection('atmosphere')}
+                  >
+                    <ChevronUp size={20} />
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
         
         {/* 印象タグ履歴 */}
-        <div className={styles.historySection}>
-          <div 
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('tags')}
-          >
+        <div className={styles.modernHistorySection}>
+          <div className={styles.sectionHeader}>
             <div className={styles.sectionIcon}>
               <Tag size={18} strokeWidth={1}/>
             </div>
             <h3 className={styles.sectionTitle}>印象タグ履歴</h3>
-            <div className={styles.headerActions}>
-              <span className={styles.toggleIcon}>
-                <ChevronDown 
-                  size={16} 
-                  className={expandedSections.tags ? styles.rotated : ''}
-                />
-              </span>
-            </div>
           </div>
           
-          <div className={`${styles.tagsList} ${!expandedSections.tags ? styles.collapsed : ''}`}>
+          <div className={styles.previewList}>
             {tagReactionHistory.length > 0 ? (
-              tagReactionHistory.slice(0, expandedSections.tags ? tagReactionHistory.length : 3).map(item => (
+              tagReactionHistory.slice(0, 3).map(item => (
                 <div key={item.id} className={styles.tagItem}>
                   <div className={styles.tagHeader}>
                     <Link href={`/shops/${item.shop_id}`} className={styles.tagShop}>{item.shop_name}</Link>
@@ -630,35 +622,60 @@ const Dashboard = () => {
                 <p>まだタグ反応がありません</p>
               </div>
             )}
-            
-            {!expandedSections.tags && tagReactionHistory.length > 3 && (
-              <div className={styles.moreIndicator}>
-                <span>他 {tagReactionHistory.length - 3}件</span>
-              </div>
-            )}
           </div>
+          
+          {tagReactionHistory.length > 3 && (
+            <>
+              {!expandedSections.tags ? (
+                <button 
+                  className={styles.expandButton}
+                  onClick={() => toggleSection('tags')}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              ) : (
+                <>
+                  <div className={styles.scrollableList}>
+                    {tagReactionHistory.slice(3).map(item => (
+                      <div key={item.id} className={styles.tagItem}>
+                        <div className={styles.tagHeader}>
+                          <Link href={`/shops/${item.shop_id}`} className={styles.tagShop}>{item.shop_name}</Link>
+                          <p className={styles.tagTime}>{formatTimeAgo(item.reacted_at)}</p>
+                        </div>
+                        <div className={styles.tagContent}>
+                          <Chip size="sm" className={styles.tagChip}>
+                            {item.tag_text}
+                          </Chip>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    className={styles.collapseButton}
+                    onClick={() => toggleSection('tags')}
+                  >
+                    <ChevronUp size={20} />
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
       
       {/* 最近のアクティビティ */}
-      <div className={styles.activitySection}>
+      <div className={styles.modernActivitySection}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionIcon}>
             <Clock size={18} strokeWidth={1}/>
           </div>
           <h3 className={styles.sectionTitle}>最近のアクティビティ</h3>
-          <ButtonGradientWrapper 
-            anotherStyle={styles.viewMoreButton} 
-            onClick={() => handleViewMoreClick('activity')}
-          >
-            詳しく見る <ChevronRight size={16} />
-          </ButtonGradientWrapper>
         </div>
         
-        <div className={styles.activityList}>
-          {recentActivity.length > 0 ? (
-            recentActivity.map(item => (
-              <div key={item.id} className={styles.activityItem}>
+        <div className={styles.previewList}>
+          {uniqueRecentActivity.length > 0 ? (
+            uniqueRecentActivity.slice(0, 5).map(item => (
+              <div key={`${item.type}-${item.shop_id}-${item.id}`} className={styles.activityItem}>
                 <div className={styles.activityDot}></div>
                 <div className={styles.activityContent}>
                   {item.shop_name ? (
@@ -684,6 +701,61 @@ const Dashboard = () => {
               <p>まだアクティビティがありません</p>
             </div>
           )}
+        </div>
+        
+        {uniqueRecentActivity.length > 5 && (
+          <>
+            {!expandedSections.activity ? (
+              <button 
+                className={styles.expandButton}
+                onClick={() => toggleSection('activity')}
+              >
+                <ChevronDown size={20} />
+              </button>
+            ) : (
+              <>
+                <div className={styles.scrollableList}>
+                  {uniqueRecentActivity.slice(5).map(item => (
+                    <div key={`${item.type}-${item.shop_id}-${item.id}`} className={styles.activityItem}>
+                      <div className={styles.activityDot}></div>
+                      <div className={styles.activityContent}>
+                        {item.shop_name ? (
+                          <p className={styles.activityText}>
+                            <span className={styles.activityType}>{item.shop_name}</span>を
+                            {item.type === 'view' && '閲覧'}
+                            {item.type === 'review' && 'レビュー投稿'}
+                            {item.type === 'favorite' && 'お気に入り追加'}
+                            {item.type === 'visited' && '訪問記録'}
+                            {item.type === 'interested' && '気になるリスト追加'}
+                          </p>
+                        ) : (
+                          <p className={styles.activityText}>
+                            <span className={styles.activityType}>{item.content}</span>
+                          </p>
+                        )}
+                        <p className={styles.activityTime}>{formatTimeAgo(item.created_at)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  className={styles.collapseButton}
+                  onClick={() => toggleSection('activity')}
+                >
+                  <ChevronUp size={20} />
+                </button>
+              </>
+            )}
+          </>
+        )}
+        
+        <div className={styles.detailsLink}>
+          <ButtonGradientWrapper 
+            anotherStyle={styles.viewMoreButton} 
+            onClick={() => handleViewMoreClick('activity')}
+          >
+            詳しく見る <ChevronRight size={16} />
+          </ButtonGradientWrapper>
         </div>
       </div>
     </div>
