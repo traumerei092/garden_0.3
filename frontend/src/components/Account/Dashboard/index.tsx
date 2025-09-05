@@ -49,11 +49,11 @@ const Dashboard = () => {
 
       const [summaryData, viewData, reviewData, activityData, atmosphereData, tagData] = await Promise.all([
         fetchDashboardSummary(),
-        fetchViewHistory(5),
-        fetchReviewHistory(5), 
-        fetchRecentActivity(5),
-        fetchAtmosphereFeedbackHistory(5),
-        fetchTagReactionHistory(5)
+        fetchViewHistory(10),
+        fetchReviewHistory(10), 
+        fetchRecentActivity(10),
+        fetchAtmosphereFeedbackHistory(10),
+        fetchTagReactionHistory(10)
       ]);
 
       setSummary(summaryData);
@@ -335,8 +335,8 @@ const Dashboard = () => {
                         </Link>
                         <div className={styles.shopStatus}>
                           {shop.has_feedback ? (
-                            <Chip size="sm" color="success" variant="flat">
-                              ✅ 完了
+                            <Chip size="sm" variant="flat" className={styles.welcomedChip}>
+                              フィードバック済
                             </Chip>
                           ) : (
                             <ButtonGradientWrapper 
@@ -389,34 +389,31 @@ const Dashboard = () => {
             <h3 className={styles.sectionTitle}>閲覧履歴</h3>
           </div>
           
-          <div className={styles.previewList}>
-            {viewHistory.length > 0 ? (
-              viewHistory.slice(0, 3).map(item => (
-                <div key={item.id} className={styles.historyItem}>
-                  <Link href={`/shops/${item.shop_id}`} className={styles.historyName}>{item.shop_name}</Link>
-                  <p className={styles.historyTime}>{formatTimeAgo(item.viewed_at)}</p>
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <p>まだ閲覧履歴がありません</p>
-              </div>
-            )}
-          </div>
-          
-          {viewHistory.length > 3 && (
+          {viewHistory.length > 0 ? (
             <>
               {!expandedSections.view ? (
-                <button 
-                  className={styles.expandButton}
-                  onClick={() => toggleSection('view')}
-                >
-                  <ChevronDown size={20} className={styles.expandIcon}/>
-                </button>
+                <>
+                  <div className={styles.previewList}>
+                    {viewHistory.slice(0, 3).map(item => (
+                      <div key={item.id} className={styles.historyItem}>
+                        <Link href={`/shops/${item.shop_id}`} className={styles.historyName}>{item.shop_name}</Link>
+                        <p className={styles.historyTime}>{formatTimeAgo(item.viewed_at)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {viewHistory.length > 3 && (
+                    <button 
+                      className={styles.expandButton}
+                      onClick={() => toggleSection('view')}
+                    >
+                      <ChevronDown size={20} strokeWidth={1} />
+                    </button>
+                  )}
+                </>
               ) : (
                 <>
                   <div className={styles.scrollableList}>
-                    {viewHistory.slice(3).map(item => (
+                    {viewHistory.map(item => (
                       <div key={item.id} className={styles.historyItem}>
                         <Link href={`/shops/${item.shop_id}`} className={styles.historyName}>{item.shop_name}</Link>
                         <p className={styles.historyTime}>{formatTimeAgo(item.viewed_at)}</p>
@@ -427,11 +424,15 @@ const Dashboard = () => {
                     className={styles.collapseButton}
                     onClick={() => toggleSection('view')}
                   >
-                    <ChevronUp size={20} />
+                    <ChevronUp size={20} strokeWidth={1} />
                   </button>
                 </>
               )}
             </>
+          ) : (
+            <div className={styles.emptyState}>
+              <p>まだ閲覧履歴がありません</p>
+            </div>
           )}
         </div>
       
@@ -444,46 +445,43 @@ const Dashboard = () => {
             <h3 className={styles.sectionTitle}>口コミ履歴</h3>
           </div>
           
-          <div className={styles.previewList}>
-            {reviewHistory.length > 0 ? (
-              reviewHistory.slice(0, 3).map(item => (
-                <div key={item.id} className={styles.reviewItem}>
-                  <div className={styles.reviewHeader}>
-                    <Link href={`/shops/${item.shop_id}`} className={styles.reviewShop}>{item.shop_name}</Link>
-                    <p className={styles.reviewTime}>{formatTimeAgo(item.created_at)}</p>
-                  </div>
-                  <p className={styles.reviewContent}>
-                    {item.content.length > 50 ? `${item.content.slice(0, 50)}...` : item.content}
-                  </p>
-                  {item.visit_purpose && item.visit_purpose.name && (
-                    <div className={styles.reviewPurpose}>
-                      <Chip size="sm" className={styles.reviewChip}>
-                        {item.visit_purpose.name}
-                      </Chip>
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <p>まだ口コミがありません</p>
-              </div>
-            )}
-          </div>
-          
-          {reviewHistory.length > 3 && (
+          {reviewHistory.length > 0 ? (
             <>
               {!expandedSections.review ? (
-                <button 
-                  className={styles.expandButton}
-                  onClick={() => toggleSection('review')}
-                >
-                  <ChevronDown size={20} />
-                </button>
+                <>
+                  <div className={styles.previewList}>
+                    {reviewHistory.slice(0, 3).map(item => (
+                      <div key={item.id} className={styles.reviewItem}>
+                        <div className={styles.reviewHeader}>
+                          <Link href={`/shops/${item.shop_id}`} className={styles.reviewShop}>{item.shop_name}</Link>
+                          <p className={styles.reviewTime}>{formatTimeAgo(item.created_at)}</p>
+                        </div>
+                        <p className={styles.reviewContent}>
+                          {item.content.length > 50 ? `${item.content.slice(0, 50)}...` : item.content}
+                        </p>
+                        {item.visit_purpose && item.visit_purpose.name && (
+                          <div className={styles.reviewPurpose}>
+                            <Chip size="sm" className={styles.reviewChip}>
+                              {item.visit_purpose.name}
+                            </Chip>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {reviewHistory.length > 3 && (
+                    <button 
+                      className={styles.expandButton}
+                      onClick={() => toggleSection('review')}
+                    >
+                      <ChevronDown size={20} strokeWidth={1} />
+                    </button>
+                  )}
+                </>
               ) : (
                 <>
                   <div className={styles.scrollableList}>
-                    {reviewHistory.slice(3).map(item => (
+                    {reviewHistory.map(item => (
                       <div key={item.id} className={styles.reviewItem}>
                         <div className={styles.reviewHeader}>
                           <Link href={`/shops/${item.shop_id}`} className={styles.reviewShop}>{item.shop_name}</Link>
@@ -506,11 +504,15 @@ const Dashboard = () => {
                     className={styles.collapseButton}
                     onClick={() => toggleSection('review')}
                   >
-                    <ChevronUp size={20} />
+                    <ChevronUp size={20} strokeWidth={1} />
                   </button>
                 </>
               )}
             </>
+          ) : (
+            <div className={styles.emptyState}>
+              <p>まだ口コミがありません</p>
+            </div>
           )}
         </div>
       
@@ -557,7 +559,7 @@ const Dashboard = () => {
                   className={styles.expandButton}
                   onClick={() => toggleSection('atmosphere')}
                 >
-                  <ChevronDown size={20} />
+                  <ChevronDown size={20} strokeWidth={1} />
                 </button>
               ) : (
                 <>
@@ -585,7 +587,7 @@ const Dashboard = () => {
                     className={styles.collapseButton}
                     onClick={() => toggleSection('atmosphere')}
                   >
-                    <ChevronUp size={20} />
+                    <ChevronUp size={20} strokeWidth={1} />
                   </button>
                 </>
               )}
@@ -631,7 +633,7 @@ const Dashboard = () => {
                   className={styles.expandButton}
                   onClick={() => toggleSection('tags')}
                 >
-                  <ChevronDown size={20} />
+                  <ChevronDown size={20} strokeWidth={1} />
                 </button>
               ) : (
                 <>
@@ -654,7 +656,7 @@ const Dashboard = () => {
                     className={styles.collapseButton}
                     onClick={() => toggleSection('tags')}
                   >
-                    <ChevronUp size={20} />
+                    <ChevronUp size={20} strokeWidth={1} />
                   </button>
                 </>
               )}
@@ -672,50 +674,47 @@ const Dashboard = () => {
           <h3 className={styles.sectionTitle}>最近のアクティビティ</h3>
         </div>
         
-        <div className={styles.previewList}>
-          {uniqueRecentActivity.length > 0 ? (
-            uniqueRecentActivity.slice(0, 5).map(item => (
-              <div key={`${item.type}-${item.shop_id}-${item.id}`} className={styles.activityItem}>
-                <div className={styles.activityDot}></div>
-                <div className={styles.activityContent}>
-                  {item.shop_name ? (
-                    <p className={styles.activityText}>
-                      <span className={styles.activityType}>{item.shop_name}</span>を
-                      {item.type === 'view' && '閲覧'}
-                      {item.type === 'review' && 'レビュー投稿'}
-                      {item.type === 'favorite' && 'お気に入り追加'}
-                      {item.type === 'visited' && '訪問記録'}
-                      {item.type === 'interested' && '気になるリスト追加'}
-                    </p>
-                  ) : (
-                    <p className={styles.activityText}>
-                      <span className={styles.activityType}>{item.content}</span>
-                    </p>
-                  )}
-                  <p className={styles.activityTime}>{formatTimeAgo(item.created_at)}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={styles.emptyState}>
-              <p>まだアクティビティがありません</p>
-            </div>
-          )}
-        </div>
-        
-        {uniqueRecentActivity.length > 5 && (
+        {uniqueRecentActivity.length > 0 ? (
           <>
             {!expandedSections.activity ? (
-              <button 
-                className={styles.expandButton}
-                onClick={() => toggleSection('activity')}
-              >
-                <ChevronDown size={20} />
-              </button>
+              <>
+                <div className={styles.previewList}>
+                  {uniqueRecentActivity.slice(0, 3).map(item => (
+                    <div key={`${item.type}-${item.shop_id}-${item.id}`} className={styles.activityItem}>
+                      <div className={styles.activityDot}></div>
+                      <div className={styles.activityContent}>
+                        {item.shop_name ? (
+                          <p className={styles.activityText}>
+                            <span className={styles.activityType}>{item.shop_name}</span>を
+                            {item.type === 'view' && '閲覧'}
+                            {item.type === 'review' && 'レビュー投稿'}
+                            {item.type === 'favorite' && 'お気に入り追加'}
+                            {item.type === 'visited' && '訪問記録'}
+                            {item.type === 'interested' && '気になるリスト追加'}
+                          </p>
+                        ) : (
+                          <p className={styles.activityText}>
+                            <span className={styles.activityType}>{item.content}</span>
+                          </p>
+                        )}
+                        <p className={styles.activityTime}>{formatTimeAgo(item.created_at)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {uniqueRecentActivity.length > 3 && (
+                  <button 
+                    className={styles.expandButton}
+                    onClick={() => toggleSection('activity')}
+                  >
+                    <ChevronDown size={20} strokeWidth={1} />
+                  </button>
+                )}
+              </>
             ) : (
               <>
                 <div className={styles.scrollableList}>
-                  {uniqueRecentActivity.slice(5).map(item => (
+                  {uniqueRecentActivity.map(item => (
                     <div key={`${item.type}-${item.shop_id}-${item.id}`} className={styles.activityItem}>
                       <div className={styles.activityDot}></div>
                       <div className={styles.activityContent}>
@@ -742,21 +741,17 @@ const Dashboard = () => {
                   className={styles.collapseButton}
                   onClick={() => toggleSection('activity')}
                 >
-                  <ChevronUp size={20} />
+                  <ChevronUp size={20} strokeWidth={1} />
                 </button>
               </>
             )}
           </>
+        ) : (
+          <div className={styles.emptyState}>
+            <p>まだアクティビティがありません</p>
+          </div>
         )}
         
-        <div className={styles.detailsLink}>
-          <ButtonGradientWrapper 
-            anotherStyle={styles.viewMoreButton} 
-            onClick={() => handleViewMoreClick('activity')}
-          >
-            詳しく見る <ChevronRight size={16} />
-          </ButtonGradientWrapper>
-        </div>
       </div>
     </div>
   );
