@@ -202,7 +202,7 @@ const ShopDrinks: React.FC<ShopDrinksProps> = ({ shop }) => {
             <Wine className={styles.titleIconSvg} strokeWidth={1} />
           </div>
           <div className={styles.titleContent}>
-            <h3>ドリンクメニュー</h3>
+            <h3 className={styles.title}>ドリンクメニュー</h3>
             <p>{totalFiltered} / {drinks.length} 件のドリンク</p>
           </div>
         </div>

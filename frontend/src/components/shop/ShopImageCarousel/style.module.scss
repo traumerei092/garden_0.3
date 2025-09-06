@@ -148,6 +148,10 @@
 .thumbsContainer {
   margin-top: 12px;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .thumbsSwiper {
@@ -258,39 +262,10 @@
     font-size: 0.7rem;
   }
   
-  .thumbSlide {
-    width: 100px;
-    height: 66px;
-  }
-  
-  .thumbWrapper,
-  .addThumbWrapper {
-    width: 100px;
-    height: 66px;
-  }
-  
-  .thumbsSwiper {
-    height: 66px;
-  }
 }
 
 @media (max-width: 480px) {
   .mainCarousel {
     height: 240px;
-  }
-  
-  .thumbSlide {
-    width: 80px;
-    height: 56px;
-  }
-  
-  .thumbWrapper,
-  .addThumbWrapper {
-    width: 80px;
-    height: 56px;
-  }
-  
-  .thumbsSwiper {
-    height: 56px;
   }
 }

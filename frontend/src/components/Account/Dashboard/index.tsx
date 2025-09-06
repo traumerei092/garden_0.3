@@ -49,11 +49,11 @@ const Dashboard = () => {
 
       const [summaryData, viewData, reviewData, activityData, atmosphereData, tagData] = await Promise.all([
         fetchDashboardSummary(),
-        fetchViewHistory(10),
-        fetchReviewHistory(10), 
-        fetchRecentActivity(10),
-        fetchAtmosphereFeedbackHistory(10),
-        fetchTagReactionHistory(10)
+        fetchViewHistory(220),
+        fetchReviewHistory(20), 
+        fetchRecentActivity(20),
+        fetchAtmosphereFeedbackHistory(20),
+        fetchTagReactionHistory(20)
       ]);
 
       setSummary(summaryData);
@@ -751,7 +751,7 @@ const Dashboard = () => {
             <p>まだアクティビティがありません</p>
           </div>
         )}
-        
+
       </div>
     </div>
   );

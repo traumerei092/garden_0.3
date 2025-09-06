@@ -46,7 +46,7 @@ const Header = () => {
             }}
         >
             <NavbarBrand className={styles.headerLeft}>
-                <Logo width={160} height={80} />
+                <Logo width={140} height={70} />
             </NavbarBrand>
             <NavbarContent justify="center" className={styles.headerCenter}>
                 {user ? (

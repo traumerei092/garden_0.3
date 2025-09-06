@@ -5,28 +5,87 @@
   position: relative;
 }
 
-.header {
+.mainHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 8px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconContainer {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionIcon {
+  color: rgba(0, 255, 255, 0.9);
+  width: 24px;
+  height: 24px;
 }
 
 .sectionTitle {
   font-size: 1.3rem;
   font-weight: bold;
   margin: 0;
-  padding-left: 10px;
-  border-left: 4px solid #4cc9f0;
   color: white;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .mainHeader {
+    gap: 12px;
+  }
+  
+  .iconContainer {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .sectionIcon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .headerContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .sectionTitle {
+    font-size: 1.1rem;
+  }
+  
+  .writeReviewButton {
+    font-size: 0.8rem;
+  }
+}
+
 .writeReviewButton {
+  width: 100%;
   border: none;
   border-radius: 8px;
-  padding: 12px 24px;
   font-weight: 600;
   font-size: 0.9rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,7 +319,7 @@
 
 // フィルター関連のスタイル
 .filters {
-  margin-bottom: 32px;
+  margin: 16px 0 32px 0;
 }
 
 .filterSection {

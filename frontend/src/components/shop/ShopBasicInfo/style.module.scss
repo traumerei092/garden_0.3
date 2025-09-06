@@ -23,16 +23,71 @@
     font-style: italic;
 }
 
+.mainHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.iconContainer {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sectionIcon {
+    color: rgba(0, 255, 255, 0.9);
+    width: 24px;
+    height: 24px;
+}
+
+.headerContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .sectionTitle {
     font-size: 1.3rem;
     font-weight: bold;
-    margin-bottom: 20px;
-    padding-left: 10px;
-    border-left: 4px solid #4cc9f0;
     color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .mainHeader {
+        gap: 12px;
+    }
+    
+    .iconContainer {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .sectionIcon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .sectionTitle {
+        font-size: 1.1rem;
+    }
+    
+    .editActions {
+        gap: 0.5rem;
+    }
+    
+    .editBasicInfo {
+        display: none;
+    }
 }
 
 .editActions {
@@ -48,6 +103,7 @@
     background: linear-gradient(135deg, rgba(0, 198, 255, 1) 0%, rgba(235, 14, 242, 1) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: rgba(0, 198, 255, 1) ;
     background-clip: text;
     font-size: 0.875rem;
     font-weight: 300;

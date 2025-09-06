@@ -230,15 +230,22 @@ const ShopReviews: React.FC<ShopReviewsProps> = ({ shopId }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h3 className={styles.sectionTitle}>口コミ</h3>
-        <ButtonGradient 
-          onClick={() => setIsModalOpen(true)}
-          anotherStyle={styles.writeReviewButton}
-        >
-          <MessageCircle size={16} style={{ marginRight: '8px' }} />
-          口コミを投稿
-        </ButtonGradient>
+      <div className={styles.mainHeader}>
+        <div className={styles.headerContainer}>
+          <div className={styles.iconContainer}>
+            <MessageCircle className={styles.sectionIcon} strokeWidth={1}/>
+          </div>
+          <div className={styles.sectionTitle}>口コミ</div>
+        </div>
+        <div className={styles.headerActions}>
+          <ButtonGradient 
+            onClick={() => setIsModalOpen(true)}
+            anotherStyle={styles.writeReviewButton}
+          >
+            <MessageCircle size={16} style={{ marginRight: '8px' }} />
+            口コミを投稿
+          </ButtonGradient>
+        </div>
       </div>
 
       <div className={styles.filters}>

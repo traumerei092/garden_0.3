@@ -3,7 +3,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   transition: all 0.3s ease;
   height: fit-content;
   
@@ -17,11 +17,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-
+  margin-bottom: 8px;
+  
   @media (max-width: 768px) {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
   }
 }
 
@@ -52,18 +53,13 @@
   width: 100%;
 }
 
-.insights {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.commonalities {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  margin-bottom: 8px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
 }
 
-.insightItem {
+.commonalityItem {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -79,109 +75,64 @@
   }
 }
 
-.insightIcon {
+.commonalityIcon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
   background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid rgba(0, 255, 255, 0.3);
   color: rgba(0, 255, 255, 0.9);
   flex-shrink: 0;
 }
 
-.insightContent {
-  display: flex;
-  align-self: center;
-  flex: 1;
-}
-
-.insightLabel {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 500;
-}
-
-.insightValue {
-  font-size: 0.8rem;
-  color: white;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-// 好みの雰囲気専用スタイル
-.atmosphereItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(0, 255, 255, 0.15);
-  }
-}
-
-.atmosphereContent {
+.commonalityContent {
   display: flex;
   flex-direction: column;
   gap: 2px;
   flex: 1;
 }
 
-.atmosphereValueContainer {
-  max-height: 40px;
-  overflow-y: auto;
-  
-  /* Custom scrollbar */
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 255, 0.3);
-    border-radius: 2px;
-    
-    &:hover {
-      background: rgba(0, 255, 255, 0.5);
-    }
-  }
-}
-
-.atmosphereValue {
-  font-size: 0.8rem;
+.commonalityMessage {
+  font-size: 0.85rem;
   color: white;
   font-weight: 500;
-  line-height: 1.3;
-  word-wrap: break-word;
-}
-
-.actionArea {
+  line-height: 1.4;
   display: flex;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
 }
 
-.detailsButton {
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0 8px;
-  height: 30px;
-  min-width: auto;
+.commonalityValue {
+  color: white;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(0, 255, 255, 0.08));
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  display: inline-block;
+  
+  .commonalityItem:hover & {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+    border-color: rgba(0, 255, 255, 0.3);
+  }
+}
 
-  &:hover {
-    transform: scale(1.05);
+.commonalityCount {
+  color: rgba(0, 255, 255, 0.9);
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(0, 255, 255, 0.08));
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  display: inline-block;
+  
+  .commonalityItem:hover & {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+    border-color: rgba(0, 255, 255, 0.3);
   }
 }
 
@@ -199,11 +150,11 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   margin-bottom: 16px;
-  width: 40%;
+  width: 50%;
 }
 
 .shimmerContent {
-  height: 80px;
+  height: 120px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
@@ -216,7 +167,8 @@
 
 // エラー・データ不足状態
 .errorState,
-.insufficientData {
+.insufficientData,
+.noCommonalities {
   text-align: center;
   padding: 24px;
   color: rgba(255, 255, 255, 0.7);
@@ -227,7 +179,8 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-.insufficientMessage {
+.insufficientMessage,
+.noCommonalitiesMessage {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 12px 0 20px 0;
@@ -261,32 +214,58 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+// Netflix風のマイクロインタラクション
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  animation: fadeInUp 0.4s ease-out;
+}
+
 // レスポンシブデザイン
 @media (max-width: 768px) {
   .container {
     padding: 16px;
   }
   
-  .content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+  .commonalities {
+    gap: 10px;
   }
   
-  .actionArea {
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .detailsButton {
-    font-size: 0.65rem;
-    padding: 0 6px;
-    height: 26px;
-    width: auto;
-    min-width: 60px;
-  }
-  
-  .insightItem {
+  .commonalityItem {
     padding: 10px;
+    gap: 10px;
+  }
+  
+  .commonalityIcon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+  }
+  
+  .commonalityItem {
+    padding: 8px;
+  }
+  
+  .commonalityValues {
+    gap: 1px;
+  }
+  
+  .commonalityValue {
+    font-size: 0.8rem;
+    padding: 1px 4px;
   }
 }

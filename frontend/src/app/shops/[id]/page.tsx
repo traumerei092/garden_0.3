@@ -10,7 +10,7 @@ import { Shop, ShopStats } from "@/types/shops";
 import Header from "@/components/Layout/Header";
 import ShopActionButton from '@/components/Shop/ShopActionButton';
 import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
-import ShopMatchRate from '@/components/Shop/ShopMatchRate';
+import CommonalitiesSection from '@/components/Shop/CommonalitiesSection';
 import ShopTagModal from '@/components/Shop/ShopTagModal';
 import ShopAtmosphereFeedbackModal from '@/components/Shop/ShopAtmosphereFeedbackModal';
 import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
@@ -287,23 +287,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       <Header />
 
       <div className={styles.detailHeader}>
-        <LinkDefault href="/shops" styleName=''>
+        <LinkDefault href="/shops" styleName={styles.backButton}>
           <ChevronLeft size={18} />
-          一覧に戻る
+          <span className={styles.backButtonText}>一覧に戻る</span>
         </LinkDefault>
         <div className={styles.headerInfo}>
           <h1 className={styles.headerShopName}>{shop.name}</h1>
-          <div className={styles.headerLocationInfo}>
-            {distance !== null && (
-              <div className={styles.headerDistance}>
-                <MapPin size={14} />
-                現在地から {formatDistance(distance)}
-              </div>
-            )}
-            <div className={styles.headerAddress}>
-              {shop.area || `${shop.prefecture} ${shop.city}`}
-            </div>
-          </div>
         </div>
         <div className={styles.actionButtons}>
           {relationStats?.counts.map((relationType) => (
@@ -314,9 +303,37 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
               isActive={relationStats.user_relations.includes(relationType.id)}
               onClick={() => handleRelationToggle(relationType.id)}
               loading={isActionLoading}
+              anotherStyle={styles.actionButton}
             />
           ))}
         </div>
+      </div>
+
+      {/*エリア情報*/}
+      <div className={styles.headerLocationInfo}>
+        {distance !== null && (
+          <div className={styles.headerDistance}>
+            <MapPin size={14} />
+            現在地から {formatDistance(distance)}
+          </div>
+        )}
+        <div className={styles.headerAddress}>
+          {shop.area || `${shop.prefecture} ${shop.city}`}
+        </div>
+      </div>
+
+      {/* スマホサイズでのみ表示されるアクションボタン */}
+      <div className={styles.mobileActionButtons}>
+        {relationStats?.counts.map((relationType) => (
+          <ShopActionButton
+            key={relationType.id}
+            type={relationType}
+            count={relationType.count}
+            isActive={relationStats.user_relations.includes(relationType.id)}
+            onClick={() => handleRelationToggle(relationType.id)}
+            loading={isActionLoading}
+          />
+        ))}
       </div>
 
       <div className={styles.mainContent}>
@@ -331,22 +348,30 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         </div>
 
         <div className={styles.shopInfoContainer}>
-          {/* ウェルカムセクション - 常連さんの傾向の上に配置 */}
-          <WelcomeSection 
-            shopId={parseInt(params.id)}
-            refreshTrigger={welcomeRefreshTrigger}
-          />
-          
-          <div className={styles.snapshotAndMatch}>
-            <div className={styles.regularCustomerSection}>
-              <RegularsSnapshot 
-                shopId={parseInt(params.id)} 
-                onViewDetails={() => setShowRegularsModal(true)} 
-              />
-            </div>
-            <div className={styles.matchRateSection}>
-              <ShopMatchRate rate={70} />
-            </div>
+          {/* 常連さんの情報セクション - 統合レイアウト */}
+          <div className={styles.regularsInfoSection}>
+
+            {/* 1. ウェルカム */}
+            <WelcomeSection 
+              shopId={parseInt(params.id)}
+              refreshTrigger={welcomeRefreshTrigger}
+              className={styles.welcomeSection}
+            />
+            
+            {/* 2. 常連さんの傾向 */}
+            <RegularsSnapshot 
+              shopId={parseInt(params.id)} 
+              onViewDetails={() => setShowRegularsModal(true)} 
+              className={styles.regularsSnapshot}
+            />
+            
+            {/* 3. あなたとの共通点 */}
+            <CommonalitiesSection 
+              shopId={parseInt(params.id)}
+              refreshTrigger={welcomeRefreshTrigger}
+              className={styles.commonalitiesSection}
+            />
+            
           </div>
           
 

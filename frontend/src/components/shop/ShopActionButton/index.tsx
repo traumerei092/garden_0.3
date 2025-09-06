@@ -13,6 +13,7 @@ type ShopActionButtonProps = {
     onClick?: () => void;
     loading?: boolean;
     showCount?: boolean;
+    anotherStyle?: string;
 };
 
 const ShopActionButton: React.FC<ShopActionButtonProps> = ({
@@ -21,7 +22,8 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
     isActive = false,
     onClick,
     loading = false,
-    showCount = true
+    showCount = true,
+    anotherStyle
 }) => {
     // デバッグ用：ShopActionButtonが受け取ったpropsを確認
     console.log(`ShopActionButton [${type.name}]:`, {
@@ -70,7 +72,7 @@ const ShopActionButton: React.FC<ShopActionButtonProps> = ({
     };
 
     return (
-        <div className={styles.buttonContainer}>
+        <div className={`${styles.buttonContainer} ${anotherStyle}`}>
             <Tooltip content={tooltipContent()} placement="bottom" className={styles.tooltip}>
                 <Button
                     className={`${styles.button} ${styles[type.name]} ${isActive ? styles.active : ''}`}

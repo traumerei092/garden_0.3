@@ -1754,6 +1754,232 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
         return distribution
 
 
+class CommonalitiesAPIView(RegularsAnalysisAPIView):
+    """
+    ユーザーと常連客の共通点分析API
+    Phase 1: 年齢・性別、雰囲気の好み、来店目的
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, shop_id):
+        # 店舗の存在確認
+        try:
+            shop = Shop.objects.get(id=shop_id)
+        except Shop.DoesNotExist:
+            return Response({
+                "detail": "店舗が見つかりません"
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # ログインユーザーの取得
+        user = request.user
+        
+        # 常連客を取得
+        regulars = self.get_regulars_queryset(shop_id)
+        if regulars is None:
+            return Response({
+                "detail": "関係タイプが見つかりません"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        regulars_list = list(regulars)
+        total_regulars = len(regulars_list)
+
+        # 常連数が少ない場合
+        if total_regulars < 3:
+            return Response({
+                "age_gender": {"category": "age_gender", "commonalities": [], "total_count": 0},
+                "atmosphere_preferences": {"category": "atmosphere_preferences", "commonalities": [], "total_count": 0},
+                "visit_purposes": {"category": "visit_purposes", "commonalities": [], "total_count": 0},
+                "total_regulars": total_regulars,
+                "has_commonalities": False
+            })
+
+        # 各カテゴリーの共通点を分析
+        age_gender_commonalities = self.analyze_age_gender_commonalities(user, regulars_list)
+        atmosphere_commonalities = self.analyze_atmosphere_commonalities(user, regulars_list)
+        visit_purpose_commonalities = self.analyze_visit_purpose_commonalities(user, regulars_list)
+        
+        # 共通点があるかどうかを判定
+        has_commonalities = (
+            bool(age_gender_commonalities["commonalities"]) or
+            bool(atmosphere_commonalities["commonalities"]) or
+            bool(visit_purpose_commonalities["commonalities"])
+        )
+
+        return Response({
+            "age_gender": age_gender_commonalities,
+            "atmosphere_preferences": atmosphere_commonalities,
+            "visit_purposes": visit_purpose_commonalities,
+            "total_regulars": total_regulars,
+            "has_commonalities": has_commonalities
+        })
+
+    def analyze_age_gender_commonalities(self, user, regulars_list):
+        """年齢・性別の共通点を分析"""
+        commonalities = []
+        matching_count = 0
+        
+        # ユーザーの年齢層と性別を取得
+        user_age_group = None
+        if user.birthdate:
+            user_age_group = self.calculate_age_group(user.birthdate)
+        
+        user_gender = user.gender
+        
+        # 常連客との比較
+        for relation in regulars_list:
+            regular = relation.user
+            is_match = False
+            
+            # 年齢層の比較
+            if user_age_group and regular.birthdate:
+                regular_age_group = self.calculate_age_group(regular.birthdate)
+                if user_age_group == regular_age_group:
+                    is_match = True
+            
+            # 性別の比較
+            if user_gender and regular.gender:
+                if user_gender == regular.gender:
+                    is_match = True
+            
+            if is_match:
+                matching_count += 1
+        
+        # 共通点のメッセージを作成
+        if matching_count > 0:
+            details = []
+            if user_age_group:
+                details.append(f"{user_age_group}")
+            if user_gender:
+                # 性別を日本語に変換
+                gender_map = {
+                    'male': '男性',
+                    'female': '女性',
+                    'other': 'その他',
+                    '男性': '男性',
+                    '女性': '女性'
+                }
+                gender_jp = gender_map.get(user_gender.lower(), user_gender)
+                details.append(f"{gender_jp}")
+            
+            if details:
+                commonalities.append("・".join(details))
+        
+        return {
+            "category": "age_gender",
+            "commonalities": commonalities,
+            "total_count": matching_count
+        }
+
+    def analyze_atmosphere_commonalities(self, user, regulars_list):
+        """雰囲気の好みの共通点を分析"""
+        commonalities = []
+        matching_count = 0
+        
+        # ユーザーの雰囲気評価を取得
+        try:
+            from .models import ShopAtmosphereFeedback
+            user_feedback = ShopAtmosphereFeedback.objects.filter(user=user).first()
+            if not user_feedback or not user_feedback.atmosphere_scores:
+                return {
+                    "category": "atmosphere_preferences",
+                    "commonalities": [],
+                    "total_count": 0
+                }
+            
+            user_scores = user_feedback.atmosphere_scores
+            common_preferences = []
+            
+            # 各常連客と比較
+            for relation in regulars_list:
+                regular = relation.user
+                regular_feedback = ShopAtmosphereFeedback.objects.filter(user=regular).first()
+                
+                if regular_feedback and regular_feedback.atmosphere_scores:
+                    regular_scores = regular_feedback.atmosphere_scores
+                    
+                    # 雰囲気指標ごとに比較（±1.0の範囲で類似とみなす）
+                    similar_indicators = []
+                    for indicator_id, user_score in user_scores.items():
+                        if indicator_id in regular_scores:
+                            regular_score = regular_scores[indicator_id]
+                            if abs(user_score - regular_score) <= 1.0:
+                                # 類似する指標の名前を取得
+                                try:
+                                    indicator = AtmosphereIndicator.objects.get(id=indicator_id)
+                                    similar_indicators.append(indicator.name)
+                                except AtmosphereIndicator.DoesNotExist:
+                                    continue
+                    
+                    if similar_indicators:
+                        matching_count += 1
+                        common_preferences.extend(similar_indicators)
+            
+            # 最も共通する雰囲気指標を抽出（重複を除去し、頻度順）
+            if common_preferences:
+                from collections import Counter
+                preference_counter = Counter(common_preferences)
+                top_preferences = [pref for pref, count in preference_counter.most_common(3)]
+                commonalities = top_preferences
+                
+        except Exception as e:
+            print(f"Error analyzing atmosphere commonalities: {e}")
+            return {
+                "category": "atmosphere_preferences",
+                "commonalities": [],
+                "total_count": 0
+            }
+        
+        return {
+            "category": "atmosphere_preferences",
+            "commonalities": commonalities,
+            "total_count": matching_count
+        }
+
+    def analyze_visit_purpose_commonalities(self, user, regulars_list):
+        """来店目的の共通点を分析"""
+        commonalities = []
+        matching_count = 0
+        
+        # ユーザーの来店目的を取得
+        user_purposes = []
+        if hasattr(user, 'visit_purposes') and user.visit_purposes.exists():
+            user_purposes = list(user.visit_purposes.values_list('name', flat=True))
+        
+        if not user_purposes:
+            return {
+                "category": "visit_purposes",
+                "commonalities": [],
+                "total_count": 0
+            }
+        
+        common_purposes = []
+        
+        # 常連客との比較
+        for relation in regulars_list:
+            regular = relation.user
+            if hasattr(regular, 'visit_purposes') and regular.visit_purposes.exists():
+                regular_purposes = list(regular.visit_purposes.values_list('name', flat=True))
+                
+                # 共通する来店目的を探す
+                shared_purposes = set(user_purposes) & set(regular_purposes)
+                if shared_purposes:
+                    matching_count += 1
+                    common_purposes.extend(shared_purposes)
+        
+        # 最も共通する来店目的を抽出（重複を除去し、頻度順）
+        if common_purposes:
+            from collections import Counter
+            purpose_counter = Counter(common_purposes)
+            top_purposes = [purpose for purpose, count in purpose_counter.most_common(3)]
+            commonalities = top_purposes
+        
+        return {
+            "category": "visit_purposes",
+            "commonalities": commonalities,
+            "total_count": matching_count
+        }
+
+
 ##############################################
 # ウェルカム機能API
 ##############################################

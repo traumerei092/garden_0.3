@@ -2,10 +2,20 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 90%;
+  width: 100%;
+  max-width: 1200px;
   color: white;
-  padding: 70px 0;
+  padding: 70px 20px 20px 20px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 60px 16px 20px 16px;
+    width: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 60px 12px 20px 12px;
+  }
 }
 
 .loadingContainer, .errorContainer {
@@ -21,10 +31,31 @@
 .detailHeader {
   width: 100%;
   border-radius: 10px;
-  margin: 15px 0 20px 0;
+  margin: 15px 0 10px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+    align-items: stretch;
+    margin: 8px 0 4px 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.backButton {
+  @media (max-width: 768px) {
+    align-self: flex-start;
+    width: 10%;
+  }
+}
+
+.backButtonText {
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .headerInfo {
@@ -32,6 +63,13 @@
   flex-direction: column;
   gap: 8px;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 70%;
+  }
 }
 
 .headerShopName {
@@ -40,13 +78,30 @@
   color: white;
   line-height: 1.2;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
 }
 
 .headerLocationInfo {
   display: flex;
+  justify-content: end;
   align-items: center;
+  width: 100%;
   gap: 30px;
   font-weight: 150;
+  margin: 0 0 10px 0;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
 }
 
 .headerDistance {
@@ -55,18 +110,58 @@
   gap: 5px;
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
+
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
+  }
 }
 
 .headerAddress {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
+  }
 }
 
 .actionButtons {
   display: flex;
   gap: 15px;
   justify-content: flex-start;
+  
+  @media (max-width: 768px) {
+    width: 25%;
+  }
+}
+
+.actionButton {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.mobileActionButtons {
+  display: none; /* デスクトップでは非表示 */
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 0 0;
+    margin-bottom: 8px;
+    
+    /* スクロールバーを隠す */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
 .mainContent {
@@ -74,6 +169,11 @@
   display: flex;
   justify-content: center;
   gap: 2.5%;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
 
 .shopImageContainer {
@@ -81,6 +181,20 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    order: 1;
+    gap: 10px;
+  }
+}
+
+.imageCarousel {
+  @media (max-width: 768px) {
+    .viewAllButton {
+      display: none;
+    }
+  }
 }
 
 .shopImageWrapper {
@@ -169,6 +283,11 @@
   width: 48.75%;
   display: flex;
   flex-direction: column;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    order: 2;
+  }
 }
 
 .shopHeaderSection {
@@ -187,6 +306,22 @@
   align-items: center;
   margin-bottom: 15px;
   gap: 20px;
+}
+
+.regularsInfoSection {
+  margin-bottom: 16px;
+}
+
+.regularsSnapshot {
+  margin-bottom: 8px;
+}
+
+.commonalitiesSection {
+  margin-bottom: 8px;
+}
+
+.welcomeSection {
+  margin-bottom: 8px;
 }
 
 .shopName {
@@ -233,6 +368,10 @@
 
 .tagSection {
   margin-bottom: 15px;
+  
+  @media (max-width: 768px) {
+    margin: 0;
+  }
 }
 
 .sectionTitle {
@@ -331,6 +470,10 @@
   height: 1px;
   background-color: rgba(255, 255, 255, 0.1);
   margin: 50px 0;
+
+  @media (max-width: 768px) {
+    margin: 20px 0;
+  }
 }
 
 .tabsContainer {

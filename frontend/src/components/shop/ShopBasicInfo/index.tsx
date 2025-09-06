@@ -5,7 +5,6 @@ import { Shop } from '@/types/shops';
 import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins, Edit, FileClock } from 'lucide-react';
 import ChipCondition from '@/components/UI/ChipCondition';
 import { ScrollShadow, Link } from '@nextui-org/react';
-import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
 import { useShopModalStore } from '@/store/useShopModalStore';
 
@@ -118,23 +117,28 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.sectionTitle}>
-        基本情報
+      <div className={styles.mainHeader}>
+        <div className={styles.iconContainer}>
+          <Store className={styles.sectionIcon} strokeWidth={1}/>
+        </div>
+        <div className={styles.headerContent}>
+          <div className={styles.sectionTitle}>基本情報</div>
+        </div>
         <div className={styles.editActions}>
           <Link 
             className={styles.editBasicInfoLink}
             onPress={openHistoryModal}
           >
-            <FileClock size={16} strokeWidth={1} />
+            <FileClock size={14} strokeWidth={1} />
             <span className={styles.editBasicInfo}>編集履歴</span>
           </Link>
-          <ButtonGradientWrapper
-            onClick={openEditModal}
-            anotherStyle={styles.editButton}
+          <Link 
+            className={styles.editBasicInfoLink}
+            onPress={openEditModal}
           >
-            <Edit size={16} />
-            基本情報を修正する
-          </ButtonGradientWrapper>
+            <Edit size={14} strokeWidth={1} />
+            <span className={styles.editBasicInfo}>修正</span>
+          </Link>
         </div>
       </div>
       
