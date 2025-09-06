@@ -125,18 +125,22 @@
   }
   
   // セレクタボタン全体
-  [data-slot="selector-button"],
-  [data-slot="clear-button"] {
+  [data-slot="selector-button"] {
     color: white !important;
     
     svg {
       color: white !important;
     }
   }
+  
+  // ×ボタンを非表示にする
+  [data-slot="clear-button"] {
+    display: none !important;
+  }
 }
 
 .autocompleteItem {
-  font-size: 10px !important;
+  font-size: 0.8rem !important;
   color: white !important;
   padding: 8px 12px !important;
   transition: all 0.2s ease !important;
@@ -156,5 +160,9 @@
   &:focus {
     background-color: rgba(0, 255, 255, 0.15) !important;
     outline: none !important;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.6rem;
   }
 }

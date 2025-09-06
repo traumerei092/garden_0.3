@@ -1,9 +1,9 @@
 'use client';
 
 import styles from './style.module.scss';
-import {Tooltip} from "@nextui-org/react";
+import {Button, Tooltip, Badge} from "@nextui-org/react";
 import StyledAutocomplete, { AutocompleteOption } from '@/components/UI/StyledAutocomplete';
-import { HousePlus, AlignJustify, LayoutGrid, MapPinned } from 'lucide-react';
+import { HousePlus, AlignJustify, LayoutGrid, MapPinned, Funnel } from 'lucide-react';
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import CustomTabs from "@/components/UI/CustomTabs";
 import {useRouter} from "next/navigation";
@@ -61,6 +61,20 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                     selectedKey={selectedTab}
                     onSelectionChange={onTabChange}
                 />
+                <div className={styles.mobileAutocomplete}>
+                    <StyledAutocomplete
+                        options={sortOptions}
+                        defaultSelectedKey="match"
+                        placeholder="マッチ率が高い順"
+                        aria-label="並び順を選択"
+                        size="sm"
+                        radius="sm"
+                        onSelectionChange={(key) => {
+                            // 並び順変更のロジックをここに追加
+                            console.log('Selected sort option:', key);
+                        }}
+                    />
+                </div>
             </div>
             <div className={styles.headerRight}>
                 <StyledAutocomplete
@@ -70,6 +84,7 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                     aria-label="並び順を選択"
                     size="sm"
                     radius="sm"
+                    className={styles.desktopAutocomplete}
                     onSelectionChange={(key) => {
                         // 並び順変更のロジックをここに追加
                         console.log('Selected sort option:', key);
@@ -90,6 +105,11 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                         <HousePlus size={18} color="#ffffff" strokeWidth={1} />
                     </ButtonGradientWrapper>
                 </Tooltip>
+                <Badge color="danger" content="5" shape="circle" className={styles.badge}>
+                    <Button className={styles.sortButton} variant="flat" color="primary" radius="sm" size="sm">
+                        <Funnel size={16} strokeWidth={1} />
+                    </Button>
+                </Badge>
             </div>
         </div>
     );
