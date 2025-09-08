@@ -539,8 +539,8 @@ class ShopTagViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = ShopTag.objects.all().annotate(
-            reaction_count=models.Count('reactions')
-        ).order_by('-reaction_count', '-created_at')
+            reaction_count_db=models.Count('reactions')
+        ).order_by('-reaction_count_db', '-created_at')
         
         # 店舗IDでフィルタリング
         shop_id = self.request.query_params.get('shop_id')
@@ -2080,3 +2080,511 @@ class ShopWelcomeAPIView(APIView):
             "message": message,
             "show_welcome_button": True  # 常連は常にボタンを表示
         })
+
+
+##############################################
+# 店舗検索API
+##############################################
+
+class ShopSearchAPIView(APIView):
+    """
+    こだわり条件での店舗検索API
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """
+        検索条件に基づいて店舗を検索
+        """
+        # 基本的なクエリセット
+        queryset = Shop.objects.all().select_related('area').prefetch_related(
+            'shop_types', 'shop_layouts', 'shop_options', 'images',
+            'business_hours', 'tags', 'atmosphere_aggregate'
+        )
+        
+        # 検索条件を適用
+        queryset = self.apply_regulars_filters(request, queryset)
+        queryset = self.apply_atmosphere_filters(request, queryset)
+        queryset = self.apply_scene_filters(request, queryset)
+        queryset = self.apply_basic_filters(request, queryset)
+        queryset = self.apply_feature_filters(request, queryset)
+        queryset = self.apply_drink_filters(request, queryset)
+        
+        # 結果をシリアライズ
+        serializer = ShopSerializer(queryset.distinct(), many=True, context={'request': request})
+        
+        return Response({
+            'shops': serializer.data,
+            'count': queryset.count()
+        })
+    
+    def apply_regulars_filters(self, request, queryset):
+        """常連さんで探すフィルター"""
+        
+        # 常連さんの歓迎度
+        welcome_min = request.GET.get('welcome_min')
+        if welcome_min:
+            try:
+                from .models import WelcomeAction
+                welcome_count = int(welcome_min)
+                shop_ids = WelcomeAction.objects.values('shop_id').annotate(
+                    count=Count('id')
+                ).filter(count__gte=welcome_count).values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (ValueError, TypeError):
+                pass
+        
+        # 常連さんの属性（年齢・性別）
+        regular_age_groups = request.GET.getlist('regular_age_groups')
+        regular_genders = request.GET.getlist('regular_genders')
+        
+        if regular_age_groups or regular_genders:
+            # favoriteのrelation_typeを取得
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation
+                ).select_related('user')
+                
+                # 年齢層フィルター
+                if regular_age_groups:
+                    filtered_user_ids = []
+                    for relation in regular_relations:
+                        user = relation.user
+                        if user.birthdate:
+                            age_group = self.calculate_age_group(user.birthdate)
+                            if age_group in regular_age_groups:
+                                filtered_user_ids.append(user.id)
+                    
+                    regular_relations = regular_relations.filter(user_id__in=filtered_user_ids)
+                
+                # 性別フィルター
+                if regular_genders:
+                    regular_relations = regular_relations.filter(user__gender__in=regular_genders)
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True).distinct()
+                queryset = queryset.filter(id__in=shop_ids)
+                
+            except RelationType.DoesNotExist:
+                pass
+        
+        # 常連さんの数でフィルタリング
+        regular_count_min = request.GET.get('regular_count_min')
+        if regular_count_min:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                count = int(regular_count_min)
+                shop_ids = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation
+                ).values('shop_id').annotate(
+                    count=Count('id')
+                ).filter(count__gte=count).values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (ValueError, TypeError, RelationType.DoesNotExist):
+                pass
+
+        # 職業・業種
+        occupation = request.GET.get('occupation')
+        industry = request.GET.get('industry')
+        
+        if occupation or industry:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation
+                ).select_related('user')
+                
+                if occupation:
+                    regular_relations = regular_relations.filter(user__occupation__icontains=occupation)
+                if industry:
+                    regular_relations = regular_relations.filter(user__industry__icontains=industry)
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True).distinct()
+                queryset = queryset.filter(id__in=shop_ids)
+            except RelationType.DoesNotExist:
+                pass
+
+        # 趣味・興味でフィルタリング
+        regular_interests = request.GET.getlist('regular_interests')
+        if regular_interests:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                interest_ids = [int(id) for id in regular_interests if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__interests__id__in=interest_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+
+        # お酒の好みでフィルタリング
+        regular_alcohol_preferences = request.GET.getlist('regular_alcohol_preferences')
+        if regular_alcohol_preferences:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                alcohol_ids = [int(id) for id in regular_alcohol_preferences if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__alcohol_categories__id__in=alcohol_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+
+        # 血液型でフィルタリング
+        regular_blood_types = request.GET.getlist('regular_blood_types')
+        if regular_blood_types:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                blood_type_ids = [int(id) for id in regular_blood_types if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__blood_type__id__in=blood_type_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+
+        # MBTIでフィルタリング
+        regular_mbti_types = request.GET.getlist('regular_mbti_types')
+        if regular_mbti_types:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                mbti_ids = [int(id) for id in regular_mbti_types if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__mbti__id__in=mbti_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+
+        # 運動頻度でフィルタリング
+        regular_exercise_frequency = request.GET.getlist('regular_exercise_frequency')
+        if regular_exercise_frequency:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                frequency_ids = [int(id) for id in regular_exercise_frequency if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__exercise_frequency__id__in=frequency_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+
+        # 食事制限・好みでフィルタリング
+        regular_dietary_preferences = request.GET.getlist('regular_dietary_preferences')
+        if regular_dietary_preferences:
+            try:
+                favorite_relation = RelationType.objects.get(name='favorite')
+                dietary_ids = [int(id) for id in regular_dietary_preferences if id.isdigit()]
+                regular_relations = UserShopRelation.objects.filter(
+                    relation_type=favorite_relation,
+                    user__dietary_preference__id__in=dietary_ids
+                ).distinct()
+                
+                shop_ids = regular_relations.values_list('shop_id', flat=True)
+                queryset = queryset.filter(id__in=shop_ids)
+            except (RelationType.DoesNotExist, ValueError):
+                pass
+                
+            except RelationType.DoesNotExist:
+                pass
+        
+        # 共通の好み
+        common_interests = request.GET.get('common_interests') == 'true'
+        if common_interests and request.user.is_authenticated:
+            # ログインユーザーと共通の興味を持つ常連がいる店舗を検索
+            user_interests = []
+            if hasattr(request.user, 'interests') and request.user.interests:
+                try:
+                    import json
+                    if isinstance(request.user.interests, str):
+                        user_interests = json.loads(request.user.interests)
+                    elif isinstance(request.user.interests, list):
+                        user_interests = request.user.interests
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            
+            if user_interests:
+                try:
+                    favorite_relation = RelationType.objects.get(name='favorite')
+                    matching_shop_ids = set()
+                    
+                    for shop_id in queryset.values_list('id', flat=True):
+                        regulars = UserShopRelation.objects.filter(
+                            shop_id=shop_id,
+                            relation_type=favorite_relation
+                        ).select_related('user')
+                        
+                        for relation in regulars:
+                            regular = relation.user
+                            if hasattr(regular, 'interests') and regular.interests:
+                                try:
+                                    if isinstance(regular.interests, str):
+                                        regular_interests = json.loads(regular.interests)
+                                    elif isinstance(regular.interests, list):
+                                        regular_interests = regular.interests
+                                    else:
+                                        continue
+                                    
+                                    # 共通の興味があるかチェック
+                                    if set(user_interests) & set(regular_interests):
+                                        matching_shop_ids.add(shop_id)
+                                        break
+                                        
+                                except (json.JSONDecodeError, TypeError):
+                                    continue
+                    
+                    queryset = queryset.filter(id__in=matching_shop_ids)
+                    
+                except RelationType.DoesNotExist:
+                    pass
+        
+        return queryset
+    
+    def apply_atmosphere_filters(self, request, queryset):
+        """雰囲気・利用シーンフィルター"""
+        
+        # 雰囲気スライダー
+        atmosphere_filters = {}
+        for key in request.GET.keys():
+            if key.startswith('atmosphere_'):
+                parts = key.split('_')
+                if len(parts) >= 3 and parts[-1] in ['min', 'max']:
+                    indicator_id = '_'.join(parts[1:-1])
+                    range_type = parts[-1]
+                    try:
+                        value = float(request.GET.get(key))
+                        if indicator_id not in atmosphere_filters:
+                            atmosphere_filters[indicator_id] = {}
+                        atmosphere_filters[indicator_id][range_type] = value
+                    except (ValueError, TypeError):
+                        pass
+        
+        if atmosphere_filters:
+            from django.db.models import Q
+            atmosphere_conditions = Q()
+            
+            for indicator_id, range_values in atmosphere_filters.items():
+                min_val = range_values.get('min', -2.0)
+                max_val = range_values.get('max', 2.0)
+                
+                # JSONFieldでの範囲検索
+                atmosphere_conditions &= Q(
+                    **{f'atmosphere_aggregate__atmosphere_averages__{indicator_id}__gte': min_val,
+                       f'atmosphere_aggregate__atmosphere_averages__{indicator_id}__lte': max_val}
+                )
+            
+            queryset = queryset.filter(atmosphere_conditions)
+        
+        # 利用シーン
+        visit_purposes = request.GET.getlist('visit_purposes')
+        if visit_purposes:
+            from accounts.models import VisitPurpose
+            purpose_objects = VisitPurpose.objects.filter(name__in=visit_purposes)
+            shop_ids = ShopReview.objects.filter(
+                visit_purpose__in=purpose_objects
+            ).values_list('shop_id', flat=True).distinct()
+            queryset = queryset.filter(id__in=shop_ids)
+        
+        # 印象タグ
+        impression_tags = request.GET.get('impression_tags')
+        if impression_tags:
+            queryset = queryset.filter(tags__value__icontains=impression_tags).distinct()
+        
+        return queryset
+    
+    def apply_scene_filters(self, request, queryset):
+        """利用シーンフィルター（追加の詳細条件）"""
+        # 将来の拡張用 - 現在は基本フィルターとして実装済み
+        return queryset
+    
+    def apply_basic_filters(self, request, queryset):
+        """基本条件フィルター"""
+        
+        # エリア
+        area_ids = request.GET.getlist('area_ids')
+        if area_ids:
+            try:
+                area_ids = [int(aid) for aid in area_ids if aid.isdigit()]
+                queryset = queryset.filter(area_id__in=area_ids)
+            except (ValueError, TypeError):
+                pass
+        
+        # 予算
+        budget_min = request.GET.get('budget_min')
+        budget_max = request.GET.get('budget_max')
+        budget_type = request.GET.get('budget_type', 'weekday')  # weekday or weekend
+        
+        if budget_min or budget_max:
+            try:
+                budget_conditions = Q()
+                if budget_type == 'weekend':
+                    if budget_min:
+                        budget_conditions &= Q(budget_weekend_min__gte=int(budget_min))
+                    if budget_max:
+                        budget_conditions &= Q(budget_weekend_max__lte=int(budget_max))
+                else:
+                    if budget_min:
+                        budget_conditions &= Q(budget_weekday_min__gte=int(budget_min))
+                    if budget_max:
+                        budget_conditions &= Q(budget_weekday_max__lte=int(budget_max))
+                
+                queryset = queryset.filter(budget_conditions)
+            except (ValueError, TypeError):
+                pass
+        
+        # 現在地からの距離
+        user_lat = request.GET.get('user_lat')
+        user_lng = request.GET.get('user_lng')
+        distance_km = request.GET.get('distance_km')
+        
+        if all([user_lat, user_lng, distance_km]):
+            try:
+                from math import radians, cos, sin, asin, sqrt
+                
+                def haversine(lon1, lat1, lon2, lat2):
+                    """2点間の距離を計算（km）"""
+                    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+                    dlon = lon2 - lon1
+                    dlat = lat2 - lat1
+                    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+                    c = 2 * asin(sqrt(a))
+                    r = 6371  # 地球の半径（km）
+                    return c * r
+                
+                user_lat = float(user_lat)
+                user_lng = float(user_lng)
+                max_distance = float(distance_km)
+                
+                # 距離フィルタリング
+                nearby_shop_ids = []
+                for shop in queryset.filter(latitude__isnull=False, longitude__isnull=False):
+                    distance = haversine(user_lng, user_lat, shop.longitude, shop.latitude)
+                    if distance <= max_distance:
+                        nearby_shop_ids.append(shop.id)
+                
+                queryset = queryset.filter(id__in=nearby_shop_ids)
+                
+            except (ValueError, TypeError):
+                pass
+        
+        # 今すぐ入れるお店（営業中）
+        open_now = request.GET.get('open_now') == 'true'
+        if open_now:
+            from datetime import datetime
+            now = datetime.now()
+            current_weekday = now.strftime('%a').lower()
+            current_time = now.time()
+            
+            # 営業中の店舗を取得
+            open_shop_ids = BusinessHour.objects.filter(
+                weekday=current_weekday,
+                is_closed=False,
+                open_time__lte=current_time,
+                close_time__gte=current_time
+            ).values_list('shop_id', flat=True)
+            
+            queryset = queryset.filter(id__in=open_shop_ids)
+        
+        return queryset
+    
+    def apply_feature_filters(self, request, queryset):
+        """お店の特徴フィルター"""
+        
+        # タイプ
+        shop_types = request.GET.getlist('shop_types')
+        if shop_types:
+            try:
+                type_ids = [int(tid) for tid in shop_types if tid.isdigit()]
+                queryset = queryset.filter(shop_types__id__in=type_ids).distinct()
+            except (ValueError, TypeError):
+                pass
+        
+        # 座席
+        shop_layouts = request.GET.getlist('shop_layouts')
+        if shop_layouts:
+            try:
+                layout_ids = [int(lid) for lid in shop_layouts if lid.isdigit()]
+                queryset = queryset.filter(shop_layouts__id__in=layout_ids).distinct()
+            except (ValueError, TypeError):
+                pass
+        
+        # 設備
+        shop_options = request.GET.getlist('shop_options')
+        if shop_options:
+            try:
+                option_ids = [int(oid) for oid in shop_options if oid.isdigit()]
+                queryset = queryset.filter(shop_options__id__in=option_ids).distinct()
+            except (ValueError, TypeError):
+                pass
+        
+        return queryset
+    
+    def apply_drink_filters(self, request, queryset):
+        """ドリンクフィルター"""
+        
+        # ドリンクジャンル
+        alcohol_categories = request.GET.getlist('alcohol_categories')
+        if alcohol_categories:
+            try:
+                category_ids = [int(cid) for cid in alcohol_categories if cid.isdigit()]
+                shop_ids = ShopDrink.objects.filter(
+                    alcohol_category_id__in=category_ids
+                ).values_list('shop_id', flat=True).distinct()
+                queryset = queryset.filter(id__in=shop_ids)
+            except (ValueError, TypeError):
+                pass
+        
+        # ドリンク銘柄名
+        drink_name = request.GET.get('drink_name')
+        if drink_name:
+            shop_ids = ShopDrink.objects.filter(
+                models.Q(name__icontains=drink_name) |
+                models.Q(alcohol_brand__name__icontains=drink_name)
+            ).values_list('shop_id', flat=True).distinct()
+            queryset = queryset.filter(id__in=shop_ids)
+        
+        return queryset
+    
+    def calculate_age_group(self, birthdate):
+        """生年月日から年代を計算"""
+        if not birthdate:
+            return None
+            
+        from datetime import date
+        today = date.today()
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        
+        if age < 20:
+            return "10代"
+        elif age < 30:
+            return "20代"
+        elif age < 40:
+            return "30代"  
+        elif age < 50:
+            return "40代"
+        elif age < 60:
+            return "50代"
+        else:
+            return "60代以上"
+
+
+class AtmosphereIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
+    """雰囲気指標のマスターデータを提供するAPI"""
+    queryset = AtmosphereIndicator.objects.all().order_by('id')
+    serializer_class = AtmosphereIndicatorSerializer
+    permission_classes = [AllowAny]

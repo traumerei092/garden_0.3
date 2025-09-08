@@ -9,9 +9,10 @@ type Props = {
   onClick?: () => void;
   anotherStyle: string;
   type?: 'button' | 'submit' | 'reset';
+  size?: 'sm' | 'md' | 'lg';
 };
 
-const ButtonGradient = ({ children, onClick, anotherStyle, type="button" }: Props) => {
+const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="md" }: Props) => {
   console.log("🧩 onPress in ButtonGradient:", onClick);
     return (
       <div className={classNames(styles.gradientWrapper, anotherStyle)}>
@@ -19,6 +20,7 @@ const ButtonGradient = ({ children, onClick, anotherStyle, type="button" }: Prop
           className={classNames(styles.gradient, anotherStyle)}
           onPress={onClick}
           type={type}
+          size={size}
         >
           {children}
         </Button>

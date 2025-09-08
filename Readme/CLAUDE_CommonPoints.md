@@ -231,6 +231,22 @@ interface CommonalitiesData {
 
 ## 📝 メンテナンス情報
 
+### 型定義管理ルール（2025-09-07追加）
+- **集約場所**: `frontend/src/types/` ディレクトリに型定義を集約
+  - 検索機能: `types/search.ts` 
+  - ユーザー関連: `types/users.ts`
+  - 店舗関連: `types/shops.ts`
+- **禁止事項**: コンポーネント内での独自型定義、重複定義
+- **API通信**: `'use server'`禁止、`fetchWithAuth`必須使用
+
+### UIコンポーネント使用規則（2025-09-07追加）
+- **lucideアイコン**: 必ず`strokeWidth={1}`を指定してスタイルを統一
+  - 例: `<Users size={16} strokeWidth={1} />`
+- **選択系UI**: CheckboxCustom・CustomCheckboxGroupを使用
+  - タグ選択やオプション選択で統一されたデザインを適用
+- **タブ系UI**: CustomTabsコンポーネントを使用
+  - スマホ対応のレスポンシブレイアウトを自動適用
+
 ### 定期メンテナンス項目
 - **常連数の閾値調整**: 現在3人 → データ蓄積に応じて調整
 - **雰囲気類似判定**: ±1.0の範囲 → 精度向上のため調整

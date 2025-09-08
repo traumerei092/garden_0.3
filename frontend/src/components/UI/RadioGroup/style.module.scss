@@ -1,0 +1,110 @@
+.radioGroup {
+  width: 100%;
+}
+
+.radioWrapper {
+  gap: 0.5rem;
+}
+
+.radioItem {
+  max-width: 100%;
+  margin: 0;
+}
+
+.radioBase {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+  }
+  
+  &[data-selected="true"] {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 1);
+    
+    &:hover {
+      background: rgba(0, 255, 255, 0.3);
+    }
+  }
+}
+
+.radioControl {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.5);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+  }
+  
+  &[data-selected="true"] {
+    border-color: rgba(0, 255, 255, 1);
+    background: radial-gradient(circle at center, rgba(0, 255, 255, 1) 0%, rgba(0, 255, 255, 0.8) 60%, rgba(0, 255, 255, 0.2) 100%);
+    box-shadow: 0 0 16px rgba(0, 255, 255, 0.6), inset 0 0 8px rgba(0, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+}
+
+.radioControlInner {
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 100%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 4px rgba(0, 255, 255, 0.3);
+  
+  &[data-selected="true"] {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+  }
+}
+
+.radioLabelWrapper {
+  margin-left: 0.75rem;
+  flex: 1;
+}
+
+.radioContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.radioText {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 0.2s ease;
+}
+
+.radioDesc {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.radioBase[data-selected="true"] {
+  .radioText {
+    color: rgba(0, 255, 255, 1);
+  }
+  
+  .radioDesc {
+    color: rgba(0, 255, 255, 0.8);
+  }
+}

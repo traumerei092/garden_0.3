@@ -7,7 +7,8 @@ from .views import (
     ShopUpdateAPIView, ShopEditHistoryListAPIView, HistoryEvaluationAPIView,
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet,
     AreaViewSet, RegularsSnapshotAPIView, RegularsDetailedAnalysisAPIView,
-    CommonalitiesAPIView, ShopWelcomeAPIView
+    CommonalitiesAPIView, ShopWelcomeAPIView, ShopSearchAPIView,
+    AtmosphereIndicatorViewSet
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -25,6 +26,7 @@ router.register(r'relation-types', RelationTypeViewSet)
 router.register(r'user-shop-relations', UserShopRelationViewSet, basename='user-shop-relation')
 router.register(r'shop-drinks', ShopDrinkViewSet, basename='shop-drink')
 router.register(r'areas', AreaViewSet, basename='area')
+router.register(r'atmosphere-indicators', AtmosphereIndicatorViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -44,4 +46,7 @@ urlpatterns = [
     
     # ウェルカム機能API
     path('shops/<int:shop_id>/welcome/', ShopWelcomeAPIView.as_view(), name='shop-welcome'),
+    
+    # 店舗検索API
+    path('shops/search/', ShopSearchAPIView.as_view(), name='shop-search'),
 ]

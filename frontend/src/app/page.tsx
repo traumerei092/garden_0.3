@@ -7,12 +7,17 @@ import { useRouter } from "next/navigation";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import Header from "@/components/Layout/Header";
+import ShopSearchModal from "@/components/Shop/ShopSearchModal";
 import { Card, CardBody, Input } from '@nextui-org/react';
+import { searchShops } from '@/actions/shop/search';
+import { SearchFilters } from '@/types/search';
 
 export default function Home() {
 
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isSearchModalOpen, setIsSearchModalOpen] = React.useState(false);
+    const [isSearching, setIsSearching] = React.useState(false);
 
     const handleLocationClick = async () => {
         try {
@@ -52,6 +57,32 @@ export default function Home() {
         }
     };
 
+    const handleSearchClick = () => {
+        setIsSearchModalOpen(true);
+    };
+
+    const handleSearchModalClose = () => {
+        setIsSearchModalOpen(false);
+    };
+
+    const handleSearch = async (filters: SearchFilters) => {
+        try {
+            setIsSearching(true);
+            const results = await searchShops(filters);
+            console.log('Search results:', results);
+            
+            // 検索結果を店舗一覧ページで表示するため、結果をstateに保存してから遷移
+            // 実装の都合上、一旦店舗一覧ページに遷移
+            router.push('/shops');
+            setIsSearchModalOpen(false);
+        } catch (error) {
+            console.error('Search error:', error);
+            // エラーハンドリング - 後で適切なエラー表示を実装
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     return (
         <main className={styles.main}>
             <div className={styles.backgroundImage}/>
@@ -69,6 +100,7 @@ export default function Home() {
                                 <div className={styles.firstViewUnder}>
                                     <ButtonGradientWrapper
                                         anotherStyle={styles.buttonStyle}
+                                        onClick={handleSearchClick}
                                     >
                                         こだわり条件で探す
                                     </ButtonGradientWrapper>
@@ -97,6 +129,14 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+            
+            {/* 検索モーダル */}
+            <ShopSearchModal
+                isOpen={isSearchModalOpen}
+                onClose={handleSearchModalClose}
+                onSearch={handleSearch}
+                isLoading={isSearching}
+            />
         </main>
     );
 }

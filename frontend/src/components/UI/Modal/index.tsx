@@ -37,6 +37,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
         body: styles.modalBody,
         footer: styles.modalFooter,
       }}
+      backdrop={'blur'}
     >
       <ModalContent>
         <ModalHeader className={styles.header}>

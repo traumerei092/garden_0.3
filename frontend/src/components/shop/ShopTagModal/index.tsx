@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Chip } from '@nextui-org/react';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
 
@@ -95,7 +95,7 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <CustomModal isOpen={isOpen} onClose={onClose}>
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>印象タグを追加</h2>
@@ -163,7 +163,7 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
           )}
         </div>
       </div>
-    </Modal>
+    </CustomModal>
   );
 };
 
