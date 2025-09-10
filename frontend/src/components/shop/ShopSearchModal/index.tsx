@@ -202,6 +202,59 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const handleReset = () => {
     setFilters({});
     setUseProfileData(false);
+    setSelectedTags([]);
+    setSelectedAreas([]);
+    setPrimaryArea(null);
+    setSelectedDrinks([]);
+  };
+
+  // 個別条件削除機能
+  const handleRemoveCondition = (conditionKey: string) => {
+    const newFilters = { ...filters };
+    
+    if (conditionKey === 'welcome_min') {
+      delete newFilters.welcome_min;
+    } else if (conditionKey === 'regular_count_min') {
+      delete newFilters.regular_count_min;
+    } else if (conditionKey.startsWith('age_')) {
+      const ageToRemove = conditionKey.replace('age_', '');
+      newFilters.regular_age_groups = newFilters.regular_age_groups?.filter(age => age !== ageToRemove);
+    } else if (conditionKey === 'interests') {
+      delete newFilters.regular_interests;
+    } else if (conditionKey === 'genders') {
+      delete newFilters.regular_genders;
+    } else if (conditionKey === 'blood_types') {
+      delete newFilters.regular_blood_types;
+    } else if (conditionKey === 'mbti_types') {
+      delete newFilters.regular_mbti_types;
+    } else if (conditionKey === 'exercise_frequency') {
+      delete newFilters.regular_exercise_frequency;
+    } else if (conditionKey === 'dietary_preferences') {
+      delete newFilters.regular_dietary_preferences;
+    } else if (conditionKey === 'occupation') {
+      delete newFilters.occupation;
+    } else if (conditionKey === 'industry') {
+      delete newFilters.industry;
+    } else if (conditionKey === 'areas') {
+      setSelectedAreas([]);
+      setPrimaryArea(null);
+      delete newFilters.area_ids;
+    } else if (conditionKey === 'budget') {
+      delete newFilters.budget_min;
+      delete newFilters.budget_max;
+    } else if (conditionKey === 'atmosphere') {
+      delete newFilters.atmosphere_filters;
+    } else if (conditionKey === 'seat_count') {
+      delete newFilters.seat_count_min;
+    } else if (conditionKey === 'impression_tags') {
+      setSelectedTags([]);
+      delete newFilters.impression_tags;
+    } else if (conditionKey === 'drinks') {
+      setSelectedDrinks([]);
+      delete newFilters.drink_names;
+    }
+    
+    setFilters(newFilters);
   };
 
   // プロフィールデータ自動入力
@@ -337,6 +390,12 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     };
     setFilters(newFilters);
     
+    // 印象タグの同期
+    if (key === 'impression_tags') {
+      const tagString = value as string;
+      setSelectedTags(tagString ? tagString.split(',') : []);
+    }
+
     // 件数を更新（デバウンス）
     const timeoutId = setTimeout(() => {
       fetchShopCount(newFilters);
@@ -396,20 +455,27 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   // タグ入力時の候補表示
   useEffect(() => {
     if (tagInput.trim().length > 0) {
+      // filters.impression_tagsから現在選択中のタグを取得
+      const currentImpressionsTagsString = filters.impression_tags || '';
+      const currentImpressionsTags = currentImpressionsTagsString ? currentImpressionsTagsString.split(',') : [];
+      
       const matchingTags = allTags.filter(tag => 
         tag.value.toLowerCase().includes(tagInput.toLowerCase()) &&
-        !selectedTags.includes(tag.value)
+        !currentImpressionsTags.includes(tag.value)
       );
       setTagSuggestions(matchingTags.slice(0, 10)); // 最大10個まで
     } else {
       setTagSuggestions([]);
     }
-  }, [tagInput, allTags, selectedTags]);
+  }, [tagInput, allTags, filters.impression_tags]);
 
   // タグ選択時の処理
   const handleTagSelection = (tagValue: string) => {
-    if (!selectedTags.includes(tagValue)) {
-      const newSelectedTags = [...selectedTags, tagValue];
+    const currentImpressionsTagsString = filters.impression_tags || '';
+    const currentImpressionsTags = currentImpressionsTagsString ? currentImpressionsTagsString.split(',') : [];
+    
+    if (!currentImpressionsTags.includes(tagValue)) {
+      const newSelectedTags = [...currentImpressionsTags, tagValue];
       setSelectedTags(newSelectedTags);
       updateFilters('impression_tags', newSelectedTags.join(','));
     }
@@ -493,6 +559,58 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       }
     }
 
+    if (filters.regular_genders?.length) {
+      tags.push({ key: 'genders', label: filters.regular_genders.join('、'), category: '性別' });
+    }
+
+    if (filters.regular_blood_types?.length) {
+      const bloodTypeNames = filters.regular_blood_types.map(id => {
+        const bloodType = profileOptions?.blood_types?.find((bt: any) => bt.id.toString() === id);
+        return bloodType?.name || id;
+      });
+      if (bloodTypeNames.length) {
+        tags.push({ key: 'blood_types', label: bloodTypeNames.join('、'), category: '血液型' });
+      }
+    }
+
+    if (filters.regular_mbti_types?.length) {
+      const mbtiNames = filters.regular_mbti_types.map(id => {
+        const mbti = profileOptions?.mbti_types?.find((m: any) => m.id.toString() === id);
+        return mbti?.name || id;
+      });
+      if (mbtiNames.length) {
+        tags.push({ key: 'mbti_types', label: mbtiNames.join('、'), category: 'MBTI' });
+      }
+    }
+
+    if (filters.regular_exercise_frequency?.length) {
+      const exerciseNames = filters.regular_exercise_frequency.map(id => {
+        const exercise = profileOptions?.exercise_frequencies?.find((e: any) => e.id.toString() === id);
+        return exercise?.name || id;
+      });
+      if (exerciseNames.length) {
+        tags.push({ key: 'exercise_frequency', label: exerciseNames.join('、'), category: '運動頻度' });
+      }
+    }
+
+    if (filters.regular_dietary_preferences?.length) {
+      const dietaryNames = filters.regular_dietary_preferences.map(id => {
+        const dietary = profileOptions?.dietary_preferences?.find((d: any) => d.id.toString() === id);
+        return dietary?.name || id;
+      });
+      if (dietaryNames.length) {
+        tags.push({ key: 'dietary_preferences', label: dietaryNames.join('、'), category: '食事制限' });
+      }
+    }
+
+    if (filters.occupation) {
+      tags.push({ key: 'occupation', label: filters.occupation, category: '職業' });
+    }
+
+    if (filters.industry) {
+      tags.push({ key: 'industry', label: filters.industry, category: '業種' });
+    }
+
     // エリア条件
     if (selectedAreas.length) {
       const areaNames = selectedAreas.map(area => area.name).slice(0, 3);
@@ -520,6 +638,12 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       if (atmosphereLabels.length) {
         tags.push({ key: 'atmosphere', label: atmosphereLabels.join('、'), category: '雰囲気' });
       }
+    }
+
+    // 印象タグ条件
+    if (filters.impression_tags) {
+      const tagNames = filters.impression_tags.split(',').slice(0, 3);
+      tags.push({ key: 'impression_tags', label: tagNames.join('、'), category: '印象' });
     }
 
     // 座席数条件
@@ -841,25 +965,6 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       <div className={styles.filterGroup}>
         <h4 className={styles.filterTitle}>印象タグ</h4>
         
-        {/* 選択されたタグの表示 */}
-        {selectedTags.length > 0 && (
-          <div className={styles.selectedTags}>
-            <p className={styles.selectedTagsTitle}>選択されたタグ:</p>
-            <div className={styles.tagChips}>
-              {selectedTags.map(tag => (
-                <Chip
-                  key={tag}
-                  onClose={() => handleTagRemoval(tag)}
-                  className={styles.selectedTagChip}
-                  variant="flat"
-                  color="primary"
-                >
-                  {tag}
-                </Chip>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* タグ入力 */}
         <Input
@@ -1263,47 +1368,76 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
 
   const modalFooter = (
-    <div className={styles.modalFooter}>
-      <div className={styles.shopCountDisplay}>
-        <span className={styles.shopCountText}>
-          該当する店舗：<strong>{shopCount}件</strong>
-        </span>
-      </div>
-      <Button
-        variant="flat"
-        onPress={handleReset}
-        className={styles.resetButton}
-      >
-        リセット
-      </Button>
-      <ButtonGradient
-        onClick={handleSearch}
-        anotherStyle={styles.searchButton}
-      >
-        {isLoading ? '検索中...' : 'この条件で探す'}
-      </ButtonGradient>
+    <div className={styles.footerContainer}>
+      {/* 選択中の条件 */}
+      {generateConditionTags().length > 0 && (
+        <div className={styles.selectedConditionsContainer}>
+          <span className={styles.selectedConditionsLabel}>選択中の条件</span>
+          <ScrollShadow orientation="horizontal" hideScrollBar className={styles.selectedConditionsScroll}>
+            <div className={styles.selectedConditionsTags}>
+              {generateConditionTags().map((tag) => (
+                <Chip
+                  key={tag.key}
+                  variant="flat"
+                  size="sm"
+                  onClose={() => handleRemoveCondition(tag.key)}
+                  className={styles.selectedConditionTag}
+                  style={{
+                    background: 'rgba(0, 194, 255, 0.15)',
+                    color: '#00c2ff',
+                    border: '1px solid rgba(0, 194, 255, 0.3)'
+                  }}
+                >
+                  {tag.label}
+                </Chip>
+              ))}
+            </div>
+          </ScrollShadow>
+        </div>
+      )}
 
-      {/* モバイル用ボタン */}
-      <div className={styles.mobileShopCount}>
-        <span className={styles.shopCountText}>
-          該当する店舗：<strong>{shopCount}件</strong>
-        </span>
+      <div className={styles.modalFooter}>
+        <div className={styles.shopCountDisplay}>
+          <span className={styles.shopCountText}>
+            <strong>{shopCount}件</strong>
+          </span>
+        </div>
+        <Button
+          variant="flat"
+          onPress={handleReset}
+          className={styles.resetButton}
+        >
+          リセット
+        </Button>
+        <ButtonGradient
+          onClick={handleSearch}
+          anotherStyle={styles.searchButton}
+        >
+          {isLoading ? '検索中...' : 'この条件で探す'}
+        </ButtonGradient>
+
+        {/* モバイル用ボタン */}
+        <div className={styles.mobileShopCount}>
+          <span className={styles.shopCountText}>
+            <strong>{shopCount}件</strong>
+          </span>
+        </div>
+        <Button
+          variant="flat"
+          onPress={handleReset}
+          className={styles.mobileResetButton}
+          size='sm'
+        >
+          リセット
+        </Button>
+        <ButtonGradient
+          onClick={handleSearch}
+          anotherStyle={styles.mobileSearchButton}
+          size='sm'
+        >
+          {isLoading ? '検索中...' : 'この条件で探す'}
+        </ButtonGradient>
       </div>
-      <Button
-        variant="flat"
-        onPress={handleReset}
-        className={styles.mobileResetButton}
-        size='sm'
-      >
-        リセット
-      </Button>
-      <ButtonGradient
-        onClick={handleSearch}
-        anotherStyle={styles.mobileSearchButton}
-        size='sm'
-      >
-        {isLoading ? '検索中...' : 'この条件で探す'}
-      </ButtonGradient>
     </div>
   );
 
@@ -1316,46 +1450,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       footer={modalFooter}
       scrollBehavior="inside"
     >
-      {/* 設定済み条件表示 */}
-      {generateConditionTags().length > 0 && (
-        <div className={styles.selectedConditions}>
-          <div className={styles.selectedConditionsHeader}>
-            <span className={styles.selectedConditionsTitle}>設定済み条件</span>
-            <Button
-              size="sm"
-              variant="light"
-              onPress={() => setFilters({})}
-              className={styles.clearAllButton}
-            >
-              すべて削除
-            </Button>
-          </div>
-          <ScrollShadow orientation="horizontal" className={styles.conditionsScroll}>
-            <div className={styles.conditionsTags}>
-              {generateConditionTags().map((tag) => (
-                <Chip
-                  key={tag.key}
-                  variant="flat"
-                  onClose={() => {
-                    // 個別の条件削除ロジック（後で実装）
-                  }}
-                  className={styles.conditionTag}
-                  style={{
-                    background: 'rgba(0, 194, 255, 0.15)',
-                    color: '#00c2ff',
-                    border: '1px solid rgba(0, 194, 255, 0.3)'
-                  }}
-                >
-                  <span className={styles.tagCategory}>{tag.category}</span>
-                  <span className={styles.tagLabel}>{tag.label}</span>
-                </Chip>
-              ))}
-            </div>
-          </ScrollShadow>
-        </div>
-      )}
       <div className={styles.searchContent}>
         
+
         {/* プロフィール自動入力 - ログイン時のみ表示 */}
         {user && (
           <div className={styles.profileSection}>
