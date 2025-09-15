@@ -1,11 +1,36 @@
 .searchContent {
   padding: 0;
   color: white;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
+  border-radius: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+// タブコンテンツのアニメーション
+.tabContent {
+  animation: fadeInUp 0.4s ease-out;
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // 選択中の条件（フッター上）
 .selectedConditionsContainer {
   padding: 0 0 0.3rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
 }
 
 .selectedConditionsLabel {
@@ -33,6 +58,13 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   min-height: auto;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 8px rgba(0, 194, 255, 0.2);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 194, 255, 0.3);
+  }
 }
 
 .footerContainer {
@@ -79,10 +111,28 @@
   width: 100%;
   text-align: center;
   margin-left: 5rem;
-  
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #00c2ff;
+  text-shadow: 0 0 10px rgba(0, 194, 255, 0.5);
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: scale(1.05);
+    color: #0080ff;
+    text-shadow: 0 0 15px rgba(0, 128, 255, 0.7);
+  }
+
   @media (max-width: 768px) {
     display: none;
   }
+}
+
+.popoverContent {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
 }
 
 .mobileShopCount {
@@ -102,8 +152,30 @@
   color: rgba(255, 255, 255, 0.8);
   
   strong {
-    color: rgba(0, 255, 255, 1);
+    color: rgba(255, 255, 255, 1);
     font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    
+    &.updated {
+      animation: countUpdate 0.6s ease-in-out;
+    }
+  }
+}
+
+@keyframes countUpdate {
+  0% {
+    transform: scale(1);
+    color: rgba(255, 255, 255, 1);
+  }
+  50% {
+    transform: scale(1.1);
+    color: rgba(0, 255, 255, 1);
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    color: rgba(255, 255, 255, 1);
   }
 }
 
@@ -111,13 +183,17 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  border-radius: 8px;
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
-  
+
   @media (max-width: 768px) {
     display: none;
   }
@@ -126,10 +202,15 @@
 .searchButton {
   flex: 1;
   max-width: 200px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 194, 255, 0.3);
 
   &:hover {
     opacity: 0.9;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 194, 255, 0.4);
   }
 
   @media (max-width: 768px) {
@@ -176,12 +257,10 @@
 }
 
 // 設定済み条件表示
-.selectedConditions {
+.selectedConditionsSection {
   width: 100%;
   margin-bottom: 0.5rem;
-  padding: 0.3rem;
   background: rgba(0, 0, 0, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -191,13 +270,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
 }
 
 .selectedConditionsTitle {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.6rem;
+  font-weight: 400;
   color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.5rem;
 }
 
 .clearAllButton {
@@ -244,6 +323,14 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.profileToggle {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
 // 優先カテゴリ
 .priorityCategories {
   display: flex;
@@ -262,9 +349,16 @@
 // フィルターグループ
 .filterGroup {
   margin-bottom: 1.5rem;
+  border-left: 2px solid rgba(0, 255, 255, 0.9);
+  padding-left: 1.5rem;
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    border-left: 1.5px solid rgba(0, 255, 255, 0.9);
+    padding-left: 0.7rem;
   }
 }
 
@@ -354,41 +448,22 @@
 }
 
 .numberInput {
-  width: 80px;
-}
-
-.numberInputBase {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-
-  &:hover {
-    border-color: rgba(0, 255, 255, 0.3) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  &[data-focus="true"], &:focus-within {
-    border-color: rgba(0, 255, 255, 1) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2) !important;
-  }
+  width: 180px;
 }
 
 // テキスト入力
 .textInput {
   width: 100%;
   margin-bottom: 0.5rem;
-  color: white;
-  font-size: 0.9rem;
-
-  &:focus {
-    outline: none;
-    border-color: rgba(0, 255, 255, 0.9);
-    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2);
-  }
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.4);
   }
+}
+
+.tagInputElement {
+  font-size: 0.8rem;
+  margin-bottom: 0.7rem;
 }
 
 // タグ関連のスタイル
@@ -424,27 +499,16 @@
 }
 
 .suggestions {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 0.8rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .suggestionsTitle {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 0.5rem;
-}
-
-.tagInputWrapper {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.tagInputElement {
-  color: white !important;
-  font-size: 0.9rem !important;
 }
 
 // タグボタングループ
@@ -690,6 +754,43 @@
   }
 }
 
+.budgetRangeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budgetRangeButton {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    background: rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+  }
+}
+
 .distanceControl {
   display: flex;
   align-items: center;
@@ -763,6 +864,35 @@
   gap: 0.5rem;
 }
 
+.twoColumnGrid {
+  // PC画面では横並び（flex）
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.radioGridLayout {
+  // RadioGroupのwrapperを対象にレスポンシブグリッド適用
+  :global([data-slot="wrapper"]) {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+    
+    @media (max-width: 768px) {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0.5rem !important;
+    }
+  }
+}
+
 .categoryItem {
   padding: 0.8rem;
   background: rgba(255, 255, 255, 0.05);
@@ -806,11 +936,12 @@
 }
 
 .categoryDescription {
-  margin-bottom: 1.5rem;
+  margin: 1rem 0;
   
-  p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
+  h2 {
+    color: rgba(255, 255, 255, 1);
+    font-size: 1.1rem;
+    font-weight: 600;
     margin: 0;
   }
 }
@@ -871,6 +1002,50 @@
 
   .profileSection {
     padding: 0.8rem;
+    margin-bottom: 1.5rem;
+
+    // モバイルでのトグルスイッチ最適化
+    .profileToggle {
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // モバイル用トグルスイッチ最適化
+  .toggleLabel {
+    gap: 0.6rem;
+
+    .toggleSlider {
+      width: 36px;
+      height: 18px;
+
+      &::before {
+        width: 14px;
+        height: 14px;
+        top: 2px;
+        left: 2px;
+      }
+
+      input:checked + &::before {
+        transform: translateX(18px);
+      }
+    }
+  }
+
+  .toggleContent {
+    .toggleText {
+      font-size: 0.85rem;
+      line-height: 1.2;
+    }
+
+    .toggleDesc {
+      font-size: 0.65rem;
+      line-height: 1.1;
+      margin-top: 1px;
+    }
   }
 
   .modalFooter {
@@ -951,5 +1126,37 @@
   .categoryItem {
     padding: 0.6rem 0.4rem;
     font-size: 0.8rem;
+  }
+}
+
+// 選択済みドリンクのスタイル
+.selectedDrinksContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.selectedDrinks {
+  padding: 0.8rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.selectedDrinksTitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.selectedDrinkChip {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  color: rgba(0, 255, 255, 0.9) !important;
+  font-size: 0.8rem;
+  
+  &:hover {
+    background: rgba(0, 255, 255, 0.2) !important;
+    border-color: rgba(0, 255, 255, 0.5) !important;
   }
 }

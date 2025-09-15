@@ -2,18 +2,12 @@
 
 import React from 'react';
 import styles from './style.module.scss';
-// 雰囲気指標の型定義
-interface AtmosphereIndicator {
-  id: number;
-  name: string;
-  description_left: string;
-  description_right: string;
-}
+import { AtmosphereIndicator, AtmospherePreference, AtmosphereChoice } from '@/types/search';
 
 interface AtmosphereSliderProps {
   indicator: AtmosphereIndicator;
-  value: number;
-  onChange: (value: number) => void;
+  value: AtmospherePreference | null;
+  onChange: (value: AtmospherePreference | null) => void;
   disabled?: boolean;
 }
 
@@ -23,25 +17,30 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const getScoreLabel = (score: number): string => {
-    switch (score) {
-      case -2:
-        return indicator.description_left;
-      case -1:
-        return `やや${indicator.description_left}`;
-      case 0:
-        return 'どちらでも';
-      case 1:
-        return `やや${indicator.description_right}`;
-      case 2:
-        return indicator.description_right;
-      default:
-        return 'どちらでも';
+  // 3択の選択肢を動的に生成
+  const getChoices = (): AtmosphereChoice[] => [
+    {
+      key: 'quiet',
+      label: indicator.description_left,
+      description: '一人の時間を重視'
+    },
+    {
+      key: 'neutral',
+      label: 'どちらでもOK',
+      description: 'フレキシブル'
+    },
+    {
+      key: 'social',
+      label: indicator.description_right,
+      description: 'コミュニティを重視'
     }
-  };
+  ];
 
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(e.target.value);
+  const choices = getChoices();
+
+  const handleChoiceChange = (selectedValue: AtmospherePreference) => {
+    // 同じ選択肢をクリックした場合はクリア（null）
+    const newValue = value === selectedValue ? null : selectedValue;
     onChange(newValue);
   };
 
@@ -49,41 +48,38 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
     <div className={styles.atmosphereSlider}>
       <div className={styles.header}>
         <h4 className={styles.title}>{indicator.name}</h4>
-        <span className={styles.currentValue}>
-          {getScoreLabel(value)}
-        </span>
+        {value && (
+          <span className={styles.currentValue}>
+            {choices.find(choice => choice.key === value)?.label || 'どちらでもOK'}
+          </span>
+        )}
       </div>
-      
-      <div className={styles.sliderContainer}>
-        <div className={styles.labels}>
-          <span className={styles.leftLabel}>
-            {indicator.description_left}
-          </span>
-          <span className={styles.rightLabel}>
-            {indicator.description_right}
-          </span>
-        </div>
-        
-        <div className={styles.sliderWrapper}>
-          <input
-            type="range"
-            min="-2"
-            max="2"
-            step="1"
-            value={value}
-            onChange={handleSliderChange}
-            disabled={disabled}
-            className={styles.slider}
-          />
-          <div className={styles.marks}>
-            {[-2, -1, 0, 1, 2].map((mark) => (
-              <div
-                key={mark}
-                className={`${styles.mark} ${value === mark ? styles.active : ''}`}
+
+      <div className={styles.choicesContainer}>
+        {choices.map((choice) => (
+          <div
+            key={choice.key}
+            className={`${styles.choiceItem} ${value === choice.key ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
+            onClick={() => !disabled && handleChoiceChange(choice.key)}
+          >
+            <div className={styles.radioButton}>
+              <input
+                type="radio"
+                name={`atmosphere-${indicator.id}`}
+                value={choice.key}
+                checked={value === choice.key}
+                onChange={() => handleChoiceChange(choice.key)}
+                disabled={disabled}
+                className={styles.radioInput}
               />
-            ))}
+              <span className={styles.radioCustom}></span>
+            </div>
+            <div className={styles.choiceContent}>
+              <span className={styles.choiceLabel}>{choice.label}</span>
+              <span className={styles.choiceDescription}>{choice.description}</span>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

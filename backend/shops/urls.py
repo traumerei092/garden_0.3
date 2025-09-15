@@ -29,6 +29,9 @@ router.register(r'areas', AreaViewSet, basename='area')
 router.register(r'atmosphere-indicators', AtmosphereIndicatorViewSet)
 
 urlpatterns = [
+    # 店舗検索API（より具体的なパターンを先に配置）
+    path('shops/search/', ShopSearchAPIView.as_view(), name='shop-search'),
+    
     path('', include(router.urls)),
     path('shops/<int:shop_pk>/reviews/', ShopReviewViewSet.as_view({'get': 'list', 'post': 'create'}), name='shop-reviews'),
     path('shops/<int:shop_pk>/reviews/<int:pk>/', ShopReviewViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='shop-review-detail'),
@@ -46,7 +49,4 @@ urlpatterns = [
     
     # ウェルカム機能API
     path('shops/<int:shop_id>/welcome/', ShopWelcomeAPIView.as_view(), name='shop-welcome'),
-    
-    # 店舗検索API
-    path('shops/search/', ShopSearchAPIView.as_view(), name='shop-search'),
 ]

@@ -20,11 +20,13 @@
   display: flex;
   align-items: center;
   justify-content: left;
+  gap: 1.5rem;
 
   @media (max-width: 768px) {
     width: 30%;
     justify-content: center;
     font-size: 0.8rem;
+    gap: 0;
   }
 }
 
@@ -129,6 +131,18 @@
   }
 }
 
+.pcBadge {
+  display: flex;
+  font-size: 0.8rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
 .badge {
   display: none;
 
@@ -138,6 +152,40 @@
     position: absolute;
     top: 0;
     right: 0;
+  }
+}
+
+.pcSortButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(0, 255, 255, 0.3);
+  }
+
+  &:focus {
+    border-color: rgba(0, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
   }
 }
 

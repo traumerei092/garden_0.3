@@ -4,25 +4,29 @@ export interface SearchFilters {
   // 常連さんで探す
   welcome_min?: number;
   regular_count_min?: number;
-  regular_age_groups?: string[];
+  dominant_age_group?: string; // 最も多い年代（単一選択）
   regular_genders?: string[];
   regular_interests?: string[];
-  regular_alcohol_preferences?: string[];
   regular_blood_types?: string[];
   regular_mbti_types?: string[];
   regular_exercise_frequency?: string[];
   regular_dietary_preferences?: string[];
+  regular_alcohol_preferences?: number[];
   occupation?: string;
   industry?: string;
   common_interests?: boolean;
 
   // 雰囲気・利用シーンで探す
   atmosphere_filters?: { [key: string]: { min: number; max: number } };
+  // 新しい3択雰囲気フィルター ('quiet' | 'neutral' | 'social')
+  atmosphere_simple?: { [key: string]: AtmospherePreference };
   visit_purposes?: string[];
   impression_tags?: string;
 
   // 詳細条件
   area_ids?: number[];
+  // マイエリアのみで検索するかどうかのフラグ
+  use_my_area_only?: boolean;
   budget_min?: number;
   budget_max?: number;
   budget_type?: 'weekday' | 'weekend';
@@ -56,6 +60,15 @@ export interface AtmosphereIndicator {
   name: string;
   description_left: string;
   description_right: string;
+}
+
+// 雰囲気の好み（3択）
+export type AtmospherePreference = 'quiet' | 'neutral' | 'social';
+
+export interface AtmosphereChoice {
+  key: AtmospherePreference;
+  label: string;
+  description: string;
 }
 
 export interface UserProfile {
@@ -126,5 +139,6 @@ export interface ShopSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSearch: (filters: SearchFilters) => void;
+  initialFilters?: SearchFilters;
   isLoading?: boolean;
 }

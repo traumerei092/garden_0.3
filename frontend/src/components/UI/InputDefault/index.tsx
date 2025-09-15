@@ -6,16 +6,24 @@ import { ReactNode } from 'react';
 import classNames from "classnames";
 
 type Props = {
-  label: string;
+  label?: string;
   type: string;
-  name: string;
+  name?: string;
   value: string;
+  placeholder?: string;
+  size?: 'sm' | 'md' | 'lg';
+  min?: number;
   isRequired?: boolean;
   endContent?: ReactNode;
-  anotherStyle: string;
+  anotherStyle?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isInvalid?: boolean;
   errorMessage?: ReactNode;
+  className?: string;
+  classNames?: {
+    inputWrapper?: string;
+    input?: string;
+  };
 };
 
 const InputDefault = ({
@@ -23,12 +31,17 @@ const InputDefault = ({
                           type,
                           name,
                           value,
+                          placeholder,
+                          size = 'md',
+                          min,
                           isRequired,
                           endContent,
                           anotherStyle,
                           onChange,
                           isInvalid,
                           errorMessage,
+                          className,
+                          classNames: customClassNames,
                       }: Props) => {
     return (
         <Input
@@ -36,18 +49,21 @@ const InputDefault = ({
             type={type}
             name={name}
             value={value}
+            placeholder={placeholder}
+            size={size}
+            min={min}
             onChange={onChange}
-            variant="underlined"
+            variant="bordered"
             radius="none"
             isRequired={isRequired}
             endContent={endContent}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
-            className={classNames(styles.input, anotherStyle)}
+            className={className || classNames(styles.input, anotherStyle)}
             classNames={{
-                inputWrapper: styles.customInputWrapper,
+                inputWrapper: customClassNames?.inputWrapper || styles.customInputWrapper,
                 label: styles.customLabel,
-                input: styles.customInput,
+                input: customClassNames?.input || styles.customInput,
             }}
         />
     );

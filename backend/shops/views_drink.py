@@ -17,7 +17,7 @@ class ShopDrinkViewSet(viewsets.ModelViewSet):
         ).prefetch_related('reactions')
 
     def get_permissions(self):
-        if self.action in ['shop_drinks', 'retrieve']:
+        if self.action in ['shop_drinks', 'retrieve', 'search_drinks']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -123,6 +123,59 @@ class ShopDrinkViewSet(viewsets.ModelViewSet):
                 'status': status_text,
                 'reaction_count': reaction_count
             })
+
+        except Exception as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def search_drinks(self, request):
+        """ドリンク名検索（検索フォーム用）- ShopDrinkとAlcoholBrandから検索"""
+        from accounts.models import AlcoholBrand
+        
+        query = request.query_params.get('q', '').strip()
+        
+        try:
+            drinks_list = []
+            
+            # 1. ShopDrinkから検索
+            drinks_query = ShopDrink.objects.filter(is_available=True)
+            if query:
+                drinks_query = drinks_query.filter(name__icontains=query)
+            
+            unique_shop_drinks = drinks_query.values('name').distinct().order_by('name')[:10]
+            for idx, drink in enumerate(unique_shop_drinks):
+                drinks_list.append({
+                    'id': f'shop_{idx + 1}',
+                    'name': drink['name']
+                })
+            
+            # 2. AlcoholBrandからも検索
+            alcohol_brands_query = AlcoholBrand.objects.all()
+            if query:
+                alcohol_brands_query = alcohol_brands_query.filter(name__icontains=query)
+            
+            alcohol_brands = alcohol_brands_query.select_related('category').order_by('name')[:10]
+            for idx, brand in enumerate(alcohol_brands):
+                drinks_list.append({
+                    'id': f'brand_{brand.id}',
+                    'name': brand.name
+                })
+            
+            # 重複削除（名前ベース）
+            seen = set()
+            unique_drinks = []
+            for drink in drinks_list:
+                if drink['name'] not in seen:
+                    seen.add(drink['name'])
+                    unique_drinks.append(drink)
+            
+            # 最大20件に制限
+            unique_drinks = unique_drinks[:20]
+            
+            return Response({'drinks': unique_drinks})
 
         except Exception as e:
             return Response(

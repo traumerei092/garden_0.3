@@ -1,5 +1,10 @@
 .radioGroup {
   width: 100%;
+  
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .radioWrapper {
@@ -22,16 +27,16 @@
   width: 100%;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.2);
     border-color: rgba(0, 255, 255, 0.3);
   }
   
   &[data-selected="true"] {
-    background: rgba(0, 255, 255, 0.2);
+    background: rgba(0, 255, 255, 0.15);
     border-color: rgba(0, 255, 255, 1);
     
     &:hover {
-      background: rgba(0, 255, 255, 0.3);
+      background: rgba(0, 255, 255, 0.15);
     }
   }
 }
@@ -58,9 +63,10 @@
 }
 
 .radioControlInner {
-  width: 6px;
-  height: 6px;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 100%);
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
   border-radius: 50%;
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -101,10 +107,10 @@
 
 .radioBase[data-selected="true"] {
   .radioText {
-    color: rgba(0, 255, 255, 1);
+    color: rgba(255, 255, 255, 1);
   }
   
   .radioDesc {
-    color: rgba(0, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.8);
   }
 }

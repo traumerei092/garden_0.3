@@ -2096,6 +2096,9 @@ class ShopSearchAPIView(APIView):
         """
         検索条件に基づいて店舗を検索
         """
+        print(f"=== ShopSearchAPIView.get() 呼び出し ===")
+        print(f"リクエストパラメータ: {request.GET.dict()}")
+
         # 基本的なクエリセット
         queryset = Shop.objects.all().select_related('area').prefetch_related(
             'shop_types', 'shop_layouts', 'shop_options', 'images',
@@ -2110,35 +2113,105 @@ class ShopSearchAPIView(APIView):
         queryset = self.apply_feature_filters(request, queryset)
         queryset = self.apply_drink_filters(request, queryset)
         
-        # 結果をシリアライズ
-        serializer = ShopSerializer(queryset.distinct(), many=True, context={'request': request})
+        # count_onlyパラメーターのチェック
+        count_only = request.GET.get('count_only', 'false').lower() == 'true'
         
-        return Response({
-            'shops': serializer.data,
-            'count': queryset.count()
-        })
+        if count_only:
+            # 件数のみを返す
+            return Response({
+                'count': queryset.distinct().count()
+            })
+        else:
+            # 結果をシリアライズ
+            serializer = ShopSerializer(queryset.distinct(), many=True, context={'request': request})
+            
+            return Response({
+                'shops': serializer.data,
+                'count': queryset.distinct().count()
+            })
     
     def apply_regulars_filters(self, request, queryset):
         """常連さんで探すフィルター"""
+
+        initial_count = queryset.count()
+        print(f"=== 常連さんフィルター開始 ===")
+        print(f"初期クエリセット件数: {initial_count}")
+        print(f"リクエストパラメータ: {request.GET.dict()}")
         
         # 常連さんの歓迎度
         welcome_min = request.GET.get('welcome_min')
         if welcome_min:
             try:
                 from .models import WelcomeAction
-                welcome_count = int(welcome_min)
+                welcome_min_threshold = int(welcome_min)
+                print(f"Welcome filter: welcome_min_threshold={welcome_min_threshold}")
+
+                # WelcomeActionの全データを確認
+                all_welcome_actions = WelcomeAction.objects.all().count()
+                print(f"WelcomeAction総数: {all_welcome_actions}")
+
+                # 各店舗の歓迎アクション数を確認
+                shop_welcome_counts = WelcomeAction.objects.values('shop_id').annotate(
+                    welcome_count=Count('id')
+                ).order_by('-welcome_count')
+                print(f"店舗別歓迎数: {list(shop_welcome_counts)}")
+
                 shop_ids = WelcomeAction.objects.values('shop_id').annotate(
-                    count=Count('id')
-                ).filter(count__gte=welcome_count).values_list('shop_id', flat=True)
+                    welcome_count=Count('id')
+                ).filter(welcome_count__gte=welcome_min_threshold).values_list('shop_id', flat=True)
+
+                print(f"Welcome filter result (threshold >= {welcome_min_threshold}): shop_ids={list(shop_ids)}")
                 queryset = queryset.filter(id__in=shop_ids)
-            except (ValueError, TypeError):
-                pass
+            except Exception as e:
+                print(f"Welcome filter error: {e}")
+                import traceback
+                traceback.print_exc()
         
         # 常連さんの属性（年齢・性別）
         regular_age_groups = request.GET.getlist('regular_age_groups')
         regular_genders = request.GET.getlist('regular_genders')
         
-        if regular_age_groups or regular_genders:
+        # 最も多い年代（単一選択）- その年代が最多の店舗のみ
+        dominant_age_group = request.GET.get('dominant_age_group')
+        if dominant_age_group:
+            try:
+                from collections import Counter
+                
+                favorite_relation = RelationType.objects.get(name='favorite')
+                
+                # 各店舗で最も多い年代を計算
+                shops_with_dominant_age = []
+                
+                for shop in queryset:
+                    # その店舗の常連の年代を取得
+                    regulars = UserShopRelation.objects.filter(
+                        shop=shop,
+                        relation_type=favorite_relation,
+                        user__birthdate__isnull=False
+                    ).select_related('user')
+                    
+                    age_groups = []
+                    for relation in regulars:
+                        age_group = self.calculate_age_group(relation.user.birthdate)
+                        if age_group:
+                            age_groups.append(age_group)
+                    
+                    if age_groups:
+                        # 最頻出の年代を取得
+                        age_counter = Counter(age_groups)
+                        most_common_age = age_counter.most_common(1)[0][0]
+                        
+                        # 指定された年代が最多の場合のみ追加
+                        if most_common_age == dominant_age_group:
+                            shops_with_dominant_age.append(shop.id)
+                
+                queryset = queryset.filter(id__in=shops_with_dominant_age)
+                
+            except RelationType.DoesNotExist:
+                pass
+        
+        # 通常の年齢層フィルター（OR条件）
+        elif regular_age_groups or regular_genders:
             # favoriteのrelation_typeを取得
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
@@ -2172,16 +2245,23 @@ class ShopSearchAPIView(APIView):
         regular_count_min = request.GET.get('regular_count_min')
         if regular_count_min:
             try:
+                print(f"Regular count filter: regular_count_min={regular_count_min}")
                 favorite_relation = RelationType.objects.get(name='favorite')
-                count = int(regular_count_min)
+                min_count = int(regular_count_min)
+                print(f"Regular count filter: min_count={min_count}")
+
                 shop_ids = UserShopRelation.objects.filter(
                     relation_type=favorite_relation
                 ).values('shop_id').annotate(
-                    count=Count('id')
-                ).filter(count__gte=count).values_list('shop_id', flat=True)
+                    regular_count=Count('id')
+                ).filter(regular_count__gte=min_count).values_list('shop_id', flat=True)
+
+                print(f"Regular count filter result: shop_ids={list(shop_ids)}")
                 queryset = queryset.filter(id__in=shop_ids)
-            except (ValueError, TypeError, RelationType.DoesNotExist):
-                pass
+            except Exception as e:
+                print(f"Regular count filter error: {e}")
+                import traceback
+                traceback.print_exc()
 
         # 職業・業種
         occupation = request.GET.get('occupation')
@@ -2206,16 +2286,24 @@ class ShopSearchAPIView(APIView):
 
         # 趣味・興味でフィルタリング
         regular_interests = request.GET.getlist('regular_interests')
+        print(f"興味フィルター: regular_interests={regular_interests}")
         if regular_interests:
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 interest_ids = [int(id) for id in regular_interests if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__interests__id__in=interest_ids
-                ).distinct()
-                
+
+                # デバッグ用ログ
+                print(f"興味フィルター: interest_ids={interest_ids}")
+
+                # AND条件: 全ての指定興味を持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for interest_id in interest_ids:
+                    base_relations = base_relations.filter(user__interests__id=interest_id)
+                regular_relations = base_relations.distinct()
+
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
+                print(f"興味フィルター結果: shop_ids={list(shop_ids)}")
+
                 queryset = queryset.filter(id__in=shop_ids)
             except (RelationType.DoesNotExist, ValueError):
                 pass
@@ -2226,10 +2314,11 @@ class ShopSearchAPIView(APIView):
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 alcohol_ids = [int(id) for id in regular_alcohol_preferences if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__alcohol_categories__id__in=alcohol_ids
-                ).distinct()
+                # AND条件: 全ての指定お酒の好みを持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for alcohol_id in alcohol_ids:
+                    base_relations = base_relations.filter(user__alcohol_categories__id=alcohol_id)
+                regular_relations = base_relations.distinct()
                 
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
                 queryset = queryset.filter(id__in=shop_ids)
@@ -2242,10 +2331,11 @@ class ShopSearchAPIView(APIView):
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 blood_type_ids = [int(id) for id in regular_blood_types if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__blood_type__id__in=blood_type_ids
-                ).distinct()
+                # AND条件: 全ての指定血液型を持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for blood_type_id in blood_type_ids:
+                    base_relations = base_relations.filter(user__blood_type__id=blood_type_id)
+                regular_relations = base_relations.distinct()
                 
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
                 queryset = queryset.filter(id__in=shop_ids)
@@ -2258,12 +2348,19 @@ class ShopSearchAPIView(APIView):
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 mbti_ids = [int(id) for id in regular_mbti_types if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__mbti__id__in=mbti_ids
-                ).distinct()
-                
+
+                # デバッグ用ログ
+                print(f"MBTIフィルター: mbti_ids={mbti_ids}")
+
+                # AND条件: 全ての指定MBTIを持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for mbti_id in mbti_ids:
+                    base_relations = base_relations.filter(user__mbti__id=mbti_id)
+                regular_relations = base_relations.distinct()
+
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
+                print(f"MBTIフィルター結果: shop_ids={list(shop_ids)}")
+
                 queryset = queryset.filter(id__in=shop_ids)
             except (RelationType.DoesNotExist, ValueError):
                 pass
@@ -2274,10 +2371,11 @@ class ShopSearchAPIView(APIView):
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 frequency_ids = [int(id) for id in regular_exercise_frequency if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__exercise_frequency__id__in=frequency_ids
-                ).distinct()
+                # AND条件: 全ての指定運動頻度を持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for frequency_id in frequency_ids:
+                    base_relations = base_relations.filter(user__exercise_frequency__id=frequency_id)
+                regular_relations = base_relations.distinct()
                 
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
                 queryset = queryset.filter(id__in=shop_ids)
@@ -2290,10 +2388,11 @@ class ShopSearchAPIView(APIView):
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
                 dietary_ids = [int(id) for id in regular_dietary_preferences if id.isdigit()]
-                regular_relations = UserShopRelation.objects.filter(
-                    relation_type=favorite_relation,
-                    user__dietary_preference__id__in=dietary_ids
-                ).distinct()
+                # AND条件: 全ての指定食事制限を持つユーザーのみ
+                base_relations = UserShopRelation.objects.filter(relation_type=favorite_relation)
+                for dietary_id in dietary_ids:
+                    base_relations = base_relations.filter(user__dietary_preference__id=dietary_id)
+                regular_relations = base_relations.distinct()
                 
                 shop_ids = regular_relations.values_list('shop_id', flat=True)
                 queryset = queryset.filter(id__in=shop_ids)
@@ -2352,7 +2451,12 @@ class ShopSearchAPIView(APIView):
                     
                 except RelationType.DoesNotExist:
                     pass
-        
+
+        final_count = queryset.count()
+        print(f"=== 常連さんフィルター終了 ===")
+        print(f"最終クエリセット件数: {final_count}")
+        print(f"フィルタリング後のshop_ids: {list(queryset.values_list('id', flat=True))}")
+
         return queryset
     
     def apply_atmosphere_filters(self, request, queryset):
@@ -2500,35 +2604,59 @@ class ShopSearchAPIView(APIView):
             
             queryset = queryset.filter(id__in=open_shop_ids)
         
+        # 座席数
+        seat_count_min = request.GET.get('seat_count_min')
+        seat_count_max = request.GET.get('seat_count_max')
+        
+        if seat_count_min:
+            try:
+                min_seats = int(seat_count_min)
+                queryset = queryset.filter(seat_count__gte=min_seats)
+            except (ValueError, TypeError):
+                pass
+        
+        if seat_count_max:
+            try:
+                max_seats = int(seat_count_max)
+                queryset = queryset.filter(seat_count__lte=max_seats)
+            except (ValueError, TypeError):
+                pass
+        
         return queryset
     
     def apply_feature_filters(self, request, queryset):
         """お店の特徴フィルター"""
         
-        # タイプ
+        # タイプ（AND条件）
         shop_types = request.GET.getlist('shop_types')
         if shop_types:
             try:
                 type_ids = [int(tid) for tid in shop_types if tid.isdigit()]
-                queryset = queryset.filter(shop_types__id__in=type_ids).distinct()
+                # AND条件: 選択された全ての店舗タイプを持つ店舗のみ
+                for type_id in type_ids:
+                    queryset = queryset.filter(shop_types__id=type_id)
             except (ValueError, TypeError):
                 pass
         
-        # 座席
+        # 座席（AND条件）
         shop_layouts = request.GET.getlist('shop_layouts')
         if shop_layouts:
             try:
                 layout_ids = [int(lid) for lid in shop_layouts if lid.isdigit()]
-                queryset = queryset.filter(shop_layouts__id__in=layout_ids).distinct()
+                # AND条件: 選択された全てのレイアウトを持つ店舗のみ
+                for layout_id in layout_ids:
+                    queryset = queryset.filter(shop_layouts__id=layout_id)
             except (ValueError, TypeError):
                 pass
         
-        # 設備
+        # 設備（AND条件）
         shop_options = request.GET.getlist('shop_options')
         if shop_options:
             try:
                 option_ids = [int(oid) for oid in shop_options if oid.isdigit()]
-                queryset = queryset.filter(shop_options__id__in=option_ids).distinct()
+                # AND条件: 選択された全ての設備を持つ店舗のみ
+                for option_id in option_ids:
+                    queryset = queryset.filter(shop_options__id=option_id)
             except (ValueError, TypeError):
                 pass
         
@@ -2549,7 +2677,40 @@ class ShopSearchAPIView(APIView):
             except (ValueError, TypeError):
                 pass
         
-        # ドリンク銘柄名
+        # ドリンク銘柄ID
+        alcohol_brands = request.GET.getlist('alcohol_brands')
+        if alcohol_brands:
+            try:
+                brand_ids = [int(bid) for bid in alcohol_brands if bid.isdigit()]
+                shop_ids = ShopDrink.objects.filter(
+                    alcohol_brand_id__in=brand_ids
+                ).values_list('shop_id', flat=True).distinct()
+                queryset = queryset.filter(id__in=shop_ids)
+            except (ValueError, TypeError):
+                pass
+        
+        # ドリンク名リスト（selectedDrinksから）
+        drink_names = request.GET.getlist('drink_names')
+        if drink_names:
+            from django.db.models import Q
+            from accounts.models import AlcoholBrand
+            
+            # ShopDrinkとAlcoholBrandの両方から検索
+            drink_conditions = Q()
+            
+            for drink_name in drink_names:
+                # ShopDrinkのname
+                drink_conditions |= Q(name__iexact=drink_name)
+                # AlcoholBrandのname経由
+                drink_conditions |= Q(alcohol_brand__name__iexact=drink_name)
+            
+            shop_ids = ShopDrink.objects.filter(
+                drink_conditions
+            ).values_list('shop_id', flat=True).distinct()
+            
+            queryset = queryset.filter(id__in=shop_ids)
+        
+        # 単一ドリンク名検索（後方互換）
         drink_name = request.GET.get('drink_name')
         if drink_name:
             shop_ids = ShopDrink.objects.filter(
@@ -2557,6 +2718,18 @@ class ShopSearchAPIView(APIView):
                 models.Q(alcohol_brand__name__icontains=drink_name)
             ).values_list('shop_id', flat=True).distinct()
             queryset = queryset.filter(id__in=shop_ids)
+        
+        # いいね数フィルター
+        drink_likes_min = request.GET.get('drink_likes_min')
+        if drink_likes_min:
+            try:
+                min_likes = int(drink_likes_min)
+                shop_ids = ShopDrink.objects.annotate(
+                    likes_count=Count('reactions', filter=models.Q(reactions__reaction_type='like'))
+                ).filter(likes_count__gte=min_likes).values_list('shop_id', flat=True).distinct()
+                queryset = queryset.filter(id__in=shop_ids)
+            except (ValueError, TypeError):
+                pass
         
         return queryset
     

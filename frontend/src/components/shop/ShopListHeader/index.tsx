@@ -12,9 +12,12 @@ import {useAuthStore} from "@/store/useAuthStore";
 interface ShopListHeaderProps {
     selectedTab?: string;
     onTabChange?: (tab: string) => void;
+    shopCount?: number;
+    filterCount?: number;
+    onSearch?: () => void;
 }
 
-const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange }) => {
+const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch }) => {
 
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
@@ -50,7 +53,19 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
     return (
         <div className={styles.container}>
             <div className={styles.headerLeft}>
-                123,456 件
+                <Badge color="danger" content={filterCount || undefined} shape="circle" className={styles.pcBadge}>
+                    <Button 
+                        className={styles.pcSortButton} 
+                        variant="flat" 
+                        color="primary" 
+                        radius="sm" 
+                        size="sm"
+                        onPress={onSearch}
+                    >
+                        <Funnel size={16} strokeWidth={1} />
+                    </Button>
+                </Badge>
+                {shopCount.toLocaleString()} 件
             </div>
             <div className={styles.headerCenter}>
                 <CustomTabs
@@ -105,8 +120,15 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                         <HousePlus size={18} color="#ffffff" strokeWidth={1} />
                     </ButtonGradientWrapper>
                 </Tooltip>
-                <Badge color="danger" content="5" shape="circle" className={styles.badge}>
-                    <Button className={styles.sortButton} variant="flat" color="primary" radius="sm" size="sm">
+                <Badge color="danger" content={filterCount || undefined} shape="circle" className={styles.badge}>
+                    <Button 
+                        className={styles.sortButton} 
+                        variant="flat" 
+                        color="primary" 
+                        radius="sm" 
+                        size="sm"
+                        onPress={onSearch}
+                    >
                         <Funnel size={16} strokeWidth={1} />
                     </Button>
                 </Badge>

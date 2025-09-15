@@ -9,7 +9,6 @@ import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import Header from "@/components/Layout/Header";
 import ShopSearchModal from "@/components/Shop/ShopSearchModal";
 import { Card, CardBody, Input } from '@nextui-org/react';
-import { searchShops } from '@/actions/shop/search';
 import { SearchFilters } from '@/types/search';
 
 export default function Home() {
@@ -68,12 +67,30 @@ export default function Home() {
     const handleSearch = async (filters: SearchFilters) => {
         try {
             setIsSearching(true);
-            const results = await searchShops(filters);
-            console.log('Search results:', results);
-            
-            // 検索結果を店舗一覧ページで表示するため、結果をstateに保存してから遷移
-            // 実装の都合上、一旦店舗一覧ページに遷移
-            router.push('/shops');
+            console.log('Home page: Search filters received:', filters);
+
+            // URLパラメータを構築
+            const params = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    if (Array.isArray(value)) {
+                        // 配列の場合は複数のパラメータとして追加
+                        value.forEach(item => {
+                            params.append(key, item.toString());
+                        });
+                    } else if (typeof value === 'object') {
+                        params.set(key, JSON.stringify(value));
+                    } else {
+                        params.set(key, value.toString());
+                    }
+                }
+            });
+
+            const searchUrl = `/shops?${params.toString()}`;
+            console.log('Home page: Navigating to:', searchUrl);
+
+            // 検索条件をURLパラメータとして含めて店舗一覧ページに遷移
+            router.push(searchUrl);
             setIsSearchModalOpen(false);
         } catch (error) {
             console.error('Search error:', error);
