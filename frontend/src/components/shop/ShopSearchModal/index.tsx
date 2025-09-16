@@ -15,7 +15,7 @@ import InputDefault from '@/components/UI/InputDefault';
 import StyledAutocomplete from '@/components/UI/StyledAutocomplete';
 import styles from './style.module.scss';
 import { Users, Heart, Settings, MapPin, Coffee, Wine, Filter } from 'lucide-react';
-import { fetchUserProfile as fetchProfile } from '@/actions/profile/fetchProfile';
+import { fetchUserProfile } from '@/actions/profile/fetchProfile';
 import { fetchProfileOptions } from '@/actions/profile/fetchProfileOptions';
 import { fetchAtmosphereIndicators } from '@/actions/shop/search';
 import { fetchShopTypes } from '@/actions/shop/fetchShopTypes';
@@ -47,7 +47,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
   const [useProfileData, setUseProfileData] = useState(false);
   const [useMyAreaOnly, setUseMyAreaOnly] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
   const [activeCategory, setActiveCategory] = useState<SearchCategory>('regulars');
   const [profileOptions, setProfileOptions] = useState<any>(null);
   const [tagInput, setTagInput] = useState('');
@@ -283,10 +283,29 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   // ユーザープロフィール取得
   const fetchUserProfileData = async () => {
     try {
-      const profile = await fetchProfile();
+      console.log('=== ユーザープロフィール取得開始 ===');
+      console.log('user (from useAuthStore):', user);
+
+      const profile = await fetchUserProfile();
+
+      console.log('=== プロフィール取得結果 ===');
+      console.log('取得したプロフィール:', profile);
+      console.log('profile keys:', profile ? Object.keys(profile) : 'null');
+      console.log('profile.my_area:', profile?.my_area);
+      console.log('profile.my_area type:', typeof profile?.my_area);
+
+      // 他のフィールドもチェック
+      console.log('profile.name:', profile?.name);
+      console.log('profile.email:', profile?.email);
+
       setUserProfile(profile);
+      console.log('プロフィール設定完了');
     } catch (error) {
-      console.error('プロフィールの取得に失敗:', error);
+      console.error('=== プロフィールの取得に失敗 ===');
+      console.error('エラー詳細:', error);
+      console.error('エラー名:', error?.name);
+      console.error('エラーメッセージ:', error?.message);
+      console.error('エラースタック:', error?.stack);
     }
   };
 
@@ -423,7 +442,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
 
       // 利用シーンを自動入力（visit_purposes）
-      if (userProfile.visit_purposes && userProfile.visit_purposes.length > 0) {
+      if (userProfile.visit_purposes && Array.isArray(userProfile.visit_purposes) && userProfile.visit_purposes.length > 0) {
         profileFilters.visit_purposes = userProfile.visit_purposes.map(p => p.name);
       }
 
@@ -686,6 +705,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     // 件数を更新（デバウンス）
     fetchCountTimeoutRef.current = setTimeout(() => {
+      console.log('=== updateFilters API呼び出し ===');
+      console.log('key:', key, 'value:', value);
+      console.log('newFilters:', newFilters);
       fetchShopCount(newFilters);
     }, 500);
   };
@@ -2112,7 +2134,13 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
             </div>
 
             {/* マイエリア検索スイッチ - マイエリアが設定されている場合のみ表示 */}
-            {userProfile?.my_area && (
+            {(() => {
+              console.log('=== マイエリアスイッチ表示判定 ===');
+              console.log('userProfile:', userProfile);
+              console.log('userProfile?.my_area:', userProfile?.my_area);
+              console.log('条件評価結果:', !!userProfile?.my_area);
+              return userProfile?.my_area;
+            })() && (
               <div className={styles.profileToggle}>
                 <label className={styles.toggleLabel}>
                   <input
@@ -2127,7 +2155,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
                       マイエリアで検索する
                     </span>
                     <span className={styles.toggleDesc}>
-                      {typeof userProfile.my_area === 'object' ? userProfile.my_area.name : userProfile.my_area}エリア内のお店のみ表示
+                      {userProfile.my_area}エリア内のお店のみ表示
                     </span>
                   </div>
                 </label>

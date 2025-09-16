@@ -44,12 +44,54 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
     onChange(newValue);
   };
 
+  // 現在の選択値に基づいてタグのスタイルを取得
+  const getCurrentValueStyle = () => {
+    if (!value) return {};
+
+    switch (value) {
+      case 'quiet':
+        return {
+          color: 'rgb(0, 198, 255)',
+          background: 'rgba(0, 198, 255, 0.15)',
+          border: '1px solid rgba(0, 198, 255, 0.3)'
+        };
+      case 'social':
+        return {
+          color: 'rgb(235, 14, 242)',
+          background: 'rgba(235, 14, 242, 0.15)',
+          border: '1px solid rgba(235, 14, 242, 0.3)'
+        };
+      case 'neutral':
+        return {
+          background: 'linear-gradient(135deg, rgba(0, 198, 255, 0.15) 0%, rgba(235, 14, 242, 0.15) 100%)',
+          border: '1px solid transparent',
+          color: '#fff',
+          position: 'relative' as const,
+          '&::before': {
+            content: '""',
+            position: 'absolute' as const,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 'inherit',
+            padding: '1px',
+            background: 'linear-gradient(135deg, rgb(0, 198, 255) 0%, rgb(235, 14, 242) 100%)',
+            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            maskComposite: 'exclude'
+          }
+        };
+      default:
+        return {};
+    }
+  };
+
   return (
     <div className={styles.atmosphereSlider}>
       <div className={styles.header}>
         <h4 className={styles.title}>{indicator.name}</h4>
         {value && (
-          <span className={styles.currentValue}>
+          <span className={styles.currentValue} style={getCurrentValueStyle()}>
             {choices.find(choice => choice.key === value)?.label || 'どちらでもOK'}
           </span>
         )}
@@ -59,7 +101,7 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
         {choices.map((choice) => (
           <div
             key={choice.key}
-            className={`${styles.choiceItem} ${value === choice.key ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
+            className={`${styles.choiceItem} ${styles[choice.key]} ${value === choice.key ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
             onClick={() => !disabled && handleChoiceChange(choice.key)}
           >
             <div className={styles.radioButton}>
