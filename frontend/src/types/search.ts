@@ -72,10 +72,14 @@ export interface AtmosphereChoice {
 }
 
 export interface UserProfile {
+  name?: string | null;
+  email?: string | null;
   birthdate?: string | null;
   gender?: string | null;
   visit_purposes?: Array<{ name: string }>;
   my_area?: string | { id: number; name: string } | null;
+  primary_area?: Area | null;
+  my_areas?: Area[] | null;
 }
 
 // 検索オプション関連

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Chip, Divider, ScrollShadow, Popover, PopoverTrigger, PopoverContent } from '@nextui-org/react';
+import { Button, Link, Chip, Divider, ScrollShadow, Popover, PopoverTrigger, PopoverContent, Listbox, ListboxItem } from '@nextui-org/react';
 import CustomModal from '@/components/UI/Modal';
 import CustomTabs, { TabItem } from '@/components/UI/CustomTabs';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
+import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import CheckboxCustom from '@/components/UI/CheckboxCustom';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
 import CustomRadioGroup from '@/components/UI/RadioGroup';
@@ -14,7 +15,7 @@ import MyAreaSelector from '@/components/Account/MyAreaSelector';
 import InputDefault from '@/components/UI/InputDefault';
 import StyledAutocomplete from '@/components/UI/StyledAutocomplete';
 import styles from './style.module.scss';
-import { Users, Heart, Settings, MapPin, Coffee, Wine, Filter } from 'lucide-react';
+import { Users, Heart, Settings, MapPin, Coffee, Wine, Filter, ChevronDown } from 'lucide-react';
 import { fetchUserProfile } from '@/actions/profile/fetchProfile';
 import { fetchProfileOptions } from '@/actions/profile/fetchProfileOptions';
 import { fetchAtmosphereIndicators } from '@/actions/shop/search';
@@ -47,7 +48,8 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
   const [useProfileData, setUseProfileData] = useState(false);
   const [useMyAreaOnly, setUseMyAreaOnly] = useState(false);
-  const [userProfile, setUserProfile] = useState<any | null>(null);
+  const [selectedMyArea, setSelectedMyArea] = useState<Area | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [activeCategory, setActiveCategory] = useState<SearchCategory>('regulars');
   const [profileOptions, setProfileOptions] = useState<any>(null);
   const [tagInput, setTagInput] = useState('');
@@ -162,6 +164,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     const fetchAtmosphereIndicatorsData = async () => {
       try {
         const indicators = await fetchAtmosphereIndicators();
+        console.log('🔥🔥🔥 取得した雰囲気指標:', indicators);
         setAtmosphereIndicators(indicators);
       } catch (error) {
         console.error('雰囲気指標の取得に失敗:', error);
@@ -298,14 +301,35 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       console.log('profile.name:', profile?.name);
       console.log('profile.email:', profile?.email);
 
-      setUserProfile(profile);
+      setUserProfile(profile as UserProfile);
+      // プライマリエリアまたは最初のマイエリアを初期選択として設定（型安全性確保）
+      if ((profile as any)?.primary_area &&
+          typeof (profile as any).primary_area === 'object' &&
+          (profile as any).primary_area !== null &&
+          'id' in (profile as any).primary_area &&
+          'name' in (profile as any).primary_area &&
+          typeof (profile as any).primary_area.id === 'number' &&
+          typeof (profile as any).primary_area.name === 'string') {
+        setSelectedMyArea((profile as any).primary_area as Area);
+      } else if ((profile as any)?.my_areas && Array.isArray((profile as any).my_areas) && (profile as any).my_areas.length > 0) {
+        const firstArea = (profile as any).my_areas[0];
+        if (firstArea &&
+            typeof firstArea === 'object' &&
+            firstArea !== null &&
+            'id' in firstArea &&
+            'name' in firstArea &&
+            typeof firstArea.id === 'number' &&
+            typeof firstArea.name === 'string') {
+          setSelectedMyArea(firstArea as Area);
+        }
+      }
       console.log('プロフィール設定完了');
     } catch (error) {
       console.error('=== プロフィールの取得に失敗 ===');
       console.error('エラー詳細:', error);
-      console.error('エラー名:', error?.name);
-      console.error('エラーメッセージ:', error?.message);
-      console.error('エラースタック:', error?.stack);
+      console.error('エラー名:', (error as any)?.name);
+      console.error('エラーメッセージ:', (error as any)?.message);
+      console.error('エラースタック:', (error as any)?.stack);
     }
   };
 
@@ -313,11 +337,19 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const fetchProfileOptionsData = async () => {
     try {
       const response = await fetchProfileOptions();
-      if (response.success && response.data) {
+      if (response?.success && response?.data) {
         setProfileOptions(response.data);
         console.log('プロフィールオプション取得成功:', response.data);
+        if (response.data &&
+            typeof response.data === 'object' &&
+            response.data !== null &&
+            'areas' in response.data) {
+          console.log('プロフィールオプション - areas:', response.data.areas);
+          console.log('areasの型:', typeof response.data.areas);
+          console.log('areasは配列か:', Array.isArray(response.data.areas));
+        }
       } else {
-        console.error('プロフィールオプション取得失敗:', response.error);
+        console.error('プロフィールオプション取得失敗:', response?.error || 'レスポンスが無効です');
       }
     } catch (error) {
       console.error('プロフィールオプションの取得に失敗:', error);
@@ -443,14 +475,19 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
       // 利用シーンを自動入力（visit_purposes）
       if (userProfile.visit_purposes && Array.isArray(userProfile.visit_purposes) && userProfile.visit_purposes.length > 0) {
-        profileFilters.visit_purposes = userProfile.visit_purposes.map(p => p.name);
+        profileFilters.visit_purposes = userProfile.visit_purposes.map((p: any) => p.name);
       }
 
-      // メインエリアのみを自動入力
-      if (userProfile.my_area && typeof userProfile.my_area === 'object') {
-        setSelectedAreas([userProfile.my_area as any]);
-        setPrimaryArea(userProfile.my_area as any);
-        profileFilters.area_ids = [userProfile.my_area.id];
+      // プライマリエリアまたは最初のマイエリアを自動入力
+      if (userProfile.primary_area) {
+        setSelectedAreas([userProfile.primary_area as any]);
+        setPrimaryArea(userProfile.primary_area as any);
+        profileFilters.area_ids = [userProfile.primary_area.id];
+      } else if (userProfile.my_areas && userProfile.my_areas.length > 0) {
+        const firstArea = userProfile.my_areas[0];
+        setSelectedAreas([firstArea as any]);
+        setPrimaryArea(firstArea as any);
+        profileFilters.area_ids = [firstArea.id];
       }
 
       // プロフィールオプションからの自動入力
@@ -592,27 +629,32 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
   // マイエリア検索の切り替え処理
   useEffect(() => {
-    if (useMyAreaOnly && userProfile?.my_area) {
+    if (useMyAreaOnly) {
       console.log('=== マイエリア検索ON ===');
-      console.log('userProfile.my_area:', userProfile.my_area);
+      console.log('userProfile.primary_area:', userProfile?.primary_area);
+      console.log('userProfile.my_areas:', userProfile?.my_areas);
 
-      // マイエリアIDを取得
-      let areaId: number;
-      if (typeof userProfile.my_area === 'object' && userProfile.my_area?.id) {
-        areaId = userProfile.my_area.id;
-      } else if (typeof userProfile.my_area === 'number') {
-        areaId = userProfile.my_area;
-      } else {
-        console.log('マイエリアデータの形式が不正です');
-        return;
+      // プライマリエリアまたは最初のマイエリアを使用
+      let areaId: number | null = null;
+
+      if (userProfile?.primary_area?.id) {
+        areaId = userProfile.primary_area.id;
+        console.log('プライマリエリアを使用:', areaId);
+      } else if (userProfile?.my_areas && userProfile.my_areas.length > 0) {
+        areaId = userProfile.my_areas[0].id;
+        console.log('最初のマイエリアを使用:', areaId);
       }
 
-      setFilters(prev => {
-        const newFilters = { ...prev, use_my_area_only: true, area_ids: [areaId] };
-        console.log('マイエリア適用後のfilters:', newFilters);
-        fetchShopCount(newFilters);
-        return newFilters;
-      });
+      if (areaId) {
+        setFilters(prev => {
+          const newFilters = { ...prev, use_my_area_only: true, area_ids: [areaId] };
+          console.log('マイエリア適用後のfilters:', newFilters);
+          fetchShopCount(newFilters);
+          return newFilters;
+        });
+      } else {
+        console.log('マイエリアデータが見つかりません');
+      }
     } else if (!useMyAreaOnly) {
       setFilters(prev => {
         const newFilters = { ...prev };
@@ -626,7 +668,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         return newFilters;
       });
     }
-  }, [useMyAreaOnly, userProfile?.my_area, useProfileData]);
+  }, [useMyAreaOnly, userProfile?.primary_area, userProfile?.my_areas, useProfileData]);
 
   // プロフィールオプション読み込み後、興味カテゴリのデフォルト選択
   useEffect(() => {
@@ -775,7 +817,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
       // 雰囲気・利用シーン条件（新3択システム）
       if (searchFilters.atmosphere_simple) {
+        console.log('🔥🔥🔥 雰囲気フィルター送信:', searchFilters.atmosphere_simple);
+        console.log('🔥🔥🔥 JSON化:', JSON.stringify(searchFilters.atmosphere_simple));
         queryParams.append('atmosphere_simple', JSON.stringify(searchFilters.atmosphere_simple));
+      } else {
+        console.log('🔥🔥🔥 atmosphere_simpleが空またはundefined:', searchFilters.atmosphere_simple);
       }
       if (searchFilters.visit_purposes?.length) {
         searchFilters.visit_purposes.forEach(purpose => {
@@ -917,8 +963,45 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     }
   };
 
+  const handleMyAreaChange = (area: Area | null) => {
+    console.log('!!! マイエリア変更:', area);
+    // 型安全性チェック
+    if (area && typeof area === 'object' && 'id' in area && 'name' in area) {
+      setSelectedMyArea(area);
+      // マイエリア変更時に検索フィルターを更新（常に実行）
+      if (useMyAreaOnly) {
+        console.log('!!! マイエリアフィルター更新:', area.id, area.name);
+        const newFilters = { ...filters, area_ids: [area.id] };
+        setFilters(newFilters);
+        // 即座に検索を実行
+        fetchShopCount(newFilters);
+      }
+    } else if (area === null) {
+      setSelectedMyArea(null);
+      if (useMyAreaOnly) {
+        console.log('!!! マイエリアフィルター削除');
+        const newFilters = { ...filters, area_ids: [] };
+        setFilters(newFilters);
+        fetchShopCount(newFilters);
+      }
+    }
+  };
+
+  const handleUseMyAreaToggle = (value: boolean) => {
+    setUseMyAreaOnly(value);
+    if (value && selectedMyArea) {
+      // マイエリア検索をONにして、選択されたエリアで検索
+      updateFilters('use_my_area_only', true);
+      updateFilters('area_ids', [selectedMyArea.id]);
+    } else {
+      // マイエリア検索をOFFにする
+      updateFilters('use_my_area_only', false);
+      updateFilters('area_ids', []);
+    }
+  };
+
   const handleAtmosphereChange = (indicatorId: number, preference: AtmospherePreference | null) => {
-    console.log('雰囲気変更:', indicatorId, preference);
+    console.log('🔥🔥🔥 handleAtmosphereChange呼ばれた:', indicatorId, preference);
 
     // 新しい3択雰囲気フィルターを使用
     const atmosphere_simple = { ...(filters.atmosphere_simple || {}) };
@@ -1184,8 +1267,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     }
 
     // エリア条件
-    if (filters.use_my_area_only && userProfile?.my_area) {
-      const areaName = typeof userProfile.my_area === 'object' ? userProfile.my_area.name : userProfile.my_area;
+    if (filters.use_my_area_only) {
+      // 選択されたマイエリアがある場合はそれを表示、なければuserProfileから取得
+      const areaName = selectedMyArea?.name ||
+                      userProfile?.primary_area?.name ||
+                      (userProfile?.my_areas && userProfile.my_areas.length > 0 ? userProfile.my_areas[0]?.name : 'マイエリア');
       tags.push({ key: 'use_my_area_only', label: `マイエリア: ${areaName}`, category: 'エリア' });
     } else if (filters.area_ids?.length) {
       // 通常のエリア選択（マイエリアOFF時）
@@ -1540,12 +1626,14 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       
       <div className={styles.filterGroup}>
         <h4 className={styles.filterTitle}>雰囲気の好み</h4>
+        {console.log('🔥🔥🔥 atmosphereIndicators.length:', atmosphereIndicators.length)}
         {atmosphereIndicators.map((indicator) => {
           // 現在の雰囲気フィルターから値を取得（3択の場合）
           const filterKey = indicator.id.toString();
           const currentPreference = filters.atmosphere_simple?.[filterKey] || null;
 
           console.log(`指標 ${indicator.name} (ID: ${indicator.id})の現在値:`, currentPreference);
+          console.log('🔥🔥🔥 filters.atmosphere_simple:', filters.atmosphere_simple);
 
           return (
             <AtmosphereSlider
@@ -2116,49 +2204,148 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         {user && (
           <div className={styles.profileSection}>
             <div className={styles.profileToggle}>
-              <label className={styles.toggleLabel}>
-                <input
-                  type="checkbox"
-                  checked={useProfileData}
-                  onChange={(e) => setUseProfileData(e.target.checked)}
-                  className={styles.toggleInput}
-                />
-                <span className={styles.toggleSlider}></span>
-                <div className={styles.toggleContent}>
-                  <span className={styles.toggleText}>
-                    自分の好みを反映する
-                  </span>
-                  <span className={styles.toggleDesc}>同じ傾向の常連さんがいる店舗を探せます。</span>
-                </div>
-              </label>
+              <SwitchVisibility
+                isSelected={useProfileData}
+                onValueChange={setUseProfileData}
+                showIcon={false}
+              />
+              <div className={styles.toggleContent}>
+                <span className={styles.toggleText}>
+                  自分の好みを反映する
+                </span>
+                <span className={styles.toggleDesc}>同じ傾向の常連さんがいる店舗を探せます。</span>
+              </div>
             </div>
 
             {/* マイエリア検索スイッチ - マイエリアが設定されている場合のみ表示 */}
             {(() => {
               console.log('=== マイエリアスイッチ表示判定 ===');
               console.log('userProfile:', userProfile);
-              console.log('userProfile?.my_area:', userProfile?.my_area);
-              console.log('条件評価結果:', !!userProfile?.my_area);
-              return userProfile?.my_area;
+              console.log('userProfile?.my_areas:', userProfile?.my_areas);
+              console.log('userProfile?.primary_area:', userProfile?.primary_area);
+              console.log('条件評価結果 (my_areas):', !!(userProfile?.my_areas && userProfile.my_areas.length > 0));
+              console.log('条件評価結果 (primary_area):', !!userProfile?.primary_area);
+              // my_areasまたはprimary_areaが存在する場合にスイッチを表示
+              return (userProfile?.my_areas && Array.isArray(userProfile.my_areas) && userProfile.my_areas.length > 0) || userProfile?.primary_area;
             })() && (
               <div className={styles.profileToggle}>
-                <label className={styles.toggleLabel}>
-                  <input
-                    type="checkbox"
-                    checked={useMyAreaOnly}
-                    onChange={(e) => setUseMyAreaOnly(e.target.checked)}
-                    className={styles.toggleInput}
-                  />
-                  <span className={styles.toggleSlider}></span>
-                  <div className={styles.toggleContent}>
-                    <span className={styles.toggleText}>
-                      マイエリアで検索する
-                    </span>
-                    <span className={styles.toggleDesc}>
-                      {userProfile.my_area}エリア内のお店のみ表示
-                    </span>
+                <SwitchVisibility
+                  isSelected={useMyAreaOnly}
+                  onValueChange={handleUseMyAreaToggle}
+                  showIcon={false}
+                />
+                <div className={styles.toggleContent}>
+                  <span className={styles.toggleText}>
+                    マイエリアで検索する
+                  </span>
+                  <div className={styles.myAreaSelection}>
+                    {(() => {
+                      console.log('=== MyAreaセクション レンダリング時の状態 ===');
+                      console.log('profileOptions:', profileOptions);
+                      console.log('profileOptions?.areas:', profileOptions?.areas);
+                      console.log('profileOptions?.areasは配列か:', Array.isArray(profileOptions?.areas));
+                      console.log('selectedMyArea:', selectedMyArea);
+                      return null;
+                    })()}
+                    {/* エリア選択用のAutoComplete */}
+                    {(() => {
+                      // ユーザーのエリア情報からエリアリストを作成（型安全）
+                      const availableAreas: Area[] = [];
+
+                      // 型ガード関数
+                      const isValidArea = (area: unknown): area is Area => {
+                        return area !== null &&
+                               area !== undefined &&
+                               typeof area === 'object' &&
+                               'id' in area &&
+                               'name' in area &&
+                               typeof (area as any).id === 'number' &&
+                               typeof (area as any).name === 'string';
+                      };
+
+                      // プライマリエリアがあれば追加（型チェック付き）
+                      if (isValidArea(userProfile?.primary_area)) {
+                        availableAreas.push(userProfile.primary_area);
+                      }
+
+                      // マイエリアがあれば追加（重複を避ける、型チェック付き）
+                      if (userProfile?.my_areas && Array.isArray(userProfile.my_areas)) {
+                        userProfile.my_areas.forEach((area: unknown) => {
+                          if (isValidArea(area)) {
+                            if (!availableAreas.find(existing => existing.id === area.id)) {
+                              availableAreas.push(area);
+                            }
+                          }
+                        });
+                      }
+
+                      // profileOptionsからのエリアデータも追加（重複を避ける、型チェック付き）
+                      if (profileOptions?.areas && Array.isArray(profileOptions.areas)) {
+                        profileOptions.areas.forEach((area: unknown) => {
+                          if (isValidArea(area)) {
+                            if (!availableAreas.find(existing => existing.id === area.id)) {
+                              availableAreas.push(area);
+                            }
+                          }
+                        });
+                      }
+
+                      console.log('最終的なavailableAreas:', availableAreas);
+
+                      if (availableAreas.length > 0) {
+                        return (
+                          <Popover placement="bottom" >
+                            <PopoverTrigger>
+                              <Link
+                                size="sm"
+                                className={styles.myAreaTrigger}
+                                showAnchorIcon
+                                anchorIcon={<ChevronDown strokeWidth={1} size={16} />}
+                              >
+                                {selectedMyArea?.name || 'エリアを選択'}
+                              </Link>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="p-0 min-w-[200px]"
+                              style={{ 
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)', 
+                                border: '1px solid rgba(0, 255, 255, 0.3)',
+                                borderRadius: '8px'
+                              }}
+                            >
+                              <Listbox
+                                selectionMode="single"
+                                selectedKeys={selectedMyArea ? [selectedMyArea.id.toString()] : []}
+                                onSelectionChange={(keys) => {
+                                  const selectedKey = Array.from(keys)[0];
+                                  if (selectedKey) {
+                                    const area = availableAreas.find((a: Area) => a.id.toString() === selectedKey);
+                                    handleMyAreaChange(area || null);
+                                  } else {
+                                    handleMyAreaChange(null);
+                                  }
+                                }}
+                                className={styles.areaListbox}
+                              >
+                                {availableAreas.map((area: Area) => (
+                                  <ListboxItem key={area.id.toString()}>
+                                    {area.name}
+                                  </ListboxItem>
+                                ))}
+                              </Listbox>
+                            </PopoverContent>
+                          </Popover>
+                        );
+                      } else {
+                        return (
+                          <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                            利用可能なエリアがありません
+                          </div>
+                        );
+                      }
+                    })()}
                   </div>
-                </label>
+                </div>
               </div>
             )}
           </div>

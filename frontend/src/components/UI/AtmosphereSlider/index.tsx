@@ -39,8 +39,10 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
   const choices = getChoices();
 
   const handleChoiceChange = (selectedValue: AtmospherePreference) => {
+    console.log('🔥🔥🔥 AtmosphereSlider.handleChoiceChange:', selectedValue);
     // 同じ選択肢をクリックした場合はクリア（null）
     const newValue = value === selectedValue ? null : selectedValue;
+    console.log('🔥🔥🔥 AtmosphereSlider.newValue:', newValue);
     onChange(newValue);
   };
 

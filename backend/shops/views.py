@@ -2099,6 +2099,14 @@ class ShopSearchAPIView(APIView):
         print(f"=== ShopSearchAPIView.get() 呼び出し ===")
         print(f"リクエストパラメータ: {request.GET.dict()}")
 
+        # atmosphere_simpleパラメータの確認
+        print(f"🔥 全パラメータ確認: {dict(request.GET)}")
+        atmosphere_simple_param = request.GET.get('atmosphere_simple')
+        if atmosphere_simple_param:
+            print(f"!!! atmosphere_simpleパラメータ検出: {atmosphere_simple_param}")
+        else:
+            print("🚨 atmosphere_simpleパラメータなし - これが問題です！")
+
         # 基本的なクエリセット
         queryset = Shop.objects.all().select_related('area').prefetch_related(
             'shop_types', 'shop_layouts', 'shop_options', 'images',
@@ -2107,6 +2115,101 @@ class ShopSearchAPIView(APIView):
         
         # 検索条件を適用
         queryset = self.apply_regulars_filters(request, queryset)
+
+        # 雰囲気フィルタリング（atmosphere_simple）を優先的に処理
+        atmosphere_simple = request.GET.get('atmosphere_simple')
+        if atmosphere_simple:
+            print(f"=== 雰囲気簡易フィルター処理開始 ===")
+            print(f"atmosphere_simple parameter: {atmosphere_simple}")
+            try:
+                import json
+                from django.db.models import Q
+                atmosphere_simple_data = json.loads(atmosphere_simple)
+                print(f"雰囲気簡易フィルター: {atmosphere_simple_data}")
+
+                if atmosphere_simple_data:
+                    simple_conditions = Q()
+                    for indicator_id, preference in atmosphere_simple_data.items():
+                        print(f"処理中: indicator_id={indicator_id}, preference={preference}")
+
+                        # preference に基づいて範囲を決定
+                        if preference == 'quiet':  # 一人の時間を重視
+                            min_val, max_val = -2.0, -0.5
+                        elif preference == 'social':  # コミュニティを重視
+                            min_val, max_val = 0.5, 2.0
+                        elif preference == 'neutral':  # どちらでもOK
+                            min_val, max_val = -0.5, 0.5
+                        else:
+                            continue
+
+                        print(f"範囲設定: {min_val} <= {indicator_id} <= {max_val}")
+
+                        # SQLite用のJSONField検索（カスタムフィルタリング）
+                        from django.db import connection
+                        if 'sqlite' in connection.settings_dict['ENGINE']:
+                            # SQLiteの場合は後でPythonでフィルタリング
+                            condition_key = f'atmosphere_json_filter_{indicator_id}'
+                            if not hasattr(simple_conditions, 'custom_filters'):
+                                simple_conditions.custom_filters = {}
+                            simple_conditions.custom_filters[condition_key] = {
+                                'indicator_id': indicator_id,
+                                'min_val': min_val,
+                                'max_val': max_val
+                            }
+                        else:
+                            # PostgreSQL等の場合
+                            simple_conditions &= Q(
+                                **{f'atmosphere_aggregate__atmosphere_averages__{indicator_id}__gte': min_val,
+                                   f'atmosphere_aggregate__atmosphere_averages__{indicator_id}__lte': max_val}
+                            )
+
+                    # カスタムフィルターまたは通常のQ条件を適用
+                    if hasattr(simple_conditions, 'custom_filters') or simple_conditions.children:
+                        initial_count = queryset.count()
+                        print(f"フィルター適用前: {initial_count}件")
+
+                        # 通常のQ条件を適用
+                        if simple_conditions.children:
+                            queryset = queryset.filter(simple_conditions)
+
+                        # SQLite用カスタムフィルタリング
+                        if hasattr(simple_conditions, 'custom_filters'):
+                            print(f"SQLite用カスタムフィルタリング実行: {simple_conditions.custom_filters}")
+                            filtered_shop_ids = []
+
+                            for shop in queryset.select_related('atmosphere_aggregate'):
+                                if shop.atmosphere_aggregate and shop.atmosphere_aggregate.atmosphere_averages:
+                                    should_include = True
+
+                                    for filter_key, filter_data in simple_conditions.custom_filters.items():
+                                        indicator_id = str(filter_data['indicator_id'])
+                                        min_val = filter_data['min_val']
+                                        max_val = filter_data['max_val']
+
+                                        actual_value = shop.atmosphere_aggregate.atmosphere_averages.get(indicator_id)
+                                        if actual_value is None:
+                                            should_include = False
+                                            break
+
+                                        if not (min_val <= actual_value <= max_val):
+                                            should_include = False
+                                            break
+
+                                    if should_include:
+                                        filtered_shop_ids.append(shop.id)
+                                        print(f"✓ {shop.name}: indicator_{filter_data['indicator_id']}={actual_value} ({min_val}~{max_val})")
+
+                            queryset = queryset.filter(id__in=filtered_shop_ids)
+
+                        final_count = queryset.count()
+                        print(f"フィルター適用後: {final_count}件")
+                        print(f"結果のshop_ids: {list(queryset.values_list('id', flat=True))}")
+
+            except Exception as e:
+                print(f"雰囲気フィルタリングエラー: {e}")
+                import traceback
+                traceback.print_exc()
+
         queryset = self.apply_atmosphere_filters(request, queryset)
         queryset = self.apply_scene_filters(request, queryset)
         queryset = self.apply_basic_filters(request, queryset)
@@ -2461,6 +2564,9 @@ class ShopSearchAPIView(APIView):
     
     def apply_atmosphere_filters(self, request, queryset):
         """雰囲気・利用シーンフィルター"""
+        print(f"=== apply_atmosphere_filters 開始 ===")
+        print(f"初期クエリセット件数: {queryset.count()}")
+        print(f"リクエストパラメータ: {request.GET.dict()}")
         
         # 雰囲気スライダー
         atmosphere_filters = {}
@@ -2493,7 +2599,8 @@ class ShopSearchAPIView(APIView):
                 )
             
             queryset = queryset.filter(atmosphere_conditions)
-        
+
+
         # 利用シーン
         visit_purposes = request.GET.getlist('visit_purposes')
         if visit_purposes:

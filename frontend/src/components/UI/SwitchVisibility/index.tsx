@@ -5,15 +5,20 @@ import styles from "./style.module.scss";
 interface SwitchVisibilityProps {
   isSelected: boolean;
   onValueChange: (value: boolean) => void;
+  showIcon?: boolean;
 }
 
-const SwitchVisibility = ({ isSelected, onValueChange }: SwitchVisibilityProps) => {
+const SwitchVisibility = ({ isSelected, onValueChange, showIcon = true }: SwitchVisibilityProps) => {
   return (
     <div className={styles.switchVisibilityContainer}>
-      {isSelected ? (
-        <Eye size={16} strokeWidth={1} className={styles.iconVisible} />
-      ) : (
-        <EyeOff size={16} strokeWidth={1} className={styles.iconHidden} />
+      {showIcon && (
+        <>
+          {isSelected ? (
+            <Eye size={16} strokeWidth={1} className={styles.iconVisible} />
+          ) : (
+            <EyeOff size={16} strokeWidth={1} className={styles.iconHidden} />
+          )}
+        </>
       )}
       <Switch
         size="sm"
@@ -25,7 +30,7 @@ const SwitchVisibility = ({ isSelected, onValueChange }: SwitchVisibilityProps) 
         }}
       />
     </div>
-    
+
   );
 };
 

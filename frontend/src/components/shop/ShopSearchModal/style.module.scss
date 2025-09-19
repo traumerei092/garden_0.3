@@ -339,6 +339,8 @@
 
 .profileToggle {
   margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
 
   &:last-child {
     margin-bottom: 0;
@@ -1173,4 +1175,42 @@
     background: rgba(0, 255, 255, 0.2) !important;
     border-color: rgba(0, 255, 255, 0.5) !important;
   }
+}
+
+// My Area AutoComplete styles
+.myAreaSelection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.myAreaAutocomplete {
+  width: 100%;
+  max-width: 200px;
+}
+
+.myAreaTrigger {
+  color: rgba(0, 255, 255, 0.9) !important;
+  font-size: 0.7rem;
+  cursor: pointer !important;
+
+  &:hover {
+    color: rgba(0, 255, 255, 0.7) !important;
+  }
+
+  &[data-hover="true"] {
+    border-color: rgba(0, 255, 255, 0.5) !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+}
+
+.areaListbox {
+  background: rgba(0, 0, 0, 1);
+  border: 1px solid rgba(0, 255, 255, 0.5);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 20;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.7rem;
 }
