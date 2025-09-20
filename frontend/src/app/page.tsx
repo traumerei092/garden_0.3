@@ -30,7 +30,9 @@ export default function Home() {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     console.log('位置情報取得成功:', position);
-                    router.push('/shops');
+                    const { latitude, longitude } = position.coords;
+                    // 位置情報をURLパラメータとして店舗ページに渡す
+                    router.push(`/shops?user_lat=${latitude}&user_lng=${longitude}&sort_by=distance`);
                 },
                 (error) => {
                     console.error('位置情報取得エラー:', {

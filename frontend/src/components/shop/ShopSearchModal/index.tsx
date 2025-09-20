@@ -1626,7 +1626,6 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       
       <div className={styles.filterGroup}>
         <h4 className={styles.filterTitle}>雰囲気の好み</h4>
-        {console.log('🔥🔥🔥 atmosphereIndicators.length:', atmosphereIndicators.length)}
         {atmosphereIndicators.map((indicator) => {
           // 現在の雰囲気フィルターから値を取得（3択の場合）
           const filterKey = indicator.id.toString();

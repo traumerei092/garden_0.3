@@ -48,6 +48,9 @@ export interface SearchFilters {
   drink_name?: string;
   drink_names?: string[];
   drink_likes_min?: number;
+
+  // ソート
+  sort_by?: 'distance' | 'name' | 'created_at';
 }
 
 export interface ShopSearchResponse {
