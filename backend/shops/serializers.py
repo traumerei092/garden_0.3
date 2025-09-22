@@ -22,7 +22,7 @@ class ReviewAuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'name', 'avatar_url')
+        fields = ('id', 'uid', 'name', 'avatar_url')
 
     def get_avatar_url(self, obj):
         if obj.avatar and hasattr(obj.avatar, 'url'):

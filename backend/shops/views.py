@@ -495,6 +495,50 @@ class ShopReviewViewSet(viewsets.ModelViewSet):
     def get_serializer_context(self):
         return {'request': self.request}
 
+    @action(detail=False, methods=['get'], url_path='public/user/(?P<user_uid>[^/.]+)', permission_classes=[AllowAny])
+    def public_user_reviews(self, request, user_uid=None):
+        """
+        指定ユーザーの公開口コミ一覧を取得する
+        """
+        try:
+            from accounts.models import UserAccount
+            user = UserAccount.objects.get(uid=user_uid)
+
+            reviews = ShopReview.objects.filter(user=user).select_related(
+                'shop', 'visit_purpose', 'user'
+            ).order_by('-created_at')
+
+            reviews_data = []
+            for review in reviews:
+                reviews_data.append({
+                    'id': review.id,
+                    'user': {
+                        'id': review.user.id,
+                        'uid': review.user.uid,
+                        'name': review.user.name,
+                        'avatar_url': review.user.avatar.url if review.user.avatar else None
+                    },
+                    'shop': {
+                        'id': review.shop.id,
+                        'name': review.shop.name
+                    },
+                    'visit_purpose': {
+                        'id': review.visit_purpose.id,
+                        'name': review.visit_purpose.name
+                    } if review.visit_purpose else None,
+                    'comment': review.comment,
+                    'likes_count': review.likes_count,
+                    'created_at': review.created_at.isoformat(),
+                    'is_liked': False  # 公開APIなのでいいね状態は取得しない
+                })
+
+            return Response(reviews_data)
+
+        except UserAccount.DoesNotExist:
+            return Response({"detail": "ユーザーが見つかりません"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class ReviewLikeAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -1102,6 +1146,84 @@ class UserShopRelationViewSet(viewsets.ModelViewSet):
                 {"detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=False, methods=['get'], url_path='public/(?P<user_uid>[^/.]+)/favorite_shops', permission_classes=[AllowAny])
+    def public_favorite_shops(self, request, user_uid=None):
+        """
+        指定ユーザーの公開行きつけ店舗一覧を取得する
+        """
+        try:
+            from accounts.models import UserAccount
+            user = UserAccount.objects.get(uid=user_uid)
+            favorite_relation_type = RelationType.objects.get(name='favorite')
+
+            relations = UserShopRelation.objects.filter(
+                user=user,
+                relation_type=favorite_relation_type
+            ).select_related('shop', 'shop__area').order_by('-created_at')
+
+            shops = []
+            for relation in relations:
+                shop = relation.shop
+                main_image = shop.images.filter(is_icon=True).first() or shop.images.first()
+
+                shops.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': shop.area.name if shop.area else '',
+                    'image_url': main_image.image.url if main_image and main_image.image else None,
+                    'added_at': relation.created_at.isoformat()
+                })
+
+            return Response({'shops': shops})
+
+        except UserAccount.DoesNotExist:
+            return Response({"detail": "ユーザーが見つかりません"}, status=status.HTTP_404_NOT_FOUND)
+        except RelationType.DoesNotExist:
+            return Response({"detail": "お気に入りリレーションタイプが見つかりません"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], url_path='public/(?P<user_uid>[^/.]+)/visited_shops', permission_classes=[AllowAny])
+    def public_visited_shops(self, request, user_uid=None):
+        """
+        指定ユーザーの公開行った店舗一覧を取得する
+        """
+        try:
+            from accounts.models import UserAccount
+            user = UserAccount.objects.get(uid=user_uid)
+            visited_relation_type = RelationType.objects.get(name='visited')
+
+            relations = UserShopRelation.objects.filter(
+                user=user,
+                relation_type=visited_relation_type
+            ).select_related('shop', 'shop__area').order_by('-created_at')
+
+            shops = []
+            for relation in relations:
+                shop = relation.shop
+                main_image = shop.images.filter(is_icon=True).first() or shop.images.first()
+
+                shops.append({
+                    'id': shop.id,
+                    'name': shop.name,
+                    'prefecture': shop.prefecture,
+                    'city': shop.city,
+                    'area': shop.area.name if shop.area else '',
+                    'image_url': main_image.image.url if main_image and main_image.image else None,
+                    'visited_at': relation.created_at.isoformat()
+                })
+
+            return Response({'shops': shops})
+
+        except UserAccount.DoesNotExist:
+            return Response({"detail": "ユーザーが見つかりません"}, status=status.HTTP_404_NOT_FOUND)
+        except RelationType.DoesNotExist:
+            return Response({"detail": "訪問リレーションタイプが見つかりません"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 ##############################################

@@ -231,6 +231,9 @@ export interface PublicUserProfile {
   dietary_preference?: DietaryPreference | null;
   atmosphere_preferences?: UserAtmospherePreference[];
   visit_purposes?: VisitPurpose[];
+  favorite_shops_count?: number;
+  visited_shops_count?: number;
+  reviews_count?: number;
 }
 
 export interface ApiResponse<T = any> {

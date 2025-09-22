@@ -49,6 +49,7 @@ export interface DrinkMasterData {
 
 export interface ReviewAuthor {
   id: number;
+  uid: string;
   name: string;
   avatar_url: string | null;
 }
@@ -56,6 +57,10 @@ export interface ReviewAuthor {
 export interface ShopReview {
   id: number;
   user: ReviewAuthor;
+  shop?: {
+    id: number;
+    name: string;
+  };
   visit_purpose: VisitPurpose | null;
   comment: string;
   likes_count: number;

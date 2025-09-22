@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ShopReview, VisitPurpose } from '@/types/shops';
 import { fetchShopReviews, createShopReview, toggleReviewLike, fetchVisitPurposes } from '@/actions/shop/reviews';
-import { Avatar, Button, Chip, Textarea, Spinner } from '@nextui-org/react';
+import { Avatar, Button, Chip, Textarea, Spinner, Link } from '@nextui-org/react';
 import { ThumbsUp, MessageCircle, Send, Calendar, Users, Star, Tag, Filter, ArrowUpDown, Link2 } from 'lucide-react';
 import { showToast } from '@/utils/toasts';
 import CustomModal from '@/components/UI/Modal';
@@ -143,10 +143,12 @@ const ShopReviews: React.FC<ShopReviewsProps> = ({ shopId }) => {
               className={styles.avatar} 
             />
             <div className={styles.userDetails}>
-              <span className={styles.userName}>{review.user.name}</span>
+              <Link href={`/user/${review.user.uid}`} className={styles.userName}>
+                {review.user.name}
+              </Link>
               {hasMultipleReviews && (
                 <div className={styles.reviewSequence}>
-                  <Link2 size={12} />
+                  <Link2 size={12} strokeWidth={1}/>
                   <span>{isFirstReview ? '初回' : `${reviewIndex + 1}回目の口コミ`}</span>
                 </div>
               )}

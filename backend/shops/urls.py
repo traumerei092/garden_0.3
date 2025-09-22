@@ -35,6 +35,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('shops/<int:shop_pk>/reviews/', ShopReviewViewSet.as_view({'get': 'list', 'post': 'create'}), name='shop-reviews'),
     path('shops/<int:shop_pk>/reviews/<int:pk>/', ShopReviewViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='shop-review-detail'),
+    path('shop-reviews/public/user/<str:user_uid>/', ShopReviewViewSet.as_view({'get': 'public_user_reviews'}), name='shop-reviews-public-user'),
     path('reviews/<int:review_pk>/like/', ReviewLikeAPIView.as_view(), name='review-like'),
     path('shops/<int:pk>/update/', ShopUpdateAPIView.as_view(), name='shop-update'),
     path('shops/<int:pk>/history/', ShopEditHistoryListAPIView.as_view(), name='shop-history-list'),
