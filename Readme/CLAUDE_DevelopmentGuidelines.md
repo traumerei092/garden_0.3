@@ -46,7 +46,29 @@
 ✅ 型定義の一元管理
 ✅ 既存型の再利用
 
+## 印象タグ機能の統一パターン
+
+### タグ追加処理の標準化
+- **必ず** `actions/shop/impressionTag.ts` の `addImpressionTag` 関数を使用する
+- 複数コンポーネント間で同じ機能を実装する場合は、共通関数に集約する
+- API結果を受け取って適切な型変換を行い、UIに反映する
+
+### ルール違反例
+❌ コンポーネント内での独自API呼び出し
+❌ 同じ機能の重複実装
+❌ API結果の適切な型変換なし
+
+### 正しい例
+✅ `import { addImpressionTag } from '@/actions/shop/impressionTag'`
+✅ API結果をShopTag型に変換してリストに追加
+✅ 既存の動作するコンポーネントの処理を参考にする
+
+### モーダルのインターフェース統一
+- ShopFeedbackModalは `onDataUpdate` プロパティでデータ更新を行う
+- `onSubmit` プロパティは廃止
+- コンポーネント修正時は使用箇所への影響を必ず確認する
+
 ## コマンド
-- lint: `npm run lint`  
+- lint: `npm run lint`
 - typecheck: `npm run typecheck`
 - test: `npm test`

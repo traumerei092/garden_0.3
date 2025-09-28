@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
+import { RadioGroup, Radio } from '@nextui-org/react';
 import styles from './style.module.scss';
-import { AtmosphereIndicator, AtmospherePreference, AtmosphereChoice } from '@/types/search';
+import { AtmosphereIndicator } from '@/types/search';
 
 interface AtmosphereSliderProps {
   indicator: AtmosphereIndicator;
-  value: AtmospherePreference | null;
-  onChange: (value: AtmospherePreference | null) => void;
+  value: number;
+  onChange: (value: number) => void;
   disabled?: boolean;
 }
 
@@ -17,113 +18,79 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
   onChange,
   disabled = false,
 }) => {
-  // 3択の選択肢を動的に生成
-  const getChoices = (): AtmosphereChoice[] => [
-    {
-      key: 'quiet',
-      label: indicator.description_left,
-      description: '一人の時間を重視'
-    },
-    {
-      key: 'neutral',
-      label: 'どちらでもOK',
-      description: 'フレキシブル'
-    },
-    {
-      key: 'social',
-      label: indicator.description_right,
-      description: 'コミュニティを重視'
-    }
-  ];
-
-  const choices = getChoices();
-
-  const handleChoiceChange = (selectedValue: AtmospherePreference) => {
-    console.log('🔥🔥🔥 AtmosphereSlider.handleChoiceChange:', selectedValue);
-    // 同じ選択肢をクリックした場合はクリア（null）
-    const newValue = value === selectedValue ? null : selectedValue;
-    console.log('🔥🔥🔥 AtmosphereSlider.newValue:', newValue);
-    onChange(newValue);
-  };
-
-  // 現在の選択値に基づいてタグのスタイルを取得
-  const getCurrentValueStyle = () => {
-    if (!value) return {};
-
-    switch (value) {
-      case 'quiet':
-        return {
-          color: 'rgb(0, 198, 255)',
-          background: 'rgba(0, 198, 255, 0.15)',
-          border: '1px solid rgba(0, 198, 255, 0.3)'
-        };
-      case 'social':
-        return {
-          color: 'rgb(235, 14, 242)',
-          background: 'rgba(235, 14, 242, 0.15)',
-          border: '1px solid rgba(235, 14, 242, 0.3)'
-        };
-      case 'neutral':
-        return {
-          background: 'linear-gradient(135deg, rgba(0, 198, 255, 0.15) 0%, rgba(235, 14, 242, 0.15) 100%)',
-          border: '1px solid transparent',
-          color: '#fff',
-          position: 'relative' as const,
-          '&::before': {
-            content: '""',
-            position: 'absolute' as const,
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: 'inherit',
-            padding: '1px',
-            background: 'linear-gradient(135deg, rgb(0, 198, 255) 0%, rgb(235, 14, 242) 100%)',
-            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            maskComposite: 'exclude'
-          }
-        };
+  // スコアに基づいて説明テキストを取得
+  const getScoreDescription = (score: number): string => {
+    switch (score) {
+      case -2:
+        return indicator.description_left;
+      case -1:
+        return `やや${indicator.description_left}`;
+      case 0:
+        return 'どちらも楽しめる';
+      case 1:
+        return `やや${indicator.description_right}`;
+      case 2:
+        return indicator.description_right;
       default:
-        return {};
+        return 'どちらも楽しめる';
     }
   };
+
+  // スコアに基づいて現在値の色を取得
+  const getValueColor = (score: number): string => {
+    if (score < 0) {
+      return 'rgb(0, 198, 255)'; // 左側（青系）
+    } else if (score > 0) {
+      return 'rgb(235, 14, 242)'; // 右側（紫系）
+    }
+    return '#fff'; // 中央（白）
+  };
+
+  // ラジオボタンのオプション定義
+  const radioOptions = [
+    { value: '-2', label: indicator.description_left, position: 'left' },
+    { value: '-1', label: '', position: 'left-center' },
+    { value: '0', label: '', position: 'center' },
+    { value: '1', label: '', position: 'right-center' },
+    { value: '2', label: indicator.description_right, position: 'right' },
+  ];
 
   return (
     <div className={styles.atmosphereSlider}>
       <div className={styles.header}>
         <h4 className={styles.title}>{indicator.name}</h4>
-        {value && (
-          <span className={styles.currentValue} style={getCurrentValueStyle()}>
-            {choices.find(choice => choice.key === value)?.label || 'どちらでもOK'}
-          </span>
-        )}
+        <span
+          className={styles.currentValue}
+          style={{ color: getValueColor(value) }}
+        >
+          {getScoreDescription(value)}
+        </span>
       </div>
 
-      <div className={styles.choicesContainer}>
-        {choices.map((choice) => (
-          <div
-            key={choice.key}
-            className={`${styles.choiceItem} ${styles[choice.key]} ${value === choice.key ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
-            onClick={() => !disabled && handleChoiceChange(choice.key)}
-          >
-            <div className={styles.radioButton}>
-              <input
-                type="radio"
-                name={`atmosphere-${indicator.id}`}
-                value={choice.key}
-                checked={value === choice.key}
-                onChange={() => handleChoiceChange(choice.key)}
-                disabled={disabled}
-                className={styles.radioInput}
-              />
-              <span className={styles.radioCustom}></span>
-            </div>
-            <div className={styles.choiceContent}>
-              <span className={styles.choiceLabel}>{choice.label}</span>
-              <span className={styles.choiceDescription}>{choice.description}</span>
-            </div>
+      <div className={styles.radioContainer}>
+        <div className={styles.radioLabels}>
+          <span className={styles.leftLabel}>{indicator.description_left}</span>
+          <span className={styles.rightLabel}>{indicator.description_right}</span>
+        </div>
+
+        <RadioGroup
+          value={value.toString()}
+          onValueChange={(val) => onChange(parseInt(val))}
+          orientation="horizontal"
+          className={styles.radioGroup}
+          isDisabled={disabled}
+        >
+          <div className={styles.radioOptions}>
+            {radioOptions.map((option) => (
+              <div key={option.value} className={styles.radioOption}>
+                <Radio
+                  value={option.value}
+                  className={`${styles.radio} ${styles[option.position]}`}
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        </RadioGroup>
       </div>
     </div>
   );

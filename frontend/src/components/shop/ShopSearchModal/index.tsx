@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, Link, Chip, Divider, ScrollShadow, Popover, PopoverTrigger, PopoverContent, Listbox, ListboxItem } from '@nextui-org/react';
 import CustomModal from '@/components/UI/Modal';
 import CustomTabs, { TabItem } from '@/components/UI/CustomTabs';
-import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
+import AtmosphereRadio from '@/components/UI/AtmosphereRadio';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import CheckboxCustom from '@/components/UI/CheckboxCustom';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
@@ -1635,11 +1635,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
           console.log('🔥🔥🔥 filters.atmosphere_simple:', filters.atmosphere_simple);
 
           return (
-            <AtmosphereSlider
+            <AtmosphereRadio
               key={indicator.id}
               indicator={indicator}
               value={currentPreference}
-              onChange={(preference) => handleAtmosphereChange(indicator.id, preference)}
+              onChange={(preference: AtmospherePreference | null) => handleAtmosphereChange(indicator.id, preference)}
             />
           );
         })}

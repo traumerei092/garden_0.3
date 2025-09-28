@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Chip } from '@nextui-org/react';
 import CustomModal from '@/components/UI/Modal';
 import { useAuthStore } from '@/store/useAuthStore';
+import { addImpressionTag } from '@/actions/shop/impressionTag';
 import styles from './style.module.scss';
 
 type ShopTagModalProps = {
@@ -55,27 +56,10 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `JWT ${localStorage.getItem('access')}`
-        },
-        body: JSON.stringify({
-          shop: shopId,
-          value: tagValue.trim()
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setTagValue('');
-        await onTagAdded(); // awaitを追加
-        onClose();
-      } else {
-        throw new Error(data.detail || 'タグの追加に失敗しました');
-      }
+      await addImpressionTag(shopId, tagValue.trim());
+      setTagValue('');
+      await onTagAdded();
+      onClose();
     } catch (err) {
       console.error('Error:', err);
       setError(err instanceof Error ? err.message : '予期せぬエラーが発生しました');
@@ -95,7 +79,7 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
   };
 
   return (
-    <CustomModal isOpen={isOpen} onClose={onClose}>
+    <CustomModal isOpen={isOpen} onClose={onClose} title="印象タグを追加">
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>印象タグを追加</h2>

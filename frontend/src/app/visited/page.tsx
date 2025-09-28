@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Calendar, Star } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
+import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchVisitedShops, UserShop } from '@/actions/shop/fetchUserShops';
-import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
-import { ShopStats, RelationType } from '@/types/shops';
+import { useShopActions } from '@/hooks/useShopActions';
 import { useAuthStore } from '@/store/useAuthStore';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
@@ -18,32 +18,20 @@ const VisitedPage: React.FC = () => {
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [shopStats, setShopStats] = useState<{ [key: number]: ShopStats }>({});
+  const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
 
-  // デフォルトのリレーションタイプ
-  const favoriteRelation: RelationType = {
-    id: 1,
-    name: 'favorite',
-    label: '行きつけ',
-    count: 0,
-    color: '#00ffff'
-  };
-
-  const visitedRelation: RelationType = {
-    id: 2,
-    name: 'visited',
-    label: '行った',
-    count: 0,
-    color: '#ffc107'
-  };
-
-  const interestedRelation: RelationType = {
-    id: 3,
-    name: 'interested',
-    label: '行きたい',
-    count: 0,
-    color: '#ef4444'
-  };
+  // カスタムフックでShopActionButtonのロジックを統一
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id } as any)), [shops]);
+  const {
+    shopStats,
+    handleRelationToggle,
+    getUserRelations,
+    refreshShopStats,
+    relations
+  } = useShopActions({
+    shops: shopsForHook,
+    onFeedbackModalOpen: setFeedbackModalShopId
+  });
 
   useEffect(() => {
     if (!user) {
@@ -56,18 +44,6 @@ const VisitedPage: React.FC = () => {
         setLoading(true);
         const visitedShops = await fetchVisitedShops();
         setShops(visitedShops);
-        
-        // 各店舗の統計データを取得
-        const newShopStats: { [key: number]: ShopStats } = {};
-        for (const shop of visitedShops) {
-          try {
-            const stats = await fetchShopStats(shop.id.toString());
-            newShopStats[shop.id] = stats;
-          } catch (error) {
-            console.error(`店舗${shop.id}の統計データ取得に失敗:`, error);
-          }
-        }
-        setShopStats(newShopStats);
       } catch (err) {
         console.error('Error loading visited shops:', err);
         setError('行った店舗の読み込みに失敗しました');
@@ -83,20 +59,6 @@ const VisitedPage: React.FC = () => {
     router.back();
   };
 
-  const handleRelationToggle = async (shopId: number, relationTypeId: number) => {
-    try {
-      await toggleShopRelation(shopId.toString(), relationTypeId);
-      
-      // 該当する店舗の統計データを再取得
-      const updatedStats = await fetchShopStats(shopId.toString());
-      setShopStats(prev => ({
-        ...prev,
-        [shopId]: updatedStats
-      }));
-    } catch (error) {
-      console.error('関係の切り替えに失敗しました:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -156,14 +118,7 @@ const VisitedPage: React.FC = () => {
         ) : (
           <div className={styles.shopsGrid}>
             {shops.map((shop) => {
-              const stats = shopStats[shop.id];
-              const userRelations: { [key: number]: boolean } = {};
-              
-              if (stats?.user_relations) {
-                stats.user_relations.forEach((relationTypeId: number) => {
-                  userRelations[relationTypeId] = true;
-                });
-              }
+              const userRelations = getUserRelations(shop.id);
 
               return (
               <div key={shop.id} className={styles.shopCardWrapper}>
@@ -174,9 +129,9 @@ const VisitedPage: React.FC = () => {
                   imageUrl={shop.image_url}
                   distance="1.2km"
                   matchRate={75}
-                  favoriteRelation={favoriteRelation}
-                  visitedRelation={visitedRelation}
-                  interestedRelation={interestedRelation}
+                  favoriteRelation={relations.favorite}
+                  visitedRelation={relations.visited}
+                  interestedRelation={relations.interested}
                   userRelations={userRelations}
                   onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
                 />
@@ -198,6 +153,16 @@ const VisitedPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* フィードバックモーダル */}
+      {feedbackModalShopId && (
+        <ShopFeedbackModal
+          isOpen={!!feedbackModalShopId}
+          onClose={() => setFeedbackModalShopId(null)}
+          shop={shops.find(s => s.id === feedbackModalShopId) as any}
+          onDataUpdate={() => feedbackModalShopId && refreshShopStats(feedbackModalShopId)}
+        />
+      )}
     </div>
   );
 };

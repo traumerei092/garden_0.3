@@ -13,6 +13,8 @@ import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
 import CommonalitiesSection from '@/components/Shop/CommonalitiesSection';
 import ShopTagModal from '@/components/Shop/ShopTagModal';
 import ShopAtmosphereFeedbackModal from '@/components/Shop/ShopAtmosphereFeedbackModal';
+import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
+import { DEFAULT_RELATIONS } from '@/hooks/useShopActions';
 import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
 import { ShopImageModal } from '@/components/Shop/ShopImageModal';
 import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
@@ -49,6 +51,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [relationStats, setRelationStats] = useState<ShopStats | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [welcomeRefreshTrigger, setWelcomeRefreshTrigger] = useState(0);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const { user } = useAuthStore();
   const isLoggedIn = !!user;
 
@@ -96,26 +99,46 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     }
   };
 
-  // リレーションの切り替え処理
+  // リレーションの切り替え処理（統一ロジック）
   const handleRelationToggle = async (relationTypeId: number) => {
     if (!isLoggedIn) {
       setShowLoginModal(true);
       return;
     }
 
+    // visitedRelation（「行った」ボタン）の特別処理
+    const isVisited = relationStats?.user_relations.includes(DEFAULT_RELATIONS.visited.id) || false;
+
+    if (relationTypeId === DEFAULT_RELATIONS.visited.id) {
+      if (!isVisited) {
+        // 未訪問 → 訪問済み: リレーション設定 + モーダル表示
+        setIsActionLoading(true);
+        try {
+          await toggleShopRelation(params.id, relationTypeId);
+          const newStats = await fetchShopStats(params.id);
+          setRelationStats(newStats);
+
+          // フィードバックモーダルを開く
+          setFeedbackModalOpen(true);
+        } catch (error) {
+          console.error('visitedリレーションの設定に失敗:', error);
+        } finally {
+          setIsActionLoading(false);
+        }
+        return;
+      }
+    }
+
+    // 通常のリレーション切り替え処理
     setIsActionLoading(true);
     try {
       await toggleShopRelation(params.id, relationTypeId);
-      try {
-        const newStats = await fetchShopStats(params.id);
-        setRelationStats(newStats);
-        
-        // favorite関係性（id=3）が変更された場合、ウェルカムセクションを更新
-        if (relationTypeId === 3) {
-          setWelcomeRefreshTrigger(prev => prev + 1);
-        }
-      } catch (statsErr) {
-        console.error('統計データの更新に失敗:', statsErr);
+      const newStats = await fetchShopStats(params.id);
+      setRelationStats(newStats);
+
+      // favorite関係性が変更された場合、ウェルカムセクションを更新
+      if (relationTypeId === DEFAULT_RELATIONS.favorite.id) {
+        setWelcomeRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
       console.error('リレーションの切り替えに失敗:', error);
@@ -123,6 +146,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       setIsActionLoading(false);
     }
   };
+
 
   // 位置情報を取得して距離を計算
   const loadLocationData = async (shopLat: number, shopLng: number) => {
@@ -554,12 +578,21 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       <ShopHistoryModal shop={shop} />
 
       {/* 常連客分析モーダル */}
-      <RegularsAnalysisModal 
+      <RegularsAnalysisModal
         isOpen={showRegularsModal}
         onClose={() => setShowRegularsModal(false)}
         shopId={shop.id}
         shopName={shop.name}
       />
+      {/* フィードバックモーダル */}
+      {shop && (
+        <ShopFeedbackModal
+          isOpen={feedbackModalOpen}
+          onClose={() => setFeedbackModalOpen(false)}
+          shop={shop}
+          onDataUpdate={loadShop}
+        />
+      )}
     </div>
   );
 };

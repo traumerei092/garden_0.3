@@ -47,40 +47,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   
-  // Multi-layer liquid effect
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-      transparent 0%,
-      rgba(255, 255, 255, 0.6) 20%,
-      rgba(255, 255, 255, 0.8) 50%,
-      rgba(255, 255, 255, 0.6) 80%,
-      transparent 100%
-    );
-    border-radius: 16px 16px 0 0;
-    z-index: 1;
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 10%;
-    right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, 
-      transparent 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      transparent 100%
-    );
-    z-index: 1;
-  }
-  
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   
   &:hover {

@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin } from 'lucide-react';
 import { Card, CardBody } from '@nextui-org/react';
 import ShopMatchRate from '@/components/Shop/ShopMatchRate';
 import ShopActionButton from '@/components/Shop/ShopActionButton';
 import { RelationType } from '@/types/shops';
-import { toggleShopRelation } from '@/actions/shop/relation';
 import styles from './style.module.scss';
 
 interface ShopGridCardProps {
@@ -40,25 +39,11 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
   onRelationToggle
 }) => {
   const router = useRouter();
-  const [loadingRelations, setLoadingRelations] = useState<{ [key: number]: boolean }>({});
-  
+
   // userRelationsは{ [relationTypeId]: boolean }形式
   const isFavorite = userRelations[favoriteRelation?.id || 0] || false;
   const isVisited = userRelations[visitedRelation?.id || 0] || false;
   const isInterested = userRelations[interestedRelation?.id || 0] || false;
-
-  // デバッグ用：リレーション状態をログ出力
-  console.log(`ShopGridCard ${name} (ID: ${id}):`, {
-    userRelations,
-    favoriteRelation: { id: favoriteRelation?.id, name: favoriteRelation?.name },
-    visitedRelation: { id: visitedRelation?.id, name: visitedRelation?.name },
-    interestedRelation: { id: interestedRelation?.id, name: interestedRelation?.name },
-    calculations: {
-      isFavorite: `userRelations[${favoriteRelation?.id}] = ${userRelations[favoriteRelation?.id || 0]}`,
-      isVisited: `userRelations[${visitedRelation?.id}] = ${userRelations[visitedRelation?.id || 0]}`,
-      isInterested: `userRelations[${interestedRelation?.id}] = ${userRelations[interestedRelation?.id || 0]}`
-    }
-  });
 
   const handleClick = () => {
     if (onClick) {
@@ -68,21 +53,9 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
     }
   };
 
-  const handleRelationToggle = async (relationType: RelationType) => {
-    if (loadingRelations[relationType.id]) return;
-
-    setLoadingRelations(prev => ({ ...prev, [relationType.id]: true }));
-
-    try {
-      if (onRelationToggle) {
-        onRelationToggle(relationType.id);
-      } else {
-        await toggleShopRelation(id.toString(), relationType.id);
-      }
-    } catch (error) {
-      console.error('関係の切り替えに失敗しました:', error);
-    } finally {
-      setLoadingRelations(prev => ({ ...prev, [relationType.id]: false }));
+  const handleRelationClick = (relationType: RelationType) => {
+    if (onRelationToggle) {
+      onRelationToggle(relationType.id);
     }
   };
 
@@ -115,8 +88,8 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                   type={favoriteRelation}
                   count={0}
                   isActive={isFavorite}
-                  onClick={() => handleRelationToggle(favoriteRelation)}
-                  loading={loadingRelations[favoriteRelation.id] || false}
+                  onClick={() => handleRelationClick(favoriteRelation)}
+                  loading={false}
                   showCount={false}
                 />
               </div>
@@ -127,8 +100,8 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                   type={visitedRelation}
                   count={0}
                   isActive={isVisited}
-                  onClick={() => handleRelationToggle(visitedRelation)}
-                  loading={loadingRelations[visitedRelation.id] || false}
+                  onClick={() => handleRelationClick(visitedRelation)}
+                  loading={false}
                   showCount={false}
                 />
               </div>
@@ -139,8 +112,8 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
                   type={interestedRelation}
                   count={0}
                   isActive={isInterested}
-                  onClick={() => handleRelationToggle(interestedRelation)}
-                  loading={loadingRelations[interestedRelation.id] || false}
+                  onClick={() => handleRelationClick(interestedRelation)}
+                  loading={false}
                   showCount={false}
                 />
               </div>

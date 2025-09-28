@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Heart, Calendar } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
+import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchWishlistShops, UserShop } from '@/actions/shop/fetchUserShops';
-import { toggleShopRelation, fetchShopStats } from '@/actions/shop/relation';
-import { ShopStats, RelationType } from '@/types/shops';
+import { fetchShopStats } from '@/actions/shop/relation';
+import { ShopStats, Shop } from '@/types/shops';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useShopActions } from '@/hooks/useShopActions';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
 
@@ -18,32 +20,20 @@ const WishlistPage: React.FC = () => {
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [shopStats, setShopStats] = useState<{ [key: number]: ShopStats }>({});
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState<number | null>(null);
 
-  // デフォルトのリレーションタイプ
-  const favoriteRelation: RelationType = {
-    id: 1,
-    name: 'favorite',
-    label: '行きつけ',
-    count: 0,
-    color: '#00ffff'
-  };
-
-  const visitedRelation: RelationType = {
-    id: 2,
-    name: 'visited',
-    label: '行った',
-    count: 0,
-    color: '#ffc107'
-  };
-
-  const interestedRelation: RelationType = {
-    id: 3,
-    name: 'interested',
-    label: '気になる',
-    count: 0,
-    color: '#ef4444'
-  };
+  // カスタムフックでShopActionButtonのロジックを統一
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id } as any)), [shops]);
+  const {
+    shopStats,
+    handleRelationToggle,
+    getUserRelations,
+    refreshShopStats,
+    relations
+  } = useShopActions({
+    shops: shopsForHook,
+    onFeedbackModalOpen: setFeedbackModalOpen
+  });
 
   useEffect(() => {
     if (!user) {
@@ -57,17 +47,6 @@ const WishlistPage: React.FC = () => {
         const wishlistShops = await fetchWishlistShops();
         setShops(wishlistShops);
         
-        // 各店舗の統計データを取得
-        const newShopStats: { [key: number]: ShopStats } = {};
-        for (const shop of wishlistShops) {
-          try {
-            const stats = await fetchShopStats(shop.id.toString());
-            newShopStats[shop.id] = stats;
-          } catch (error) {
-            console.error(`店舗${shop.id}の統計データ取得に失敗:`, error);
-          }
-        }
-        setShopStats(newShopStats);
       } catch (err) {
         console.error('Error loading wishlist shops:', err);
         setError('行きたい店舗の読み込みに失敗しました');
@@ -82,6 +61,7 @@ const WishlistPage: React.FC = () => {
   const handleBackClick = () => {
     router.back();
   };
+
 
   if (loading) {
     return (
@@ -141,14 +121,7 @@ const WishlistPage: React.FC = () => {
         ) : (
           <div className={styles.shopsGrid}>
             {shops.map((shop) => {
-              const stats = shopStats[shop.id];
-              const userRelations: { [key: number]: boolean } = {};
-              
-              if (stats?.user_relations) {
-                stats.user_relations.forEach((relationTypeId: number) => {
-                  userRelations[relationTypeId] = true;
-                });
-              }
+              const userRelations = getUserRelations(shop.id);
 
               return (
               <div key={shop.id} className={styles.shopCardWrapper}>
@@ -159,10 +132,11 @@ const WishlistPage: React.FC = () => {
                   imageUrl={shop.image_url}
                   distance="1.2km"
                   matchRate={75}
-                  favoriteRelation={favoriteRelation}
-                  visitedRelation={visitedRelation}
-                  interestedRelation={interestedRelation}
+                  favoriteRelation={relations.favorite}
+                  visitedRelation={relations.visited}
+                  interestedRelation={relations.interested}
                   userRelations={userRelations}
+                  onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
                 />
                 {shop.added_at && (
                   <div className={styles.addedDate}>
@@ -182,6 +156,16 @@ const WishlistPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* フィードバックモーダル */}
+      {feedbackModalOpen && (
+        <ShopFeedbackModal
+          isOpen={!!feedbackModalOpen}
+          onClose={() => setFeedbackModalOpen(null)}
+          shop={shops.find(s => s.id === feedbackModalOpen) as any}
+          onDataUpdate={() => feedbackModalOpen && refreshShopStats(feedbackModalOpen)}
+        />
+      )}
     </div>
   );
 };
