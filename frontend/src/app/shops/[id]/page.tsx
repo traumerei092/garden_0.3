@@ -10,7 +10,6 @@ import { Shop, ShopStats } from "@/types/shops";
 import Header from "@/components/Layout/Header";
 import ShopActionButton from '@/components/Shop/ShopActionButton';
 import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
-import CommonalitiesSection from '@/components/Shop/CommonalitiesSection';
 import ShopTagModal from '@/components/Shop/ShopTagModal';
 import ShopAtmosphereFeedbackModal from '@/components/Shop/ShopAtmosphereFeedbackModal';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
@@ -19,9 +18,9 @@ import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
 import { ShopImageModal } from '@/components/Shop/ShopImageModal';
 import ShopBasicInfo from '@/components/Shop/ShopBasicInfo';
 import ShopReviews from '@/components/Shop/ShopReviews';
-import RegularsSnapshot from '@/components/Shop/RegularsSnapshot';
 import RegularsAnalysisModal from '@/components/Shop/RegularsAnalysisModal';
 import WelcomeSection from '@/components/Shop/WelcomeSection';
+import RegularsCommunitySection from '@/components/Shop/RegularsCommunitySection';
 import ShopDrinks from '@/components/Shop/ShopDrinks';
 import ShopImageCarousel from '@/components/Shop/ShopImageCarousel';
 import ShopImageGalleryModal from '@/components/Shop/ShopImageGalleryModal';
@@ -376,26 +375,20 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           <div className={styles.regularsInfoSection}>
 
             {/* 1. ウェルカム */}
-            <WelcomeSection 
+            <WelcomeSection
               shopId={parseInt(params.id)}
               refreshTrigger={welcomeRefreshTrigger}
               className={styles.welcomeSection}
             />
-            
-            {/* 2. 常連さんの傾向 */}
-            <RegularsSnapshot 
-              shopId={parseInt(params.id)} 
-              onViewDetails={() => setShowRegularsModal(true)} 
-              className={styles.regularsSnapshot}
-            />
-            
-            {/* 3. あなたとの共通点 */}
-            <CommonalitiesSection 
+
+            {/* 2. 統合コミュニティセクション */}
+            <RegularsCommunitySection
               shopId={parseInt(params.id)}
+              onViewDetails={() => setShowRegularsModal(true)}
               refreshTrigger={welcomeRefreshTrigger}
-              className={styles.commonalitiesSection}
+              className={styles.regularsCommunitySection}
             />
-            
+
           </div>
           
 

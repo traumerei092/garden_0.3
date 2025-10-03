@@ -1,6 +1,5 @@
 .publicProfileContainer {
   width: 100%;
-  max-width: 1200px;
   min-height: 100vh;
   background: rgb(10, 11, 28);
   color: #fff;
@@ -295,8 +294,7 @@
 
 /* プロフィール詳細 */
 .profileContent {
-  padding: 40px 0px 80px 0px;
-  margin: 0 auto;
+  padding: 40px 40px 80px 40px;
 
   @media (max-width: 768px) {
     padding: 30px 20px 60px 20px;

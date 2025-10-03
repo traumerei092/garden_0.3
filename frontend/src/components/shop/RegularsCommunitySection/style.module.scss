@@ -1,0 +1,345 @@
+.container {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    margin-bottom: 6px;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 6px;
+  }
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(255, 255, 255);
+  margin: 0;
+}
+
+.titleIcon {
+  color: rgb(0, 255, 255);
+  flex-shrink: 0;
+}
+
+.detailsButton {
+  border: none;
+  color: white;
+  font-size: 0.6rem;
+  padding: 6px 12px;
+  height: auto;
+  min-height: auto;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+/* コミュニティプレビュー */
+.communityPreview {
+  display: flex;
+  justify-content: space-evenly;
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+}
+
+.avatarGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 198, 255, 0.8), rgba(235, 14, 242, 0.8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.avatarMore {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgb(0, 255, 255);
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+  }
+}
+
+.communityDescription {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(255, 255, 255);
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
+}
+
+.emotionalCopy {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+}
+
+/* コミュニティ統計 */
+.communityStats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 2px solid rgb(0, 255, 255);
+
+  @media (max-width: 768px) {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+}
+
+.statIcon {
+  color: rgb(0, 255, 255);
+  flex-shrink: 0;
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgb(255, 255, 255);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* パーソナル接続 */
+.personalConnection {
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+}
+
+.connectionHighlight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.highlightText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(255, 255, 255);
+}
+
+.percentageText {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(0, 255, 255);
+  background: rgba(0, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.additionalConnections {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.connectionItem {
+  &:not(:last-child)::after {
+    content: ' | ';
+    margin-left: 4px;
+  }
+}
+
+/* ローディング・エラー状態 */
+.loadingState, .errorState, .insufficientData {
+  text-align: center;
+  padding: 20px 16px;
+  color: rgba(255, 255, 255, 0.6);
+
+  @media (max-width: 768px) {
+    padding: 16px 12px;
+  }
+}
+
+.shimmer {
+  .shimmerTitle {
+    height: 18px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .shimmerContent {
+    height: 50px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.errorSubtext, .insufficientMessage {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.progressContainer {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.progressBar {
+  width: 100%;
+  max-width: 180px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, rgb(0, 255, 255) 0%, rgba(235, 14, 242, 0.8) 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+  .statItem {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+  }
+
+  .additionalConnections {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .connectionItem::after {
+    content: '';
+    margin-left: 0;
+  }
+}

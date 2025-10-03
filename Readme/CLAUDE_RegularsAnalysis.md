@@ -1,252 +1,362 @@
-# 常連客分析機能 (Regulars Analysis)
+# 常連分析機能 設計・実装ドキュメント
 
-## 概要
+## 現状の実装サマリー（v1.0）
 
-店舗に対して「行きつけ」として登録したユーザーのプロフィールデータを分析し、その店舗の常連客層の傾向を可視化する機能です。Netflix 品質のモダンな UI で、店舗の顧客層を理解するためのインサイトを提供します。
-
-## 機能詳細
-
-### 1. 常連客スナップショット (RegularsSnapshot)
-
-店舗詳細ページに表示される、常連客の傾向を要約した概要コンポーネント
-
-**表示項目:**
-
-- **中心層**: 年齢層と性別の最頻値（例: 30 代の男性）
-- **主な興味**: 常連客の共通の興味・趣味
-- **好みの雰囲気**: 雰囲気設定の分析結果（スクロール可能）
-
-**最小サンプル数:** 3 人以上の「行きつけ」登録が必要
-
-### 2. 詳細分析モーダル (RegularsAnalysisModal)
-
-「詳しく見る」ボタンから開く、詳細な統計情報を表示するモーダル
-
-**分析軸:**
-
-- 年齢層
-- 性別
-- 血液型
-- MBTI
-- 職業
-- 業種
-- 運動頻度
-- 趣味
-- 好きなお酒
-- 利用目的
-
-## 技術実装
-
-### バックエンド API
-
-#### 1. スナップショット API
+### 既存コンポーネント構成
 
 ```
-GET /api/shops/{shop_id}/regulars/snapshot/
+frontend/src/components/Shop/
+├── WelcomeSection/                    # ウェルカムメッセージ
+├── RegularsSnapshot/                  # 常連概要表示
+├── CommonalitiesSection/              # 共通点分析表示
+└── RegularsAnalysisModal/             # 詳細分析モーダル
+    ├── index.tsx                      # メインコンポーネント
+    └── style.module.scss              # スタイル定義
 ```
 
-**レスポンス例:**
+### 現状の表示内容
 
-```json
-{
-  "core_group": {
-    "age_group": "30代",
-    "gender": "男性"
-  },
-  "atmosphere_summary": "アットホームな雰囲気を好む傾向があります。",
-  "top_interests": ["音楽", "料理", "映画鑑賞"],
-  "total_regulars": 25
-}
-```
+1. **RegularsSnapshot**: 常連の基本統計（年代、職業、エリア）
+2. **CommonalitiesSection**: ユーザーとの共通点分析
+3. **RegularsAnalysisModal**: StyledAutocomplete での軸選択 + 詳細データ表示
 
-#### 2. 詳細分析 API
+### 現状の課題
 
-```
-GET /api/shops/{shop_id}/regulars/analysis/?axis=age_group
-```
-
-**レスポンス例:**
-
-```json
-{
-  "axis": "age_group",
-  "distribution": [
-    {
-      "label": "30代",
-      "count": 12,
-      "percentage": 48.0
-    },
-    {
-      "label": "40代",
-      "count": 8,
-      "percentage": 32.0
-    }
-  ],
-  "total_regulars": 25
-}
-```
-
-### atmosphere_summary 分析ロジック
-
-#### 分析対象
-
-店舗に「行きつけ」登録したユーザーの`UserAtmospherePreference`データ
-
-#### 処理フロー
-
-1. **データ収集**: 常連客のスコア（-2〜+2）を指標別に取得
-2. **平均値計算**: 各雰囲気指標の平均スコアを算出
-3. **特徴抽出**:
-   - 平均スコア > 0.5: ポジティブな傾向
-   - 平均スコア < -0.5: ネガティブな傾向
-   - 絶対値が最も大きい指標を「最も特徴的」として特定
-4. **自然言語生成**:
-   - 最高スコア指標に基づく基本文生成
-   - 複数の特徴がある場合は組み合わせた表現
-
-#### 実装コード (backend/shops/views.py:1439-1487)
-
-```python
-def get_atmosphere_summary(self, regulars):
-    from accounts.models import UserAtmospherePreference
-
-    # 各指標の平均スコアを計算
-    indicator_scores = {}
-    for relation in regulars:
-        user_prefs = UserAtmospherePreference.objects.filter(user_profile=relation.user)
-        for pref in user_prefs:
-            indicator_id = pref.indicator.id
-            if indicator_id not in indicator_scores:
-                indicator_scores[indicator_id] = []
-            indicator_scores[indicator_id].append(pref.score)
-
-    # 平均スコアを算出し、特徴的な指標を特定
-    avg_scores = {}
-    for indicator_id, scores in indicator_scores.items():
-        avg_scores[indicator_id] = sum(scores) / len(scores)
-
-    # 最も特徴的な指標を選択（絶対値が最大）
-    if avg_scores:
-        max_indicator = max(avg_scores.items(), key=lambda x: abs(x[1]))
-        # 自然言語での表現に変換
-        return self.generate_atmosphere_description(max_indicator)
-
-    return "様々な雰囲気を楽しんでいるようです。"
-```
-
-#### 自然言語表現例
-
-- **アットホーム指標が高い**: "アットホームな雰囲気を好む傾向があります。"
-- **静か指標が高い**: "落ち着いた雰囲気を求める傾向があります。"
-- **賑やか指標が高い**: "活気のある雰囲気を楽しむ傾向があります。"
-
-### フロントエンド実装
-
-#### コンポーネント構成
-
-```
-RegularsSnapshot/
-├── index.tsx          # メインコンポーネント
-└── style.module.scss  # スタイリング
-
-RegularsAnalysisModal/
-├── index.tsx          # 詳細分析モーダル
-└── style.module.scss  # モーダルスタイリング
-```
-
-#### API 連携
-
-- `fetchWithAuth`を使用した認証付き API 呼び出し
-- エラーハンドリングとローディング状態管理
-- リアルタイムデータ更新対応
-
-### UI/UX 設計
-
-#### Netflix 品質のデザイン
-
-- **ガラスモーフィズム**: `backdrop-filter: blur()`
-- **グラデーション**: シアン系のアクセントカラー
-- **カスタムスクロールバー**: 細いスクロールバー（3-4px）
-- **ホバーエフェクト**: `transform: scale(1.05)`
-
-#### レスポンシブ対応
-
-- モバイル表示での 2 列 →1 列自動調整
-- タッチ操作対応
-- 小画面でのフォントサイズ調整
-
-## データ要件
-
-### 必要な関連データ
-
-1. **UserShopRelation**: `relation_type = favorite`（行きつけ関係）
-2. **UserAccount**: ユーザーの基本プロフィール
-3. **UserAtmospherePreference**: 雰囲気の好み設定
-4. **各種マスターデータ**: 興味、趣味、職業等
-
-### サンプルデータ
-
-- 開発・テスト用に 50 人のサンプルユーザーを作成
-- 各店舗に 2-8 人の「行きつけ」関係を設定
-- プロフィール情報を完全に網羅
-
-## パフォーマンス考慮
-
-### データベース最適化
-
-- `select_related('user')`で N+1 問題回避
-- 事前に`UserShopRelation`でフィルタリング
-- Counter 使用によるメモリ効率的な集計
-
-### フロントエンド最適化
-
-- `cache: 'no-store'`でリアルタイム性確保
-- ローディング状態とエラー処理
-- スクロール領域の最大高制限（40px）
-
-## セキュリティ
-
-### アクセス制御
-
-- `permission_classes = [AllowAny]`（店舗情報は公開）
-- 個人特定情報は集計結果のみ表示
-- ユーザーの詳細情報は非公開
-
-### プライバシー保護
-
-- 統計的な傾向のみ表示
-- 最小サンプル数（3 人）による匿名性確保
-- 個別ユーザーの特定不可能な表現
-
-## 今後の拡張予定
-
-### 機能拡張
-
-- 時系列分析（月別・年別トレンド）
-- 他店舗との比較機能
-- レコメンデーション機能との連携
-
-### 分析の高度化
-
-- 機械学習による予測分析
-- クラスタリングによる顧客セグメント
-- より自然な言語生成（LLM 活用）
-
-## 関連ファイル
-
-### フロントエンド
-
-- `frontend/src/components/Shop/RegularsSnapshot/`
-- `frontend/src/components/Shop/RegularsAnalysisModal/`
-- `frontend/src/actions/shop/regulars.ts`
-
-### バックエンド
-
-- `backend/shops/views.py` (RegularsAnalysisAPIView 関連)
-- `backend/shops/models.py` (UserShopRelation)
-- `backend/shops/serializers.py` (Shop serializer with area)
-- `backend/shops/urls.py` (API routing)
+- 情報が 3 セクションに分散し、訴求点が不明確
+- 具体的人数表示によるプライバシーリスク
+- データ羅列的で感情的訴求が不足
+- StyledAutocomplete による UX 摩擦
 
 ---
 
-_このドキュメントは 2025 年 8 月 29 日時点での実装内容を記載しています。_
+## 新方針・設計（v2.0）
+
+### ビジョン
+
+「サードプレイスを誰しもが見つけられる」ために、データの機械的表示から「人の温かみ」「コミュニティの魅力」を感じられる表現への転換。
+
+### 改良方針
+
+1. **情報統合**: RegularsSnapshot + CommonalitiesSection → RegularsCommunitySection
+2. **感情訴求強化**: データ + 解釈・感想の組み合わせ
+3. **プライバシー配慮**: 人数表示廃止、割合表示（5%刻み）
+4. **UX 改善**: ドロップダウン → タブ式ナビゲーション
+5. **ビジュアル改良**: 円グラフ + アバター表現
+
+### 新コンポーネント設計
+
+#### RegularsCommunitySection（統合コンポーネント）
+
+```tsx
+<RegularsCommunitySection>
+  {/* メインビジュアル - コミュニティの第一印象 */}
+  <CommunityPreview>
+    <AvatarGroup /> {/* 常連のアバター群 */}
+    <CommunityDescription>
+      "30代中心の落ち着いたコミュニティ"
+    </CommunityDescription>
+    <EmotionalCopy>"仕事帰りにほっと一息つける場所"</EmotionalCopy>
+  </CommunityPreview>
+
+  {/* パーソナル接続 - 最重要要素 */}
+  <PersonalConnection>
+    <ConnectionHighlight>
+      "あなたと同じ渋谷エリア在住の方が40%います"
+    </ConnectionHighlight>
+    <AdditionalConnections>
+      "同年代: 35% | IT関係: 25% | カフェ好き: 60%"
+    </AdditionalConnections>
+  </PersonalConnection>
+
+  {/* 詳細分析へのCTA */}
+  <AnalysisButton onClick={openModal}>
+    "コミュニティの詳しい分析を見る"
+  </AnalysisButton>
+</RegularsCommunitySection>
+```
+
+#### RegularsAnalysisModal（改良版）
+
+```tsx
+<RegularsAnalysisModal>
+  {/* タブナビゲーション */}
+  <TabNavigation>
+    <Tab active>年代構成</Tab>
+    <Tab>職業分布</Tab>
+    <Tab>エリア分布</Tab>
+    <Tab>趣味・関心</Tab>
+  </TabNavigation>
+
+  {/* タブコンテンツ */}
+  <TabContent>
+    <CircularChart data={ageDistribution} />
+    <InsightPanel>
+      <Insight>
+        "30代が中心のコミュニティ。同世代の仲間と出会えそうです"
+      </Insight>
+      <PersonalMatch>"あなたと同年代: 35%"</PersonalMatch>
+    </InsightPanel>
+  </TabContent>
+</RegularsAnalysisModal>
+```
+
+### データ変換ロジック
+
+#### プライバシー配慮の数値変換
+
+```typescript
+// 人数 → 割合変換（5%刻み）
+const convertToPercentage = (count: number, total: number): number => {
+  const exactPercentage = (count / total) * 100;
+  return Math.round(exactPercentage / 5) * 5;
+};
+
+// 割合 → 感情的表現変換
+const getEmotionalExpression = (percentage: number): string => {
+  if (percentage >= 40) return "多く";
+  if (percentage >= 20) return "そこそこ";
+  if (percentage >= 10) return "少し";
+  return "わずかに";
+};
+```
+
+#### 感情的解釈生成ロジック
+
+```typescript
+const generateCommunityInsight = (data: RegularData): string => {
+  const dominantAge = getDominantCategory(data.ageDistribution);
+  const dominantOccupation = getDominantCategory(data.occupationDistribution);
+
+  const ageDescriptions = {
+    "20代": "活気ある若い",
+    "30代": "落ち着いた働き盛りの",
+    "40代": "経験豊富な大人の",
+    "50代": "落ち着きのある成熟した",
+  };
+
+  const occupationDescriptions = {
+    IT関係: "テック系",
+    営業: "コミュニケーション上手な",
+    クリエイター: "クリエイティブな",
+    会社員: "様々な業界の",
+  };
+
+  return `${ageDescriptions[dominantAge]}${occupationDescriptions[dominantOccupation]}空間`;
+};
+```
+
+### ビジュアル設計
+
+#### カラーパレット戦略
+
+```scss
+// 温かみのあるコミュニティ
+$warm-community: #ff6b6b, #ffe66d, #ff8e53;
+
+// クールなコミュニティ
+$cool-community: #4ecdc4, #45b7d1, #a8e6cf;
+
+// バランス型コミュニティ
+$balanced-community: #ffa07a, #98d8c8, #f7dc6f;
+```
+
+#### アニメーション表現
+
+```scss
+.avatarGroup {
+  .avatar {
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .communityPulse {
+    animation: gentlePulse 3s infinite;
+  }
+}
+
+@keyframes gentlePulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+```
+
+### 実装フェーズ
+
+#### Phase 1: 統合コンポーネント実装
+
+1. RegularsCommunitySection 作成
+2. 既存データの統合表示
+3. 基本的な感情的コピー追加
+4. プライバシー配慮の数値変換
+
+#### Phase 2: モーダル改良
+
+1. タブ式ナビゲーション実装
+2. 円グラフコンポーネント作成
+3. InsightPanel 実装
+4. アニメーション・ビジュアル改良
+
+#### Phase 3: 高度化
+
+1. 感情的解釈ロジックの精密化
+2. パーソナライゼーション強化
+3. A/B テスト準備
+4. パフォーマンス最適化
+
+### API・データ構造
+
+#### 既存 API 活用
+
+```typescript
+// /api/shops/{id}/regulars/snapshot/
+interface RegularsSnapshot {
+  total_regulars: number;
+  age_distribution: Record<string, number>;
+  occupation_distribution: Record<string, number>;
+  area_distribution: Record<string, number>;
+  visit_frequency: Record<string, number>;
+}
+
+// /api/shops/{id}/commonalities/
+interface CommonalitiesData {
+  user_matches: {
+    age_match: boolean;
+    area_match: boolean;
+    occupation_match: boolean;
+    interests_match: string[];
+  };
+  similarity_score: number;
+}
+```
+
+#### 新しいフロントエンド型定義
+
+```typescript
+interface CommunityInsight {
+  description: string; // "30代中心の落ち着いた"
+  emotionalCopy: string; // "仕事帰りにほっと一息"
+  dominantCharacteristics: {
+    age: string;
+    occupation: string;
+    area: string;
+  };
+}
+
+interface PersonalConnection {
+  primaryMatch: string; // "同じ渋谷エリア在住: 40%"
+  secondaryMatches: string[]; // ["同年代: 35%", "IT関係: 25%"]
+  overallScore: number; // 0-100の親和性スコア
+}
+```
+
+### 成功指標・KPI
+
+#### エンゲージメント指標
+
+- モーダル開封率（詳細分析クリック率）
+- タブ切り替え回数（関心の深さ）
+- ページ滞在時間の延長
+
+#### 行動指標
+
+- お気に入り登録率
+- 訪問予定登録率
+- 実際の来店率（可能であれば）
+
+#### 感情指標
+
+- "行きたい"感情の向上（アンケート等）
+- "親しみやすさ"の向上
+- "不安感"の軽減
+
+### 技術的考慮事項
+
+#### パフォーマンス
+
+- 円グラフレンダリングの最適化
+- アニメーションのフレームレート管理
+- データ変換処理のメモ化
+
+#### アクセシビリティ
+
+- 色だけに依存しない情報伝達
+- スクリーンリーダー対応
+- キーボードナビゲーション
+
+#### レスポンシブ対応
+
+- モバイルでのタブ表示
+- 円グラフのサイズ調整
+- アバター表示の最適化
+
+---
+
+## 実装状況 (2025-09-29)
+
+### ✅ 完了済み
+
+1. **RegularsCommunitySection の統合実装**
+   - 既存の RegularsSnapshot + CommonalitiesSection を統合
+   - 統一デザインシステムの適用（color scheme: rgb(10,11,28), rgb(0,255,255)）
+   - コンパクトレイアウトの実装（「一画面でどれだけコンパクトに伝えたい情報を訴求するか」対応）
+   - Lucide アイコンの採用（絵文字の完全除去）
+
+2. **RegularsAnalysisModal の改良実装**
+   - CustomModal への移行（NextUI Modal から脱却）
+   - **プライバシー配慮の人数表示廃止**（✅重要）
+   - タブ式ナビゲーションの実装
+   - 統一カラーパレットの適用
+
+3. **バックエンド改修**
+   - `get_top_interests()` メソッドの ManyToManyField 対応
+   - `analyze_interests()` メソッドの ManyToManyField 対応
+   - 60ユーザーへの興味データ投入完了
+
+4. **バグ修正**
+   - renderPersonalConnection の `[object Object]` 表示問題を解決
+   - 興味情報が表示されない問題を解決
+
+### ⚠️ 重要な方針遵守
+
+- **人数表示の完全廃止**: RegularsAnalysisModal で人数（例：「対象: 12人」）を表示しない
+- **割合表示（5%刻み）**: プライバシー配慮による数値変換の徹底
+- **感情的表現**: generateEmotionalCopy の削除（精度不足のため）
+
+### 🎯 現在の表示内容
+
+1. **RegularsCommunitySection**
+   - 年代・性別情報（「40代の女性が中心」）✅
+   - 興味情報（「コーヒー・読書が人気」）✅
+   - パーソナル接続（共通点の%表示）✅
+
+2. **RegularsAnalysisModal**
+   - 年代構成タブ ✅
+   - 職業分布タブ ✅
+   - エリア分布タブ ✅
+   - 趣味・関心タブ ✅
+   - 人数非表示（プライバシー配慮）✅
+
+---
+
+**最終更新**: 2025-09-29
+**バージョン**: v2.0 Implementation Complete
+**担当**: Claude Code Implementation
+
+## 実装前の確認事項
+
+この設計に基づいて実装を進める前に、以下の点について確認・調整が必要：
+
+1. **Copy Writing 方針の詳細化**（現在は基本方針のみ）
+2. **既存 API データとの整合性確認**
+3. **ビジュアルデザインの詳細仕様**
+4. **A/B テスト対象の具体化**
+
+実装結果が期待と異なる場合は、このドキュメントの現状サマリー（v1.0）に基づいて元の実装に戻すことが可能です。

@@ -1565,25 +1565,32 @@ class RegularsAnalysisAPIView(generics.GenericAPIView):
         常連客の興味Top N を取得
         """
         interests_counter = Counter()
-        
+
         for relation in regulars:
             user = relation.user
-            if hasattr(user, 'interests') and user.interests:
-                # interests が JSON文字列の場合はパース、リストの場合はそのまま使用
-                try:
-                    if isinstance(user.interests, str):
-                        interests_list = json.loads(user.interests)
-                    elif isinstance(user.interests, list):
-                        interests_list = user.interests
-                    else:
+            if hasattr(user, 'interests'):
+                # ManyToManyFieldの場合
+                if hasattr(user.interests, 'all'):
+                    user_interests = user.interests.all()
+                    for interest in user_interests:
+                        if hasattr(interest, 'name') and interest.name:
+                            interests_counter[interest.name] += 1
+                # 従来のJSON形式の場合（後方互換性）
+                elif user.interests:
+                    try:
+                        if isinstance(user.interests, str):
+                            interests_list = json.loads(user.interests)
+                        elif isinstance(user.interests, list):
+                            interests_list = user.interests
+                        else:
+                            continue
+
+                        for interest in interests_list:
+                            if interest and interest.strip():
+                                interests_counter[interest.strip()] += 1
+                    except (json.JSONDecodeError, TypeError):
                         continue
-                        
-                    for interest in interests_list:
-                        if interest and interest.strip():
-                            interests_counter[interest.strip()] += 1
-                except (json.JSONDecodeError, TypeError):
-                    continue
-        
+
         # Top N を取得
         return [interest for interest, count in interests_counter.most_common(top_n)]
 
@@ -1770,21 +1777,29 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
         interests_list = []
         for relation in regulars_list:
             user = relation.user
-            if hasattr(user, 'interests') and user.interests:
-                try:
-                    if isinstance(user.interests, str):
-                        interests = json.loads(user.interests)
-                    elif isinstance(user.interests, list):
-                        interests = user.interests
-                    else:
+            if hasattr(user, 'interests'):
+                # ManyToManyFieldの場合
+                if hasattr(user.interests, 'all'):
+                    user_interests = user.interests.all()
+                    for interest in user_interests:
+                        if hasattr(interest, 'name') and interest.name:
+                            interests_list.append(interest.name)
+                # 従来のJSON形式の場合（後方互換性）
+                elif user.interests:
+                    try:
+                        if isinstance(user.interests, str):
+                            interests = json.loads(user.interests)
+                        elif isinstance(user.interests, list):
+                            interests = user.interests
+                        else:
+                            continue
+
+                        for interest in interests:
+                            if interest and interest.strip():
+                                interests_list.append(interest.strip())
+                    except (json.JSONDecodeError, TypeError):
                         continue
-                        
-                    for interest in interests:
-                        if interest and interest.strip():
-                            interests_list.append(interest.strip())
-                except (json.JSONDecodeError, TypeError):
-                    continue
-        
+
         return self.create_distribution(interests_list)
 
     def analyze_hobbies(self, regulars_list):

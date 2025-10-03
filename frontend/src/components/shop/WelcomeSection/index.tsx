@@ -126,45 +126,35 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
     return null;
   }
 
-  const welcomeMessage = data.welcome_count === 1
-    ? (
-        <>
-          <span className={styles.highlightCount}>1人</span>の常連さんが「ウェルカム！」と言っています！
-        </>
-      )
-    : (
-        <>
-          <span className={styles.highlightCount}>{data.welcome_count}人</span>の常連さんが「ウェルカム！」と言っています！
-        </>
-      );
-
   return (
-    <div className={`${styles.container} ${className}`}>
-      <div className={styles.content}>
-        <div className={styles.icon}>
-          <HandHeart size={14} strokeWidth={1} />
-        </div>
+    <div className={styles.wrapper}>
+      <div className={styles.highlightCountWrapper}>
+        {data.welcome_count}人
+      </div>
+      <div className={`${styles.container} ${className}`}>
         <div className={styles.message}>
-          {welcomeMessage}
+          の常連さんが「ウェルカム！」と言っています！
         </div>
         {data.show_welcome_button && (
-          <Button
-            type='button'
-            className={styles.welcomeButton}
-            onPress={handleWelcome}
-            disabled={submitting}
-          >
-            {submitting ? (
-              '...'
-            ) : (
-              <ThumbsUp 
-                size={16} 
-                fill={data.user_welcomed ? 'rgba(0, 255, 255, 0.9)' : 'none'} 
-                stroke="rgba(0, 255, 255, 0.9)"
-                strokeWidth={1.5}
-              />
-            )}
-          </Button>
+          <Tooltip content="初来店のお客さんを歓迎しましょう！"  className={styles.tooltip}>
+            <Button
+              type='button'
+              className={styles.welcomeButton}
+              onPress={handleWelcome}
+              disabled={submitting}
+            >
+              {submitting ? (
+                '...'
+              ) : (
+                <ThumbsUp 
+                  size={16} 
+                  fill={data.user_welcomed ? 'rgba(0, 255, 255, 0.9)' : 'none'} 
+                  stroke="rgba(0, 255, 255, 0.9)"
+                  strokeWidth={1.5}
+                />
+              )}
+            </Button>
+          </Tooltip>
         )}
       </div>
     </div>
