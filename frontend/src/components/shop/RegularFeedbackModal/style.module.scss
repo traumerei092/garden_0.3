@@ -1,0 +1,251 @@
+.regularFeedbackModal {
+  width: 100%;
+  min-height: 500px;
+}
+
+// 利用シーンステップ
+.usageSceneStep {
+  padding: 20px 0;
+}
+
+.stepDescription {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border-left: 4px solid rgba(0, 198, 255, 0.6);
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+// 雰囲気フィードバックステップ
+.atmosphereStep {
+  padding: 20px 0;
+}
+
+.atmosphereList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 印象タグステップ
+.impressionStep {
+  padding: 20px 0;
+}
+
+.existingTags {
+  margin-bottom: 32px;
+
+  h4 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+}
+
+.newTagArea {
+  h4 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  h5 {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+    margin: 20px 0 12px 0;
+  }
+}
+
+.tagInput {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.addedTags {
+  margin-top: 16px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0, 198, 255, 0.15);
+  color: rgba(0, 198, 255, 0.9);
+  border: 1px solid rgba(0, 198, 255, 0.3);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+
+  .removeTag {
+    background: none;
+    border: none;
+    color: rgba(0, 198, 255, 0.7);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0;
+    margin-left: 4px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 198, 255, 0.2);
+      color: rgba(0, 198, 255, 1);
+    }
+  }
+}
+
+// 完了ステップ
+.completeStep {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.completionMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  .starIcon {
+    color: #ffc107;
+    filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.3));
+  }
+
+  h3 {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 400px;
+
+    &:last-child {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .regularFeedbackModal {
+    min-height: 400px;
+  }
+
+  .usageSceneStep,
+  .atmosphereStep,
+  .impressionStep {
+    padding: 16px 0;
+  }
+
+  .stepDescription {
+    margin-bottom: 20px;
+    padding: 12px;
+
+    p {
+      font-size: 13px;
+    }
+  }
+
+  .atmosphereList {
+    gap: 12px;
+  }
+
+  .newTagArea {
+    h4 {
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    h5 {
+      font-size: 13px;
+      margin: 16px 0 8px 0;
+    }
+  }
+
+  .completeStep {
+    padding: 30px 16px;
+
+    .completionMessage {
+      gap: 12px;
+
+      .starIcon {
+        width: 40px;
+        height: 40px;
+      }
+
+      h3 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 13px;
+
+        &:last-child {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// ButtonGradient disabled state
+.disabledButton {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

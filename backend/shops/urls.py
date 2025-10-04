@@ -1,14 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ShopViewSet, ShopTypeViewSet, ShopLayoutViewSet, ShopOptionViewSet, 
-    PaymentMethodViewSet, ShopReviewViewSet, ShopCreateViewSet, 
+    ShopViewSet, ShopTypeViewSet, ShopLayoutViewSet, ShopOptionViewSet,
+    PaymentMethodViewSet, ShopReviewViewSet, ShopCreateViewSet,
     ShopTagViewSet, ShopTagReactionViewSet, ShopImageViewSet,
     ShopUpdateAPIView, ShopEditHistoryListAPIView, HistoryEvaluationAPIView,
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet,
     AreaViewSet, RegularsSnapshotAPIView, RegularsDetailedAnalysisAPIView,
     CommonalitiesAPIView, ShopWelcomeAPIView, ShopSearchAPIView,
-    AtmosphereIndicatorViewSet
+    AtmosphereIndicatorViewSet, RegularUsageSceneViewSet
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -50,4 +50,8 @@ urlpatterns = [
     
     # ウェルカム機能API
     path('shops/<int:shop_id>/welcome/', ShopWelcomeAPIView.as_view(), name='shop-welcome'),
+
+    # 常連フィードバック - 利用シーンAPI
+    path('shops/<int:shop_pk>/regular-usage-scenes/', RegularUsageSceneViewSet.as_view({'get': 'list', 'post': 'create'}), name='shop-regular-usage-scenes'),
+    path('shops/<int:shop_pk>/regular-usage-scenes/<int:pk>/', RegularUsageSceneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='shop-regular-usage-scene-detail'),
 ]

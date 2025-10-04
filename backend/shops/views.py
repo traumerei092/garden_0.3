@@ -13,18 +13,20 @@ from .models import (
     ShopTag, ShopTagReaction, ShopMessage, ShopStaff, ShopImage,
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation,
     ShopDrink, ShopDrinkReaction, Area,
-    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate
+    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
+    RegularUsageScene
 )
 from accounts.dashboard_views import track_shop_view
 from .serializers import (
-    ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer, 
-    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer, 
+    ShopCreateSerializer, ShopUpdateSerializer, ShopTypeSerializer, ShopLayoutSerializer, ShopOptionSerializer,
+    ShopSerializer, ShopTagSerializer, ShopTagCreateSerializer, ShopTagReactionSerializer, UserShopRelationSerializer,
     ShopImageSerializer, PaymentMethodSerializer, ShopEditHistorySerializer, HistoryEvaluationSerializer,
     ShopReviewSerializer, ShopReviewLikeSerializer, ShopDrinkSerializer, ShopDrinkReactionSerializer,
     AlcoholCategorySerializer, AlcoholBrandSerializer, DrinkStyleSerializer, AreaSerializer, AreaDetailSerializer,
     AreaTreeSerializer, AreaGeoJSONSerializer,
-    AtmosphereIndicatorSerializer, ShopAtmosphereFeedbackSerializer, 
-    ShopAtmosphereFeedbackCreateUpdateSerializer, ShopAtmosphereAggregateSerializer
+    AtmosphereIndicatorSerializer, ShopAtmosphereFeedbackSerializer,
+    ShopAtmosphereFeedbackCreateUpdateSerializer, ShopAtmosphereAggregateSerializer,
+    RegularUsageSceneSerializer, RegularUsageSceneCreateUpdateSerializer
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -3071,3 +3073,62 @@ class AtmosphereIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AtmosphereIndicator.objects.all().order_by('id')
     serializer_class = AtmosphereIndicatorSerializer
     permission_classes = [AllowAny]
+
+
+class RegularUsageSceneViewSet(viewsets.ModelViewSet):
+    """常連利用シーン管理API"""
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # ユーザーの店舗IDに絞って取得
+        shop_id = self.kwargs.get('shop_pk')
+        if shop_id:
+            return RegularUsageScene.objects.filter(
+                user=self.request.user,
+                shop_id=shop_id
+            ).prefetch_related('visit_purposes')
+        return RegularUsageScene.objects.filter(user=self.request.user).prefetch_related('visit_purposes')
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return RegularUsageSceneCreateUpdateSerializer
+        return RegularUsageSceneSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['shop_id'] = self.kwargs.get('shop_pk')
+        return context
+
+    def create(self, request, *args, **kwargs):
+        shop_id = self.kwargs.get('shop_pk')
+        if not shop_id:
+            return Response(
+                {'error': 'Shop ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 店舗が存在するかチェック
+        shop = get_object_or_404(Shop, id=shop_id)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            response_serializer = RegularUsageSceneSerializer(instance)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def list(self, request, *args, **kwargs):
+        """特定の店舗の利用シーンを取得"""
+        shop_id = self.kwargs.get('shop_pk')
+        if shop_id:
+            # 特定の店舗の利用シーンを取得
+            queryset = self.get_queryset()
+            instance = queryset.first()  # 1つのユーザー・店舗の組み合わせは1つだけ
+            if instance:
+                serializer = RegularUsageSceneSerializer(instance)
+                return Response(serializer.data)
+            else:
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+        else:
+            # 全ての利用シーンを取得
+            return super().list(request, *args, **kwargs)

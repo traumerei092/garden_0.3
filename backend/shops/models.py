@@ -655,3 +655,27 @@ class WelcomeAction(models.Model):
         return f"{self.user.name} welcomes {self.shop.name}"
 
 
+##############################################
+# 常連利用シーン記録機能
+##############################################
+class RegularUsageScene(models.Model):
+    """常連客の利用シーンを記録するモデル"""
+    user = models.ForeignKey('accounts.UserAccount', on_delete=models.CASCADE, related_name='regular_usage_scenes')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='regular_usage_scenes')
+    visit_purposes = models.ManyToManyField(
+        'accounts.VisitPurpose',
+        related_name='regular_usage_scenes',
+        verbose_name="利用目的"
+    )
+    created_at = models.DateTimeField("記録日", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日", auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'shop')  # 1ユーザー1店舗につき1つの利用シーン記録
+        verbose_name = "常連利用シーン"
+        verbose_name_plural = "常連利用シーン"
+
+    def __str__(self):
+        return f"{self.user.name} の {self.shop.name} 利用シーン"
+
+

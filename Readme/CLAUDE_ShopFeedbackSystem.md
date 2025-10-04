@@ -225,8 +225,97 @@ const newTag: ShopTag = {
 - データ量: 大量フィードバックによるパフォーマンス影響
 - 多言語: 現在日本語のみ対応
 
+## 常連フィードバック機能（2025-10-04追加）
+
+### 概要
+「行きつけ」ボタン押下時に表示される4段階の常連フィードバックモーダルシステム。
+利用シーン選択→雰囲気評価→印象タグ→完了の流れで、常連客としての店舗利用体験を包括的に収集する。
+
+### 常連フィードバックフロー
+
+#### Step 1: 利用シーン選択
+- **UI**: CustomCheckboxGroup（VisitPurpose）
+- **選択肢**: 来店目的の複数選択（デート、接待、一人飲み等）
+- **データ**: `visit_purpose_ids: number[]`形式
+- **API**: `POST /api/shops/{id}/regular-usage-scenes/`
+- **保存タイミング**: 「登録して次へ」ボタン押下時
+
+#### Step 2-4: 既存フィードバックフロー再利用
+- **Step 2**: 雰囲気評価（AtmosphereSlider）
+- **Step 3**: 印象タグ（ShopImpressionTag）
+- **Step 4**: 完了画面
+
+### システム構成追加
+
+#### 新規ファイル
+```
+frontend/src/
+├── components/Shop/RegularFeedbackModal/        # 常連フィードバックモーダル
+│   ├── index.tsx                                # 4ステップモーダル実装
+│   └── style.module.scss                       # スタイル定義
+├── actions/shop/regularUsageScene.ts            # 利用シーン管理API
+backend/shops/
+├── models.py                                    # RegularUsageSceneモデル追加
+├── serializers.py                              # RegularUsageScene関連シリアライザー
+├── views.py                                     # RegularUsageSceneViewSet追加
+├── urls.py                                      # 利用シーンエンドポイント追加
+└── admin.py                                     # 管理画面設定追加
+```
+
+#### データモデル
+```python
+# RegularUsageScene Model
+class RegularUsageScene(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+    visit_purposes = models.ManyToManyField(VisitPurpose)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+```
+
+### 呼び出しパターン
+```tsx
+// 店舗詳細ページでの統合
+const handleRelationToggle = async (relationTypeId: number) => {
+  if (relationTypeId === DEFAULT_RELATIONS.favorite.id) {
+    if (!isFavorite) {
+      // 常連フィードバックモーダルを表示
+      setRegularFeedbackModalOpen(true);
+      return;
+    }
+  }
+  // 通常のリレーション処理...
+};
+
+<RegularFeedbackModal
+  isOpen={regularFeedbackModalOpen}
+  onClose={() => setRegularFeedbackModalOpen(false)}
+  shop={shop}
+  onDataUpdate={handleRegularFeedbackComplete}
+/>
+```
+
+### 技術的特徴
+
+#### コード再利用戦略
+- **Step 2-4**: 既存ShopFeedbackModalのロジックを完全再利用
+- **API統一**: 同一のatmosphere_feedback、impression_tagエンドポイント使用
+- **UI統一**: AtmosphereSlider、ShopImpressionTag等を再利用
+
+#### データフロー統合
+1. **利用シーン登録**: Step 1完了時にRegularUsageScene作成
+2. **行きつけ設定**: 全Step完了時に「行きつけ」リレーション自動設定
+3. **データ統合**: 利用シーン + 雰囲気評価 + 印象タグの3層データ
+
+### 管理画面対応
+
+Django管理画面でRegularUsageSceneの確認・編集が可能：
+- ユーザー別・店舗別の利用シーン一覧
+- 利用目的のManyToManyField管理
+- 作成・更新日時の追跡
+
 ---
 
-**最終更新**: 2025-09-28
-**バージョン**: v1.0
+**最終更新**: 2025-10-04
+**バージョン**: v1.1（常連フィードバック機能追加）
 **担当**: Claude Code Implementation

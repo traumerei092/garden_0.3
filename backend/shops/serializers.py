@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from .models import (
-    Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour, 
+    Shop, ShopImage, ShopType, ShopLayout, ShopOption, BusinessHour,
     ShopTag, ShopTagReaction, UserShopRelation, PaymentMethod,
     ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike,
     ShopDrink, ShopDrinkReaction, Area,
-    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate
+    AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
+    RegularUsageScene
 )
 from accounts.models import VisitPurpose, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.contrib.auth import get_user_model
@@ -686,3 +687,70 @@ class ShopAtmosphereAggregateSerializer(serializers.ModelSerializer):
             return 'medium'
         else:
             return 'low'
+
+
+# 常連フィードバック関連のシリアライザー
+class RegularUsageSceneSerializer(serializers.ModelSerializer):
+    """常連利用シーン表示用のシリアライザー"""
+    user = serializers.StringRelatedField(read_only=True)
+    shop = serializers.StringRelatedField(read_only=True)
+    visit_purposes = VisitPurposeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RegularUsageScene
+        fields = ['id', 'user', 'shop', 'visit_purposes', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'shop', 'created_at', 'updated_at']
+
+
+class RegularUsageSceneCreateUpdateSerializer(serializers.ModelSerializer):
+    """常連利用シーン登録・更新用のシリアライザー"""
+    visit_purpose_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=True
+    )
+
+    class Meta:
+        model = RegularUsageScene
+        fields = ['visit_purpose_ids']
+
+    def validate_visit_purpose_ids(self, value):
+        """利用目的IDの検証"""
+        if not value:
+            raise serializers.ValidationError("At least one visit purpose must be selected")
+
+        # IDが存在することを確認
+        valid_ids = VisitPurpose.objects.values_list('id', flat=True)
+        for purpose_id in value:
+            if purpose_id not in valid_ids:
+                raise serializers.ValidationError(f"Invalid visit purpose ID: {purpose_id}")
+
+        return value
+
+    def create(self, validated_data):
+        visit_purpose_ids = validated_data.pop('visit_purpose_ids')
+        user = self.context['request'].user
+        shop_id = self.context['shop_id']
+
+        # 既存の記録があれば削除
+        RegularUsageScene.objects.filter(user=user, shop_id=shop_id).delete()
+
+        # 新しい記録を作成
+        usage_scene = RegularUsageScene.objects.create(
+            user=user,
+            shop_id=shop_id
+        )
+
+        # ManyToManyフィールドを設定
+        usage_scene.visit_purposes.set(visit_purpose_ids)
+
+        return usage_scene
+
+    def update(self, instance, validated_data):
+        visit_purpose_ids = validated_data.pop('visit_purpose_ids')
+
+        # ManyToManyフィールドを更新
+        instance.visit_purposes.set(visit_purpose_ids)
+        instance.save()
+
+        return instance

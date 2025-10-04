@@ -13,6 +13,7 @@ import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
 import ShopTagModal from '@/components/Shop/ShopTagModal';
 import ShopAtmosphereFeedbackModal from '@/components/Shop/ShopAtmosphereFeedbackModal';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
+import RegularFeedbackModal from '@/components/Shop/RegularFeedbackModal';
 import { DEFAULT_RELATIONS } from '@/hooks/useShopActions';
 import AtmosphereVisualization from '@/components/UI/AtmosphereVisualization';
 import { ShopImageModal } from '@/components/Shop/ShopImageModal';
@@ -51,6 +52,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [welcomeRefreshTrigger, setWelcomeRefreshTrigger] = useState(0);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [regularFeedbackModalOpen, setRegularFeedbackModalOpen] = useState(false);
   const { user } = useAuthStore();
   const isLoggedIn = !!user;
 
@@ -128,6 +130,17 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       }
     }
 
+    // favoriteRelation（「行きつけ」ボタン）の特別処理
+    const isFavorite = relationStats?.user_relations.includes(DEFAULT_RELATIONS.favorite.id) || false;
+
+    if (relationTypeId === DEFAULT_RELATIONS.favorite.id) {
+      if (!isFavorite) {
+        // 未設定 → 行きつけ: 常連フィードバックモーダルを表示
+        setRegularFeedbackModalOpen(true);
+        return;
+      }
+    }
+
     // 通常のリレーション切り替え処理
     setIsActionLoading(true);
     try {
@@ -146,6 +159,24 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     }
   };
 
+
+  // 常連フィードバック完了後の処理
+  const handleRegularFeedbackComplete = async () => {
+    setRegularFeedbackModalOpen(false);
+
+    // 行きつけリレーションを設定
+    setIsActionLoading(true);
+    try {
+      await toggleShopRelation(params.id, DEFAULT_RELATIONS.favorite.id);
+      const newStats = await fetchShopStats(params.id);
+      setRelationStats(newStats);
+      setWelcomeRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error('favoriteリレーションの設定に失敗:', error);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   // 位置情報を取得して距離を計算
   const loadLocationData = async (shopLat: number, shopLng: number) => {
@@ -584,6 +615,16 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           onClose={() => setFeedbackModalOpen(false)}
           shop={shop}
           onDataUpdate={loadShop}
+        />
+      )}
+
+      {/* 常連フィードバックモーダル */}
+      {shop && (
+        <RegularFeedbackModal
+          isOpen={regularFeedbackModalOpen}
+          onClose={() => setRegularFeedbackModalOpen(false)}
+          shop={shop}
+          onDataUpdate={handleRegularFeedbackComplete}
         />
       )}
     </div>

@@ -5,11 +5,11 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 import json
 from .models import (
-    Shop, ShopType, ShopLayout, ShopOption, 
+    Shop, ShopType, ShopLayout, ShopOption,
     BusinessHour, ShopImage, ShopTag, ShopTagReaction,
     UserShopRelation, RelationType, PaymentMethod,
     AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
-    ShopDrink, ShopDrinkReaction, Area, WelcomeAction
+    ShopDrink, ShopDrinkReaction, Area, WelcomeAction, RegularUsageScene
 )
 
 # AreaモデルのカスタムフォームでGeoJSON編集機能を追加
@@ -345,6 +345,44 @@ class WelcomeActionAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'shop')
+
+
+# 常連利用シーンの管理画面設定
+@admin.register(RegularUsageScene)
+class RegularUsageSceneAdmin(admin.ModelAdmin):
+    list_display = ('user', 'shop', 'visit_purposes_display', 'created_at', 'updated_at')
+    list_filter = ('created_at', 'updated_at', 'visit_purposes')
+    search_fields = ('user__name', 'user__email', 'shop__name')
+    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ('user', 'shop')
+    filter_horizontal = ('visit_purposes',)
+    date_hierarchy = 'created_at'
+
+    def visit_purposes_display(self, obj):
+        """利用目的を見やすく表示"""
+        purposes = obj.visit_purposes.all()
+        if purposes:
+            return ", ".join([purpose.name for purpose in purposes])
+        return "未設定"
+    visit_purposes_display.short_description = '利用目的'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'shop').prefetch_related('visit_purposes')
+
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('user', 'shop')
+        }),
+        ('利用シーン', {
+            'fields': ('visit_purposes',),
+            'description': '常連として利用する目的やシーンを選択してください。'
+        }),
+        ('システム情報', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
 
 # Register your models here.
 admin.site.register(ShopType)
