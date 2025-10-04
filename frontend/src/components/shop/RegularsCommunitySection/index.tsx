@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { User, Users, TrendingUp } from 'lucide-react';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { fetchCommonalities, CommonalitiesData } from '@/actions/shop/commonalities';
-import { fetchRegularCommunityStats, RegularCommunityStatsResponse, formatPercentage, getAtmosphereTendencyStyle } from '@/actions/shop/regularCommunityStats';
+import { fetchRegularCommunityStats, RegularCommunityStatsResponse, formatPercentage } from '@/actions/shop/regularCommunityStats';
 import { useAuthStore } from '@/store/useAuthStore';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
@@ -202,21 +202,21 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
 
       return (
         <div className={styles.regularsSummary}>
-          <div className={styles.summaryTitle}>あなたとの共通点</div>
+          <div className={styles.summaryTitle}>あなたとの共通度</div>
           <div className={styles.commonalityTags}>
             {commonalities.age_gender && (
               <div className={`${styles.tag} ${styles.commonalityTag}`}>
-                同じ年代・性別の方は ({formatPercentage(commonalities.age_gender.percentage)})
+                {commonalities.age_gender.text}
               </div>
             )}
             {commonalities.atmosphere && (
               <div className={`${styles.tag} ${styles.commonalityTag}`}>
-                同じ雰囲気好みの方は ({formatPercentage(commonalities.atmosphere.percentage)})
+                {commonalities.atmosphere.text}
               </div>
             )}
             {commonalities.visit_purpose && (
               <div className={`${styles.tag} ${styles.commonalityTag}`}>
-                同じ利用シーンの方は ({formatPercentage(commonalities.visit_purpose.percentage)})
+                {commonalities.visit_purpose.text}
               </div>
             )}
           </div>

@@ -189,7 +189,8 @@ class RegularCommunityStatsService:
         if most_common_age and most_common_gender:
             age_name = most_common_age[0]
             gender_name = most_common_gender[0]
-            summary['dominant_demographic'] = f"{age_name}・{gender_name}が中心"
+            gender_display = RegularCommunityStatsService.get_gender_display(gender_name)
+            summary['dominant_demographic'] = f"{age_name}・{gender_display}が中心"
             summary['age_distribution'] = dict(age_counter)
             summary['gender_distribution'] = dict(gender_counter)
             summary['total_regulars'] = total_users
@@ -238,6 +239,16 @@ class RegularCommunityStatsService:
         return stats
 
     @staticmethod
+    def get_gender_display(gender: str) -> str:
+        """英語の性別を日本語に変換"""
+        gender_map = {
+            'male': '男性',
+            'female': '女性',
+            'other': 'その他'
+        }
+        return gender_map.get(gender, gender)
+
+    @staticmethod
     def calculate_user_commonalities(user: UserAccount, shop_id: int) -> Dict:
         """
         ユーザーと常連との共通点を計算
@@ -259,10 +270,13 @@ class RegularCommunityStatsService:
 
         if len(regulars) > 0:
             age_gender_percentage = round((age_gender_match_count / len(regulars)) * 100, 2)
-            commonalities['age_gender'] = {
-                'percentage': age_gender_percentage,
-                'text': f"あなたと同じ{user_age_group}・{user.gender}の方がそこそこいます({age_gender_percentage}%)"
-            }
+            if age_gender_percentage > 0:
+                user_age_group = RegularCommunityStatsService.calculate_age_group(user.birthdate)
+                user_gender_display = RegularCommunityStatsService.get_gender_display(user.gender)
+                commonalities['age_gender'] = {
+                    'percentage': age_gender_percentage,
+                    'text': f"{user_age_group}・{user_gender_display}は({age_gender_percentage}%)"
+                }
 
         # 2. 雰囲気好みの共通点
         user_atmosphere_avg = UserAtmospherePreference.objects.filter(
@@ -279,15 +293,16 @@ class RegularCommunityStatsService:
         stats = ShopRegularStatistics.objects.filter(shop_id=shop_id).first()
         if stats and stats.atmosphere_distribution:
             user_tendency_percentage = stats.atmosphere_distribution.get(user_tendency, 0)
-            tendency_names = {
-                'solitude': '一人の時間を重視',
-                'flexible': 'フレキシブル',
-                'community': 'コミュニティを重視'
-            }
-            commonalities['atmosphere'] = {
-                'percentage': user_tendency_percentage,
-                'text': f"あなたと同じく{tendency_names[user_tendency]}する方が多いです({user_tendency_percentage}%)"
-            }
+            if user_tendency_percentage > 0:
+                tendency_names = {
+                    'solitude': '一人の時間を楽しみたい方',
+                    'flexible': 'フレキシブルな方',
+                    'community': '他の人との交流を楽しみたい方'
+                }
+                commonalities['atmosphere'] = {
+                    'percentage': user_tendency_percentage,
+                    'text': f"{tendency_names[user_tendency]}は({user_tendency_percentage}%)"
+                }
 
         # 3. 利用シーンの共通点
         user_usage_scene = RegularUsageScene.objects.filter(
@@ -310,7 +325,7 @@ class RegularCommunityStatsService:
             if max_common_percentage > 0:
                 commonalities['visit_purpose'] = {
                     'percentage': max_common_percentage,
-                    'text': f"あなたと同じく{common_purpose_name}で利用する方が多いです({max_common_percentage}%)"
+                    'text': f"{common_purpose_name}で利用している方は({max_common_percentage}%)"
                 }
 
         return commonalities
