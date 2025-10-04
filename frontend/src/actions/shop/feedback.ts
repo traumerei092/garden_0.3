@@ -1,8 +1,8 @@
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 
 export interface FeedbackData {
-  atmosphereScores: { indicator_id: number; score: number }[];
-  impressionTags: string[];
+  atmosphere_scores: { [key: string]: number };
+  impressionTags?: string[];
 }
 
 export interface ShopAtmosphereFeedback {

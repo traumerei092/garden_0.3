@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
 import styles from './style.module.scss';
 
 // 雰囲気指標の型定義
@@ -44,20 +44,16 @@ const AtmosphereInput: React.FC<AtmosphereInputProps> = ({
     const fetchIndicators = async () => {
       try {
         setLoading(true);
-        
-        // shopIdがある場合はそのAPIを使用、なければ汎用的なエンドポイントを想定
-        const url = shopId 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_indicators/`
-          : `${process.env.NEXT_PUBLIC_API_URL}/atmosphere-indicators/`; // 今後必要に応じて追加
-          
-        const response = await fetchWithAuth(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+
+        // 中央化された関数を使用
+        const result = await fetchAtmosphereIndicators();
+        if (!result.success || !result.data) {
+          throw new Error(result.error || '雰囲気指標の取得に失敗しました');
         }
-        
-        const data = await response.json();
+
+        const data = result.data;
         setIndicators(data);
-        
+
         // 初期スコアが設定されていない場合は、すべて0で初期化
         if (Object.keys(initialScores).length === 0) {
           const defaultScores: AtmosphereScores = {};
@@ -67,7 +63,7 @@ const AtmosphereInput: React.FC<AtmosphereInputProps> = ({
           setScores(defaultScores);
           onScoresChange(defaultScores);
         }
-        
+
       } catch (err) {
         console.error('Failed to fetch atmosphere indicators:', err);
         setError('雰囲気指標の読み込みに失敗しました');

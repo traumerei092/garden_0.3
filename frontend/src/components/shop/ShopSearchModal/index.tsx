@@ -18,7 +18,7 @@ import styles from './style.module.scss';
 import { Users, Heart, Settings, MapPin, Coffee, Wine, Filter, ChevronDown } from 'lucide-react';
 import { fetchUserProfile } from '@/actions/profile/fetchProfile';
 import { fetchProfileOptions } from '@/actions/profile/fetchProfileOptions';
-import { fetchAtmosphereIndicators } from '@/actions/shop/search';
+import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
 import { fetchShopTypes } from '@/actions/shop/fetchShopTypes';
 import { fetchShopLayouts } from "@/actions/shop/fetchShopLayouts";
 import { fetchShopOptions } from "@/actions/shop/fetchShopOptions";
@@ -163,9 +163,13 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   useEffect(() => {
     const fetchAtmosphereIndicatorsData = async () => {
       try {
-        const indicators = await fetchAtmosphereIndicators();
-        console.log('🔥🔥🔥 取得した雰囲気指標:', indicators);
-        setAtmosphereIndicators(indicators);
+        const result = await fetchAtmosphereIndicators();
+        if (result.success && result.data) {
+          console.log('🔥🔥🔥 取得した雰囲気指標:', result.data);
+          setAtmosphereIndicators(result.data);
+        } else {
+          console.error('雰囲気指標の取得に失敗:', result.error);
+        }
       } catch (error) {
         console.error('雰囲気指標の取得に失敗:', error);
       }

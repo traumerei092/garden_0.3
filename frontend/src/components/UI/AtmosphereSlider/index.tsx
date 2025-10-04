@@ -4,6 +4,7 @@ import React from 'react';
 import { RadioGroup, Radio } from '@nextui-org/react';
 import styles from './style.module.scss';
 import { AtmosphereIndicator } from '@/types/search';
+import { getScoreText, getScoreColor } from '@/utils/atmosphere';
 
 interface AtmosphereSliderProps {
   indicator: AtmosphereIndicator;
@@ -18,33 +19,6 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
   onChange,
   disabled = false,
 }) => {
-  // スコアに基づいて説明テキストを取得
-  const getScoreDescription = (score: number): string => {
-    switch (score) {
-      case -2:
-        return indicator.description_left;
-      case -1:
-        return `やや${indicator.description_left}`;
-      case 0:
-        return 'どちらも楽しめる';
-      case 1:
-        return `やや${indicator.description_right}`;
-      case 2:
-        return indicator.description_right;
-      default:
-        return 'どちらも楽しめる';
-    }
-  };
-
-  // スコアに基づいて現在値の色を取得
-  const getValueColor = (score: number): string => {
-    if (score < 0) {
-      return 'rgb(0, 198, 255)'; // 左側（青系）
-    } else if (score > 0) {
-      return 'rgb(235, 14, 242)'; // 右側（紫系）
-    }
-    return '#fff'; // 中央（白）
-  };
 
   // ラジオボタンのオプション定義
   const radioOptions = [
@@ -61,9 +35,9 @@ const AtmosphereSlider: React.FC<AtmosphereSliderProps> = ({
         <h4 className={styles.title}>{indicator.name}</h4>
         <span
           className={styles.currentValue}
-          style={{ color: getValueColor(value) }}
+          style={{ color: getScoreColor(value) }}
         >
-          {getScoreDescription(value)}
+          {getScoreText(value, indicator.description_left, indicator.description_right)}
         </span>
       </div>
 

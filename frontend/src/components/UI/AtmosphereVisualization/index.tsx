@@ -3,6 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
+import {
+  getScoreText,
+  scoreToRightPercentage,
+  scoreToMarkerPosition,
+  getScoreColor
+} from '@/utils/atmosphere';
 import styles from './style.module.scss';
 
 interface AtmosphereIndicator {
@@ -43,18 +50,15 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
         setLoading(true);
         setError(null);
 
-        // 指標とアグリゲートデータを並行取得
-        const [indicatorsResponse, aggregateResponse] = await Promise.all([
-          fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_indicators/`),
-          fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_aggregate/`)
-        ]);
-
-        if (indicatorsResponse.ok) {
-          const indicatorsData = await indicatorsResponse.json();
-          setIndicators(indicatorsData);
-        } else {
-          throw new Error('指標データの取得に失敗しました');
+        // 指標データを中央化された関数で取得
+        const indicatorsResult = await fetchAtmosphereIndicators();
+        if (!indicatorsResult.success || !indicatorsResult.data) {
+          throw new Error(indicatorsResult.error || '指標データの取得に失敗しました');
         }
+        setIndicators(indicatorsResult.data);
+
+        // アグリゲートデータを取得
+        const aggregateResponse = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_aggregate/`);
 
         if (aggregateResponse.ok) {
           const aggregateData = await aggregateResponse.json();
@@ -79,47 +83,6 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
     }
   }, [shopId]);
 
-  // スコアから右側（description_right）の色の割合を計算
-  const scoreToRightPercentage = (score: number): number => {
-    // -2.0 ～ +2.0 を 0% ～ 100% に変換
-    return Math.max(0, Math.min(100, ((score + 2) / 4) * 100));
-  };
-
-  // スコアからマーカー位置を計算（50%を中心とした実際の位置）
-  const scoreToMarkerPosition = (score: number): number => {
-    // -2.0 ～ +2.0 を 0% ～ 100% に変換
-    return Math.max(0, Math.min(100, ((score + 2) / 4) * 100));
-  };
-
-  // スコアに基づいて色を取得
-  const getScoreColor = (score: number): string => {
-    if (score === 0) return 'rgba(255, 255, 255, 0.8)';
-    const rightPercentage = scoreToRightPercentage(score);
-    if (rightPercentage > 50) {
-      // 右側（ピンク）が優勢
-      return 'rgba(235, 14, 242, 0.8)';
-    } else {
-      // 左側（シアン）が優勢
-      return 'rgba(0, 194, 255, 0.8)';
-    }
-  };
-
-  // スコアに基づいて表示テキストを生成
-  const getScoreText = (score: number, leftLabel: string, rightLabel: string): string => {
-    if (score === 0) return 'どちらでもない';
-    
-    const absScore = Math.abs(score);
-    const isRight = score > 0;
-    const label = isRight ? rightLabel : leftLabel;
-    
-    if (absScore >= 1.5) {
-      return label;
-    } else if (absScore >= 0.5) {
-      return `やや${label}`;
-    } else {
-      return 'どちらでもない';
-    }
-  };
 
   // 信頼度レベルの表示テキスト
   const getConfidenceText = (level: string, count: number): string => {

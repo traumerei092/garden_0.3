@@ -11,7 +11,7 @@ import { Star } from 'lucide-react';
 import styles from './style.module.scss';
 import { Shop } from '@/types/shops';
 import { AtmosphereIndicator } from '@/types/search';
-import { fetchAtmosphereIndicators } from '@/actions/shop/search';
+import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
 import { toggleTagReaction } from '@/actions/shop/relation';
 import { submitShopFeedback, FeedbackData } from '@/actions/shop/feedback';
 import { getUserShopFeedbackFromStorage } from '@/utils/feedbackStorage';
@@ -82,8 +82,12 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
   const loadAtmosphereIndicators = async () => {
     try {
       setIsLoading(true);
-      const indicators = await fetchAtmosphereIndicators();
-      setAtmosphereIndicators(indicators);
+      const result = await fetchAtmosphereIndicators();
+      if (result.success && result.data) {
+        setAtmosphereIndicators(result.data);
+      } else {
+        console.error('雰囲気指標の取得に失敗:', result.error);
+      }
     } catch (error) {
       console.error('雰囲気指標の取得に失敗:', error);
     } finally {
@@ -165,11 +169,8 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
   const handleAtmosphereFeedbackSubmit = async () => {
     try {
       const feedbackData: FeedbackData = {
-        atmosphereScores: Object.entries(atmosphereScores).map(([indicatorId, score]) => ({
-          indicator_id: parseInt(indicatorId),
-          score
-        })),
-        impressionTags: [] // 雰囲気フィードバックでは空
+        atmosphere_scores: atmosphereScores,
+        impressionTags: []
       };
 
       try {

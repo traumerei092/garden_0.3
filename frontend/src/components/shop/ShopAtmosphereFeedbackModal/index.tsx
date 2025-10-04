@@ -5,7 +5,7 @@ import Modal from '@/components/UI/Modal';
 import AtmosphereInput, { AtmosphereScores } from '@/components/UI/AtmosphereInput';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import ModalButtons from '@/components/UI/ModalButtons';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { submitShopFeedback, getUserShopFeedback, FeedbackData } from '@/actions/shop/feedback';
 import styles from './style.module.scss';
 
 interface ShopAtmosphereFeedbackModalProps {
@@ -37,21 +37,18 @@ const ShopAtmosphereFeedbackModal: React.FC<ShopAtmosphereFeedbackModalProps> = 
         try {
           setLoading(true);
           setError(null);
-          
-          const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/my_atmosphere_feedback/`);
-          
-          if (response.ok) {
-            const data = await response.json();
+
+          const data = await getUserShopFeedback(shopId);
+
+          if (data) {
             setInitialScores(data.atmosphere_scores || {});
             setScores(data.atmosphere_scores || {});
             setIsEditing(true);
-          } else if (response.status === 404) {
+          } else {
             // フィードバックがない場合は新規作成モード
             setInitialScores({});
             setScores({});
             setIsEditing(false);
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
           }
         } catch (err) {
           console.error('Failed to fetch existing feedback:', err);
@@ -77,27 +74,19 @@ const ShopAtmosphereFeedbackModal: React.FC<ShopAtmosphereFeedbackModalProps> = 
       setSubmitting(true);
       setError(null);
 
-      const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_feedback/`, {
-        method: 'POST',
-        body: JSON.stringify({
-          atmosphere_scores: scores
-        })
-      });
+      const feedbackData: FeedbackData = {
+        atmosphere_scores: scores
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'フィードバックの保存に失敗しました');
-      }
-
-      const result = await response.json();
-      console.log('Atmosphere feedback saved:', result);
+      await submitShopFeedback(shopId, feedbackData);
+      console.log('Atmosphere feedback saved');
 
       // 成功時はコールバックを呼び出してモーダルを閉じる
       if (onSuccess) {
         onSuccess();
       }
       handleClose();
-      
+
     } catch (err) {
       console.error('Failed to save atmosphere feedback:', err);
       setError(err instanceof Error ? err.message : 'フィードバックの保存に失敗しました');
