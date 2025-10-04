@@ -3,8 +3,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 8px 16px;
-  margin-bottom: 8px;
+  padding: 8px 12px;
   transition: all 0.3s ease;
 
   &:hover {
@@ -15,7 +14,6 @@
 
   @media (max-width: 768px) {
     padding: 6px 12px;
-    margin-bottom: 6px;
   }
 }
 
@@ -23,7 +21,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
 
   @media (max-width: 768px) {
     margin-bottom: 6px;
@@ -34,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: rgb(255, 255, 255);
   margin: 0;
@@ -323,6 +320,196 @@
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
+}
+
+/* 常連サマリー（新しいタグ形式） */
+.regularsSummary {
+  margin-bottom: 6px;
+}
+
+.summaryTitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.summaryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.tagGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.tagLabel {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  min-width: 80px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    min-width: 70px;
+  }
+}
+
+/* 新しいタグスタイル（横一列対応） */
+.tag {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.6rem;
+  font-weight: 400;
+  border: 1px solid;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
+.regularsSummaryTag {
+  background: rgba(0, 255, 255, 0.15);
+  color: white;
+  border-color: rgba(0, 255, 255, 0.3);
+  padding: 6px 8px;
+}
+
+.visitPurposeTag {
+  background: rgba(0, 198, 255, 0.15);
+  color: white;
+  border-color: rgba(0, 198, 255, 0.3);
+}
+
+.commonalityTag {
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.1) 0%, rgba(235, 14, 242, 0.1) 100%);
+  color: linear-gradient(90deg, rgba(0, 255, 255, 0.8) 0%, rgba(235, 14, 242, 0.8) 100%);
+  border-color: transparent;
+}
+
+.atmosphereTag {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+}
+
+.percentage {
+  font-size: 0.7rem;
+  opacity: 0.8;
+
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
+  }
+}
+
+/* 共通点セクション（新フォーマット） */
+
+.commonalityTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.commonalityTag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.1) 0%, rgba(235, 14, 242, 0.1) 100%);
+  border-radius: 16px;
+  position: relative;
+  color: white;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 0.8px; // これが境界線の太さになります
+    border-radius: 16px;
+    background: linear-gradient(to right, rgba(0, 198, 255, 0.3), rgba(235, 14, 242, 0.3));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  @media (max-width: 768px) {
+    gap: 6px;
+    padding: 5px 6px;
+  }
+}
+
+.commonalityCategory {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 60px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.7rem;
+    min-width: 50px;
+  }
+}
+
+.commonalityValue {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(255, 255, 255);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+}
+
+.commonalityPercentage {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 20, 147, 0.8);
+  background: rgba(255, 20, 147, 0.1);
+  padding: 1px 4px;
+  border-radius: 3px;
+
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
+  }
 }
 
 /* レスポンシブ調整 */

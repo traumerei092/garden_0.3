@@ -9,7 +9,8 @@ from .models import (
     BusinessHour, ShopImage, ShopTag, ShopTagReaction,
     UserShopRelation, RelationType, PaymentMethod,
     AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
-    ShopDrink, ShopDrinkReaction, Area, WelcomeAction, RegularUsageScene
+    ShopDrink, ShopDrinkReaction, Area, WelcomeAction, RegularUsageScene,
+    ShopRegularStatistics
 )
 
 # AreaモデルのカスタムフォームでGeoJSON編集機能を追加
@@ -345,6 +346,72 @@ class WelcomeActionAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'shop')
+
+
+# 常連統計の管理画面設定
+@admin.register(ShopRegularStatistics)
+class ShopRegularStatisticsAdmin(admin.ModelAdmin):
+    list_display = (
+        'shop', 'regular_count', 'atmosphere_tendency',
+        'atmosphere_tendency_percentage', 'popular_visit_purpose', 'last_calculated'
+    )
+    list_filter = ('atmosphere_tendency', 'last_calculated')
+    search_fields = ('shop__name',)
+    readonly_fields = ('last_calculated',)
+
+    def get_readonly_fields(self, request, obj=None):
+        """統計データは基本的に自動計算なので編集不可にする"""
+        if obj:  # 編集時
+            return self.readonly_fields + (
+                'regular_count', 'atmosphere_tendency', 'atmosphere_tendency_percentage',
+                'atmosphere_distribution', 'visit_purpose_distribution', 'age_gender_summary'
+            )
+        return self.readonly_fields
+
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('shop', 'regular_count', 'last_calculated')
+        }),
+        ('雰囲気統計', {
+            'fields': ('atmosphere_tendency', 'atmosphere_tendency_percentage', 'atmosphere_distribution'),
+            'description': '常連の雰囲気好み傾向データ'
+        }),
+        ('利用シーン統計', {
+            'fields': ('popular_visit_purpose', 'visit_purpose_distribution'),
+            'description': '常連の利用目的統計データ'
+        }),
+        ('年代・性別統計', {
+            'fields': ('age_gender_summary',),
+            'description': '常連の年代・性別分布データ'
+        }),
+    )
+
+    actions = ['refresh_statistics']
+
+    def refresh_statistics(self, request, queryset):
+        """選択した店舗の統計を更新"""
+        from .services import RegularCommunityStatsService
+
+        updated_count = 0
+        for shop_stats in queryset:
+            try:
+                RegularCommunityStatsService.update_shop_statistics(shop_stats.shop.id)
+                updated_count += 1
+            except Exception as e:
+                self.message_user(
+                    request,
+                    f"{shop_stats.shop.name}の統計更新に失敗: {str(e)}",
+                    level='ERROR'
+                )
+
+        if updated_count > 0:
+            self.message_user(
+                request,
+                f"{updated_count}件の統計を更新しました",
+                level='SUCCESS'
+            )
+
+    refresh_statistics.short_description = "選択した店舗の統計を更新"
 
 
 # 常連利用シーンの管理画面設定

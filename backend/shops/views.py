@@ -254,8 +254,83 @@ class ShopViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except ShopAtmosphereFeedback.DoesNotExist:
             return Response(
-                {"detail": "フィードバックが見つかりません"}, 
+                {"detail": "フィードバックが見つかりません"},
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=['get'])
+    def regular_community_stats(self, request, pk=None):
+        """
+        常連コミュニティの統計情報を取得
+        常連サマリー（年代・性別・雰囲気好み・利用シーン）と
+        ログインユーザーとの共通点を返す
+        """
+        from .services import RegularCommunityStatsService
+
+        shop = self.get_object()
+
+        # 統計データを更新（初回またはデータが古い場合）
+        try:
+            stats = RegularCommunityStatsService.update_shop_statistics(shop.id)
+        except Exception as e:
+            return Response(
+                {"detail": f"統計計算エラー: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # 常連サマリーデータを構築
+        summary_data = {
+            'age_gender_summary': stats.age_gender_summary.get('dominant_demographic', 'データ不足'),
+            'atmosphere_tendency': {
+                'tag': stats.atmosphere_display_text,
+                'tendency': stats.atmosphere_tendency,
+                'percentage': float(stats.atmosphere_tendency_percentage) if stats.atmosphere_tendency_percentage else 0
+            },
+            'popular_visit_purpose': {
+                'tag': f"{stats.popular_visit_purpose.name}で利用する方が多いです" if stats.popular_visit_purpose else 'データ不足',
+                'purpose_name': stats.popular_visit_purpose.name if stats.popular_visit_purpose else None
+            },
+            'regular_count': stats.regular_count
+        }
+
+        # ユーザーとの共通点を計算（認証ユーザーのみ）
+        commonalities = {}
+        if request.user.is_authenticated:
+            commonalities = RegularCommunityStatsService.calculate_user_commonalities(
+                request.user, shop.id
+            )
+
+        return Response({
+            'summary': summary_data,
+            'commonalities': commonalities,
+            'last_calculated': stats.last_calculated
+        })
+
+    @action(detail=True, methods=['post'])
+    def refresh_regular_stats(self, request, pk=None):
+        """
+        常連統計を強制更新（管理者用）
+        """
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return Response(
+                {"detail": "管理者権限が必要です"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        from .services import RegularCommunityStatsService
+
+        shop = self.get_object()
+        try:
+            stats = RegularCommunityStatsService.update_shop_statistics(shop.id)
+            return Response({
+                "detail": "統計を更新しました",
+                "last_calculated": stats.last_calculated,
+                "regular_count": stats.regular_count
+            })
+        except Exception as e:
+            return Response(
+                {"detail": f"統計更新エラー: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 class ShopCreateViewSet(viewsets.GenericViewSet):

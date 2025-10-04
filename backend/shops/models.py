@@ -679,3 +679,67 @@ class RegularUsageScene(models.Model):
         return f"{self.user.name} の {self.shop.name} 利用シーン"
 
 
+##############################################
+# 常連統計キャッシュ機能（スケーラブル設計）
+##############################################
+class ShopRegularStatistics(models.Model):
+    """店舗の常連統計データをキャッシュするモデル（パフォーマンス最適化）"""
+    shop = models.OneToOneField(Shop, on_delete=models.CASCADE, related_name='regular_statistics')
+
+    # 年代・性別統計
+    age_gender_summary = models.JSONField("年代・性別サマリー", default=dict, blank=True)
+
+    # 雰囲気好み統計
+    atmosphere_tendency = models.CharField(
+        "雰囲気傾向",
+        max_length=20,
+        choices=[
+            ('solitude', '一人の時間を重視'),
+            ('flexible', 'フレキシブル'),
+            ('community', 'コミュニティを重視')
+        ],
+        null=True,
+        blank=True
+    )
+    atmosphere_tendency_percentage = models.DecimalField(
+        "雰囲気傾向の割合",
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    atmosphere_distribution = models.JSONField("雰囲気分布データ", default=dict, blank=True)
+
+    # 利用シーン統計
+    popular_visit_purpose = models.ForeignKey(
+        'accounts.VisitPurpose',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="人気の利用目的"
+    )
+    visit_purpose_distribution = models.JSONField("利用目的分布", default=dict, blank=True)
+
+    # 統計メタデータ
+    regular_count = models.IntegerField("常連数", default=0)
+    last_calculated = models.DateTimeField("最終計算日時", auto_now=True)
+
+    class Meta:
+        verbose_name = "店舗常連統計"
+        verbose_name_plural = "店舗常連統計"
+
+    def __str__(self):
+        return f"{self.shop.name} の常連統計"
+
+    @property
+    def atmosphere_display_text(self):
+        """雰囲気傾向の表示テキストを返す"""
+        if self.atmosphere_tendency == 'solitude':
+            return "一人の時間を楽しみたい方が多い"
+        elif self.atmosphere_tendency == 'flexible':
+            return "一人飲み・交流、どちらもOKの人が多い"
+        elif self.atmosphere_tendency == 'community':
+            return "他の人との交流を楽しみたい方が多い"
+        return "データ不足"
+
+

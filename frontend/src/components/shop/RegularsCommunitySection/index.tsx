@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Users, Coffee, Heart, TrendingUp, Gamepad2 } from 'lucide-react';
+import { User, Users, TrendingUp } from 'lucide-react';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { fetchCommonalities, CommonalitiesData } from '@/actions/shop/commonalities';
+import { fetchRegularCommunityStats, RegularCommunityStatsResponse, formatPercentage, getAtmosphereTendencyStyle } from '@/actions/shop/regularCommunityStats';
 import { useAuthStore } from '@/store/useAuthStore';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
@@ -37,6 +38,7 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
   refreshTrigger
 }) => {
   const [regularsData, setRegularsData] = useState<RegularsSnapshotData | null>(null);
+  const [communityStats, setCommunityStats] = useState<RegularCommunityStatsResponse | null>(null);
   const [commonalitiesData, setCommonalitiesData] = useState<CommonalitiesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +90,15 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
 
       const regularsSnapshot = await regularsResponse.json();
       setRegularsData(regularsSnapshot);
+
+      // 常連コミュニティ統計の取得
+      try {
+        const statsData = await fetchRegularCommunityStats(shopId);
+        setCommunityStats(statsData);
+      } catch (err) {
+        console.error('Community stats fetch failed:', err);
+        setCommunityStats(null);
+      }
 
       // 共通点データの取得（ユーザーがログインしている場合のみ）
       if (user?.id) {
@@ -174,9 +185,47 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
     );
   }
 
-  // 共通点データの処理
+  // 共通点データの処理（新しいAPI対応）
   const renderPersonalConnection = () => {
-    if (!user?.id || !commonalitiesData || !commonalitiesData.has_commonalities) {
+    if (!user?.id) {
+      return null;
+    }
+
+    // 新しいAPI（communityStats）を優先使用
+    if (communityStats?.commonalities) {
+      const { commonalities } = communityStats;
+      const hasAnyCommonalities = commonalities.age_gender || commonalities.atmosphere || commonalities.visit_purpose;
+
+      if (!hasAnyCommonalities) {
+        return null;
+      }
+
+      return (
+        <div className={styles.regularsSummary}>
+          <div className={styles.summaryTitle}>あなたとの共通点</div>
+          <div className={styles.commonalityTags}>
+            {commonalities.age_gender && (
+              <div className={`${styles.tag} ${styles.commonalityTag}`}>
+                同じ年代・性別の方は ({formatPercentage(commonalities.age_gender.percentage)})
+              </div>
+            )}
+            {commonalities.atmosphere && (
+              <div className={`${styles.tag} ${styles.commonalityTag}`}>
+                同じ雰囲気好みの方は ({formatPercentage(commonalities.atmosphere.percentage)})
+              </div>
+            )}
+            {commonalities.visit_purpose && (
+              <div className={`${styles.tag} ${styles.commonalityTag}`}>
+                同じ利用シーンの方は ({formatPercentage(commonalities.visit_purpose.percentage)})
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // フォールバック: 従来のAPI
+    if (!commonalitiesData || !commonalitiesData.has_commonalities) {
       return null;
     }
 
@@ -225,6 +274,7 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
     );
   };
 
+
   return (
     <div className={`${styles.container} ${className}`}>
       <div className={styles.header}>
@@ -261,36 +311,44 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
         </div>
       </div>
 
-      {/* 詳細統計 */}
-      <div className={styles.communityStats}>
-        <div className={styles.statItem}>
-          <div className={styles.statIcon}>
-            <User size={14} strokeWidth={1}/>
-          </div>
-          <div className={styles.statContent}>
-            <span className={styles.statValue}>
-              {regularsData.core_group.age_group}の{regularsData.core_group.gender}
-            </span>
-            <span className={styles.statLabel}>が中心</span>
-          </div>
+      {/* 常連サマリー（タグ形式） */}
+      <div className={styles.regularsSummary}>
+        <div className={styles.summaryTitle}>常連客の特徴</div>
+        <div className={styles.summaryTags}>
+          {communityStats ? (
+            <>
+              <div className={`${styles.tag} ${styles.regularsSummaryTag}`}>
+                {communityStats.summary.age_gender_summary}
+              </div>
+              <div
+                className={`${styles.tag} ${styles.regularsSummaryTag}`}
+              >
+                {communityStats.summary.atmosphere_tendency.tag}
+              </div>
+              <div className={`${styles.tag} ${styles.regularsSummaryTag}`}>
+                {communityStats.summary.popular_visit_purpose.purpose_name ?
+                  `${communityStats.summary.popular_visit_purpose.purpose_name}で利用する方が多いです` :
+                  '多様な利用シーンで楽しまれています'
+                }
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={`${styles.tag} ${styles.ageGenderTag}`}>
+                {regularsData.core_group.age_group}・{regularsData.core_group.gender}が中心
+              </div>
+              <div className={`${styles.tag} ${styles.atmosphereTag}`}>
+                経験豊富な大人の空間
+              </div>
+              <div className={`${styles.tag} ${styles.visitPurposeTag}`}>
+                {regularsData.top_interests.slice(0, 2).join('・')}が人気
+              </div>
+            </>
+          )}
         </div>
-
-        {regularsData.top_interests.length > 0 && (
-          <div className={styles.statItem}>
-            <div className={styles.statIcon}>
-              <Gamepad2 size={14} strokeWidth={1} />
-            </div>
-            <div className={styles.statContent}>
-              <span className={styles.statValue}>
-                {regularsData.top_interests.slice(0, 2).join(' • ')}
-              </span>
-              <span className={styles.statLabel}>が人気</span>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* パーソナル接続 */}
+      {/* あなたとの共通点 */}
       {renderPersonalConnection()}
     </div>
   );
