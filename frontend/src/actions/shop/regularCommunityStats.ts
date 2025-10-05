@@ -1,5 +1,16 @@
 /**
  * 常連コミュニティ統計API
+ *
+ * 用途: RegularsCommunitySection（タグ表示の要約セクション）専用
+ * - 常連コミュニティのサマリー情報取得
+ * - 年齢性別要約、雰囲気傾向、人気利用目的、常連数
+ * - タグ形式での概要表示用データ
+ * - ユーザー個別の共通点パーセンテージ
+ *
+ * エンドポイント: /api/shops/{shop_id}/regular_community_stats/
+ *
+ * 注意: 詳細分析データ（円グラフ用の分布データ）が必要な場合は
+ * regulars.ts の fetchRegularsAnalysis を使用すること
  */
 
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';

@@ -1,3 +1,15 @@
+/**
+ * 常連客の詳細分析データ取得用ファイル
+ *
+ * 用途: RegularsAnalysisModal（詳細分析モーダル）専用
+ * - 各軸（年齢、雰囲気、利用シーン、職業、趣味）の詳細分布データ
+ * - 円グラフ表示用の実データ取得
+ * - ユーザー個別の共通点分析
+ *
+ * エンドポイント: /api/shops/{shop_id}/regulars/analysis/
+ * パラメータ: axis（age_group, atmosphere_preference, usage_scenes, occupation, interests）
+ */
+
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 
 // 常連客スナップショット取得

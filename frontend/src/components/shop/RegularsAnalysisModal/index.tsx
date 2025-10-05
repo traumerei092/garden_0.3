@@ -6,6 +6,7 @@ import { BarChart3, Users, UserCheck, Heart, Briefcase } from 'lucide-react';
 import CircularChart from '@/components/UI/CircularChart';
 import CustomModal from '@/components/UI/Modal';
 import { fetchRegularCommunityStats, RegularCommunityStatsResponse } from '@/actions/shop/regularCommunityStats';
+import { fetchRegularsAnalysis } from '@/actions/shop/regulars';
 import { useAuthStore } from '@/store/useAuthStore';
 import styles from './style.module.scss';
 
@@ -48,6 +49,7 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
   const [currentTabData, setCurrentTabData] = useState<TabData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tabDataCache, setTabDataCache] = useState<Record<string, TabData>>({});
   const { user } = useAuthStore();
 
   // タブ設定
@@ -99,37 +101,43 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
   ];
 
 
-  // 年齢構成データの処理
-  const processAgeData = (stats: RegularCommunityStatsResponse) => {
-    // RegularsCommunityStatsからは詳細な年齢分布は取得できないため、
-    // サマリー情報から仮の分布を作成
-    const ageGenderSummary = stats.summary.age_gender_summary;
+  // 実データ取得関数
+  const fetchTabData = async (axis: string) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    // "40代・男性が中心"のような文字列から年代を抽出
-    const ageMatch = ageGenderSummary.match(/(\d+)代/);
-    if (ageMatch) {
-      const mainAge = ageMatch[1] + '代';
-      setCurrentTabData({
-        axis: 'age_group',
-        distribution: [
-          { category: mainAge, percentage: 60 },
-          { category: '30代', percentage: 25 },
-          { category: '50代', percentage: 15 }
-        ]
-      });
-    } else {
-      setCurrentTabData({
-        axis: 'age_group',
-        distribution: [
-          { category: '40代', percentage: 40 },
-          { category: '30代', percentage: 30 },
-          { category: '50代', percentage: 30 }
-        ]
-      });
+      // キャッシュから取得を試行
+      if (tabDataCache[axis]) {
+        setCurrentTabData(tabDataCache[axis]);
+        setLoading(false);
+        return;
+      }
+
+      const data = await fetchRegularsAnalysis(shopId, axis);
+
+      const tabData: TabData = {
+        axis: axis,
+        distribution: data.distribution || [],
+        user_specific_info: data.user_specific_info
+      };
+
+      // キャッシュに保存
+      setTabDataCache(prev => ({
+        ...prev,
+        [axis]: tabData
+      }));
+
+      setCurrentTabData(tabData);
+    } catch (err) {
+      console.error(`Failed to fetch ${axis} data:`, err);
+      setError(`${axis}データの取得に失敗しました: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // 雰囲気データの処理
+  // 雰囲気データの処理（既存のAPIを使用）
   const processAtmosphereData = (stats: RegularCommunityStatsResponse) => {
     const atmosphereTendency = stats.summary.atmosphere_tendency;
     const mainTendency = atmosphereTendency.tendency;
@@ -164,57 +172,7 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
     });
   };
 
-  // 利用シーンデータの処理
-  const processUsageScenesData = (stats: RegularCommunityStatsResponse) => {
-    const popularPurpose = stats.summary.popular_visit_purpose?.purpose_name;
 
-    if (popularPurpose) {
-      setCurrentTabData({
-        axis: 'usage_scenes',
-        distribution: [
-          { category: popularPurpose, percentage: 55 },
-          { category: '友人との時間', percentage: 25 },
-          { category: 'リラックス', percentage: 20 }
-        ],
-        user_specific_info: stats.commonalities?.visit_purpose ? {
-          percentage: stats.commonalities.visit_purpose.percentage,
-          text: stats.commonalities.visit_purpose.text
-        } : undefined
-      });
-    } else {
-      setCurrentTabData({
-        axis: 'usage_scenes',
-        distribution: [
-          { category: '仕事終わりの一杯', percentage: 35 },
-          { category: '友人との時間', percentage: 35 },
-          { category: 'リラックス', percentage: 30 }
-        ]
-      });
-    }
-  };
-
-  // 職業・趣味データは既存のAPIでは取得できないため仮データ
-  const processOccupationData = () => {
-    setCurrentTabData({
-      axis: 'occupation',
-      distribution: [
-        { category: '会社員', percentage: 45 },
-        { category: '自営業', percentage: 25 },
-        { category: 'フリーランス', percentage: 30 }
-      ]
-    });
-  };
-
-  const processInterestsData = () => {
-    setCurrentTabData({
-      axis: 'interests',
-      distribution: [
-        { category: 'お酒', percentage: 40 },
-        { category: '音楽', percentage: 35 },
-        { category: '読書', percentage: 25 }
-      ]
-    });
-  };
 
   // ユーザー固有情報の表示
   const getUserSpecificText = (): string | null => {
@@ -230,11 +188,6 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
 
       const statsData = await fetchRegularCommunityStats(shopId);
       setCommunityStats(statsData);
-
-      // デフォルトタブ（年齢構成）のデータを設定
-      if (selectedTab === 'age') {
-        processAgeData(statsData);
-      }
     } catch (err) {
       console.error('Failed to fetch community stats:', err);
       setError(`データの取得に失敗しました: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -245,23 +198,16 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
 
   // タブ変更時のデータ処理
   useEffect(() => {
-    if (isOpen && communityStats) {
-      switch (selectedTab) {
-        case 'age':
-          processAgeData(communityStats);
-          break;
-        case 'atmosphere':
+    if (isOpen) {
+      const tabConfig = tabs.find(tab => tab.key === selectedTab);
+      if (tabConfig) {
+        if (selectedTab === 'atmosphere' && communityStats) {
+          // 雰囲気は既存APIを使用
           processAtmosphereData(communityStats);
-          break;
-        case 'usage_scenes':
-          processUsageScenesData(communityStats);
-          break;
-        case 'occupation':
-          processOccupationData();
-          break;
-        case 'interests':
-          processInterestsData();
-          break;
+        } else {
+          // その他のタブは実データを取得
+          fetchTabData(tabConfig.apiAxis);
+        }
       }
     }
   }, [selectedTab, isOpen, communityStats]);
