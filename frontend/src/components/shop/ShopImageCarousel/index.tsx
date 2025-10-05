@@ -159,6 +159,19 @@ const ShopImageCarousel: React.FC<ShopImageCarouselProps> = ({
             slidesPerView="auto"
             freeMode={true}
             watchSlidesProgress={true}
+            grabCursor={true}
+            loop={false}
+            centeredSlides={false}
+            breakpoints={{
+              320: {
+                slidesPerView: "auto",
+                spaceBetween: 6
+              },
+              768: {
+                slidesPerView: "auto",
+                spaceBetween: 8
+              }
+            }}
             className={styles.thumbsSwiper}
           >
             {displayImages.map((image, index) => (
