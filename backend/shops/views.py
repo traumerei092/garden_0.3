@@ -1736,11 +1736,24 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
     """
     
     def get(self, request, shop_id):
+        print(f"=== RegularsDetailedAnalysisAPIView.get() called ===")
+        print(f"shop_id: {shop_id}")
+        print(f"request.GET: {dict(request.GET)}")
+        print(f"request.user: {request.user}")
+        print(f"request.user.is_authenticated: {request.user.is_authenticated}")
+
         # 分析軸を取得
         axis = request.GET.get('axis', 'age_group')
-        
+        print(f"axis: {axis}")
+
         # 常連客を取得
-        regulars = self.get_regulars_queryset(shop_id)
+        print(f"Calling get_regulars_queryset({shop_id})")
+        try:
+            regulars = self.get_regulars_queryset(shop_id)
+            print(f"regulars queryset retrieved successfully")
+        except Exception as e:
+            print(f"Error in get_regulars_queryset: {e}")
+            raise
         if regulars is None:
             return Response({
                 "detail": "関係タイプが見つかりません"
@@ -1758,12 +1771,25 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
             })
 
         # 軸ごとの分析処理
-        distribution_data = self.analyze_by_axis(axis, regulars_list)
+        print(f"Calling analyze_by_axis with axis={axis}, regulars_count={len(regulars_list)}")
+        try:
+            distribution_data = self.analyze_by_axis(axis, regulars_list)
+            print(f"analyze_by_axis completed successfully, data: {distribution_data}")
+        except Exception as e:
+            print(f"Error in analyze_by_axis: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
+
+        # ユーザー固有情報を取得（認証ユーザーのみ）
+        user_specific_info = None
+        if request.user.is_authenticated:
+            user_specific_info = self.get_user_specific_info(request.user, axis, distribution_data)
 
         return Response({
             "axis": axis,
             "distribution": distribution_data,
-            "total_regulars": total_regulars
+            "user_specific_info": user_specific_info
         })
 
     def analyze_by_axis(self, axis, regulars_list):
@@ -1790,6 +1816,10 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
             return self.analyze_alcohols(regulars_list)
         elif axis == 'visit_purposes':
             return self.analyze_visit_purposes(regulars_list)
+        elif axis == 'atmosphere_preference':
+            return self.analyze_atmosphere_preference(regulars_list)
+        elif axis == 'usage_scenes':
+            return self.analyze_usage_scenes(regulars_list)
         else:
             return []
 
@@ -1806,11 +1836,14 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
 
     def analyze_gender(self, regulars_list):
         """性別分析"""
+        from .services import RegularCommunityStatsService
+
         genders = []
         for relation in regulars_list:
             if relation.user.gender:
-                genders.append(relation.user.gender)
-        
+                gender_display = RegularCommunityStatsService.get_gender_display(relation.user.gender)
+                genders.append(gender_display)
+
         return self.create_distribution(genders)
 
     def analyze_occupation(self, regulars_list):
@@ -1947,25 +1980,192 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
 
     def create_distribution(self, data_list):
         """
-        データリストから分布情報を作成
+        データリストから分布情報を作成（人数表示なし、パーセンテージのみ）
         """
         if not data_list:
             return []
-            
+
         # カウントして分布を作成
         counter = Counter(data_list)
         total_count = len(data_list)
-        
+
         distribution = []
         for label, count in counter.most_common():
             percentage = (count / total_count) * 100
             distribution.append({
-                "label": label,
-                "count": count,
+                "category": label,
                 "percentage": round(percentage, 1)
             })
-        
+
         return distribution
+
+    def analyze_atmosphere_preference(self, regulars_list):
+        """雰囲気好み分析 - RegularCommunityStatsServiceと同ロジック"""
+        from .services import RegularCommunityStatsService
+
+        # ユーザーIDリストを取得
+        user_ids = [relation.user.id for relation in regulars_list]
+
+        # 雰囲気好み傾向を計算
+        tendency, percentage, distribution = RegularCommunityStatsService.calculate_atmosphere_tendency(user_ids)
+
+        # 分布データを作成
+        result = []
+        tendency_names = {
+            'solitude': '一人の時間を重視',
+            'flexible': 'フレキシブル',
+            'community': 'コミュニティを重視'
+        }
+
+        for key, value in distribution.items():
+            result.append({
+                'category': tendency_names.get(key, key),
+                'percentage': float(value)
+            })
+
+        # パーセンテージの高い順にソート
+        result.sort(key=lambda x: x['percentage'], reverse=True)
+
+        return result
+
+    def analyze_usage_scenes(self, regulars_list):
+        """利用シーン分析 - RegularCommunityStatsServiceと同ロジック"""
+        from .services import RegularCommunityStatsService
+        from shops.models import RegularUsageScene
+
+        # 各ユーザーの利用シーンを取得
+        usage_scenes_counter = {}
+        total_scenes = 0
+
+        for relation in regulars_list:
+            user_usage_scenes = RegularUsageScene.objects.filter(
+                user=relation.user,
+                shop_id=relation.shop.id
+            )
+
+            for usage_scene in user_usage_scenes:
+                for purpose in usage_scene.visit_purposes.all():
+                    usage_scenes_counter[purpose.name] = usage_scenes_counter.get(purpose.name, 0) + 1
+                    total_scenes += 1
+
+        if total_scenes == 0:
+            return []
+
+        # 分布データを作成
+        result = []
+        for purpose_name, count in usage_scenes_counter.items():
+            percentage = round((count / total_scenes) * 100, 2)
+            result.append({
+                'category': purpose_name,
+                'percentage': float(percentage)
+            })
+
+        # パーセンテージの高い順にソート
+        result.sort(key=lambda x: x['percentage'], reverse=True)
+
+        return result
+
+    def get_user_specific_info(self, user, axis, distribution_data):
+        """ユーザー固有情報を取得"""
+        from .services import RegularCommunityStatsService
+
+        if axis == 'age_group':
+            user_age_group = RegularCommunityStatsService.calculate_age_group(user.birthdate)
+            if user_age_group:
+                # 分布データから該当する割合を取得
+                for item in distribution_data:
+                    if item['category'] == user_age_group:
+                        return {
+                            'category': user_age_group,
+                            'percentage': item['percentage'],
+                            'text': f"あなたと同じ{user_age_group}の人は{item['percentage']}%います"
+                        }
+
+        elif axis == 'gender':
+            user_gender = RegularCommunityStatsService.get_gender_display(user.gender)
+            for item in distribution_data:
+                if item['category'] == user_gender:
+                    return {
+                        'category': user_gender,
+                        'percentage': item['percentage'],
+                        'text': f"あなたと同じ{user_gender}の人は{item['percentage']}%います"
+                    }
+
+        elif axis == 'occupation':
+            if user.occupation:
+                for item in distribution_data:
+                    if item['category'] == user.occupation:
+                        return {
+                            'category': user.occupation,
+                            'percentage': item['percentage'],
+                            'text': f"あなたと同じ{user.occupation}の人は{item['percentage']}%います"
+                        }
+
+        elif axis == 'atmosphere_preference':
+            # ユーザーの雰囲気好み傾向を取得
+            from shops.models import UserAtmospherePreference
+            from django.db.models import Avg
+
+            user_atmosphere_avg = UserAtmospherePreference.objects.filter(
+                user_profile=user
+            ).aggregate(avg=Avg('score'))['avg'] or 0
+
+            user_tendency = 'フレキシブル'
+            if user_atmosphere_avg < -0.5:
+                user_tendency = '一人の時間を重視'
+            elif user_atmosphere_avg > 0.5:
+                user_tendency = 'コミュニティを重視'
+
+            for item in distribution_data:
+                if item['category'] == user_tendency:
+                    return {
+                        'category': user_tendency,
+                        'percentage': item['percentage'],
+                        'text': f"あなたと同じく{user_tendency}する人は{item['percentage']}%います"
+                    }
+
+        elif axis == 'usage_scenes':
+            # ユーザーの利用シーンを取得（最も多い割合のもの）
+            from shops.models import RegularUsageScene
+
+            user_usage_scenes = RegularUsageScene.objects.filter(user=user)
+            max_percentage = 0
+            best_match = None
+
+            for usage_scene in user_usage_scenes:
+                for purpose in usage_scene.visit_purposes.all():
+                    for item in distribution_data:
+                        if item['category'] == purpose.name and item['percentage'] > max_percentage:
+                            max_percentage = item['percentage']
+                            best_match = {
+                                'category': purpose.name,
+                                'percentage': item['percentage'],
+                                'text': f"あなたと同じく{purpose.name}で利用している人は{item['percentage']}%います"
+                            }
+
+            return best_match
+
+        elif axis == 'interests':
+            # ユーザーの興味・関心から最もマッチング率が高いものを取得
+            if hasattr(user, 'interests'):
+                max_percentage = 0
+                best_match = None
+
+                if hasattr(user.interests, 'all'):
+                    user_interests = user.interests.all()
+                    for interest in user_interests:
+                        for item in distribution_data:
+                            if item['category'] == interest.name and item['percentage'] > max_percentage:
+                                max_percentage = item['percentage']
+                                best_match = {
+                                    'category': interest.name,
+                                    'percentage': item['percentage'],
+                                    'text': f"あなたと同じ{interest.name}に興味がある人は{item['percentage']}%います"
+                                }
+
+                return best_match
+
+        return None
 
 
 class CommonalitiesAPIView(RegularsAnalysisAPIView):

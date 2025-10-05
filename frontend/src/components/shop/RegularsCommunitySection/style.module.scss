@@ -370,7 +370,7 @@
 
 /* 新しいタグスタイル（横一列対応） */
 .tag {
-  padding: 6px 12px;
+  padding: 6px 8px;
   border-radius: 16px;
   font-size: 0.6rem;
   font-weight: 400;
@@ -389,7 +389,6 @@
   background: rgba(0, 255, 255, 0.15);
   color: white;
   border-color: rgba(0, 255, 255, 0.3);
-  padding: 6px 8px;
 }
 
 .visitPurposeTag {
@@ -445,7 +444,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
   background: linear-gradient(90deg, rgba(0, 255, 255, 0.1) 0%, rgba(235, 14, 242, 0.1) 100%);
   border-radius: 16px;
   position: relative;

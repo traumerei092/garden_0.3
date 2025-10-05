@@ -62,9 +62,12 @@ class RegularCommunityStatsService:
             return []
 
     @staticmethod
-    def calculate_atmosphere_tendency(regulars: List[UserAccount]) -> Tuple[str, Decimal, Dict]:
+    def calculate_atmosphere_tendency(regulars) -> Tuple[str, Decimal, Dict]:
         """
         常連の雰囲気傾向を計算
+
+        Args:
+            regulars: 常連客リスト（UserAccountオブジェクト または user_ids のリスト）
 
         Returns:
             - tendency: 'solitude', 'flexible', 'community'
@@ -74,7 +77,11 @@ class RegularCommunityStatsService:
         if not regulars:
             return None, Decimal('0.00'), {}
 
-        user_ids = [user.id for user in regulars]
+        # regularsがintegerのリストかオブジェクトのリストか判定
+        if regulars and isinstance(regulars[0], int):
+            user_ids = regulars  # 既にuser_idsのリスト
+        else:
+            user_ids = [user.id for user in regulars]  # オブジェクトからIDを抽出
 
         # 各ユーザーの雰囲気好み平均値を計算
         user_averages = []

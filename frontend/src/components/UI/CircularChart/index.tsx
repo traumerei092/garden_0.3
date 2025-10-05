@@ -88,52 +88,52 @@ const CircularChart: React.FC<CircularChartProps> = ({
           />
 
           {/* データセグメント */}
-          {dataWithOffset.map((item, index) => (
-            <g key={index}>
-              <path
-                d={createArcPath(item.percentage, item.offset)}
-                fill={item.color}
-                className={styles.chartSegment}
-                data-label={item.label}
-              />
-            </g>
-          ))}
+          {dataWithOffset.map((item, index) => {
+            // テキスト表示位置を計算
+            const midAngle = ((item.offset + item.percentage / 2) / 100) * 360 - 90;
+            const midAngleRad = (midAngle * Math.PI) / 180;
+            const textRadius = radius * 0.75; // 円の75%の位置
+            const textX = center + textRadius * Math.cos(midAngleRad);
+            const textY = center + textRadius * Math.sin(midAngleRad);
 
-          {/* 中央のテキスト */}
-          <text
-            x={center}
-            y={center - 5}
-            textAnchor="middle"
-            className={styles.centerText}
-          >
-            <tspan x={center} dy="0" className={styles.totalLabel}>
-              総数
-            </tspan>
-            <tspan x={center} dy="20" className={styles.totalValue}>
-              {data.reduce((sum, item) => sum + item.value, 0)}人
-            </tspan>
-          </text>
+            return (
+              <g key={index}>
+                <path
+                  d={createArcPath(item.percentage, item.offset)}
+                  fill={item.color}
+                  className={styles.chartSegment}
+                  data-label={item.label}
+                />
+                {/* カテゴリラベルとパーセンテージをパイスライス上に表示 */}
+                <text
+                  x={textX}
+                  y={textY - 8}
+                  textAnchor="middle"
+                  className={styles.labelText}
+                  fill="white"
+                  fontSize="11"
+                  fontWeight="bold"
+                >
+                  {item.label}
+                </text>
+                <text
+                  x={textX}
+                  y={textY + 8}
+                  textAnchor="middle"
+                  className={styles.percentageText}
+                  fill="white"
+                  fontSize="10"
+                  fontWeight="bold"
+                >
+                  {item.percentage.toFixed(1)}%
+                </text>
+              </g>
+            );
+          })}
+
         </svg>
       </div>
 
-      {/* 凡例 */}
-      <div className={styles.legend}>
-        {data.map((item, index) => (
-          <div key={index} className={styles.legendItem}>
-            <div
-              className={styles.legendColor}
-              style={{ backgroundColor: item.color }}
-            />
-            <div className={styles.legendContent}>
-              <span className={styles.legendLabel}>{item.label}</span>
-              <div className={styles.legendStats}>
-                <span className={styles.legendValue}>{item.value}人</span>
-                <span className={styles.legendPercentage}>({item.percentage.toFixed(1)}%)</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
