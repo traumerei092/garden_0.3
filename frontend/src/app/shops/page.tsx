@@ -67,9 +67,9 @@ const Shops = () => {
                             // 数値に変換可能な場合は変換
                             const numValue = Number(value);
                             if (!isNaN(numValue) && value !== '') {
-                                (filters as Record<string, any>)[key] = numValue;
+                                (filters as Record<string, unknown>)[key] = numValue;
                             } else {
-                                (filters as Record<string, any>)[key] = value;
+                                (filters as Record<string, unknown>)[key] = value;
                             }
                         }
                     } else {
@@ -77,14 +77,14 @@ const Shops = () => {
                         // 数値配列が期待されるフィールドは変換
                         if (['shop_types', 'shop_layouts', 'shop_options', 'area_ids', 'alcohol_categories', 'alcohol_brands', 'regular_interests', 'regular_mbti_types', 'regular_blood_types', 'regular_exercise_frequency', 'regular_dietary_preferences', 'regular_alcohol_preferences'].includes(key)) {
                             const numValues = values.map(v => parseInt(v)).filter(n => !isNaN(n));
-                            (filters as Record<string, any>)[key] = numValues.length > 0 ? numValues : values;
+                            (filters as Record<string, unknown>)[key] = numValues.length > 0 ? numValues : values;
                         } else {
-                            (filters as Record<string, any>)[key] = values;
+                            (filters as Record<string, unknown>)[key] = values;
                         }
                     }
                 } catch {
                     // パースに失敗した場合は文字列として扱う
-                    (filters as Record<string, any>)[key] = values.length === 1 ? values[0] : values;
+                    (filters as Record<string, unknown>)[key] = values.length === 1 ? values[0] : values;
                 }
             });
 

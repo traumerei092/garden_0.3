@@ -27,7 +27,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
 
         // APIレスポンスを適切な形式に変換
         const shops: Shop[] = data.map((shop: unknown) => {
-            const shopData = shop as Record<string, any>;
+            const shopData = shop as Record<string, unknown>;
             return {
                 id: shopData.id,
                 name: shopData.name,
@@ -113,7 +113,7 @@ export async function fetchShopById(id: string): Promise<Shop> {
         if (Array.isArray(shop.tags)) {
             console.log('タグデータの詳細:');
             shop.tags.forEach((tag: unknown) => {
-                const tagData = tag as Record<string, any>;
+                const tagData = tag as Record<string, unknown>;
                 console.log(`タグID: ${tagData.id}, 値: ${tagData.value}, user_has_reacted: ${tagData.user_has_reacted}, is_creator: ${tagData.is_creator}`);
             });
         }
@@ -141,7 +141,7 @@ export async function fetchShopById(id: string): Promise<Shop> {
             latitude: shop.latitude,
             longitude: shop.longitude,
             tags: Array.isArray(shop.tags) ? shop.tags.map((tag: unknown) => {
-                const tagData = tag as Record<string, any>;
+                const tagData = tag as Record<string, unknown>;
                 // 明示的にboolean型に変換して確実に正しい型になるようにする
                 const userHasReacted = tagData.user_has_reacted === true;
                 const isCreator = tagData.is_creator === true;

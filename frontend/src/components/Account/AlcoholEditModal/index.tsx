@@ -1,14 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Eye } from 'lucide-react';
 import styles from './style.module.scss';
 import Modal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import CustomTabs from '@/components/UI/CustomTabs';
-import { User as UserType, ProfileOptions, AlcoholCategory, AlcoholBrand, DrinkStyle } from '@/types/users';
+import { User as UserType, ProfileOptions } from '@/types/users';
 import { updateAlcoholCategories } from '@/actions/profile/updateAlcoholCategories';
 import { updateAlcoholBrands } from '@/actions/profile/updateAlcoholBrands';
 import { updateDrinkStyles } from '@/actions/profile/updateDrinkStyles';

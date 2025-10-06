@@ -19,10 +19,10 @@ import ChipSelected from '@/components/UI/ChipSelected';
 import { UserInfo } from '@/types/users';
 
 interface BasicInfoProps {
-  userData?: Record<string, any>;
-  onUserUpdate?: (updatedUser: Record<string, any>) => void;
-  profileOptions?: Record<string, any>;
-  userAtmospherePreferences?: Record<string, any>[];
+  userData?: Record<string, unknown>;
+  onUserUpdate?: (updatedUser: Record<string, unknown>) => void;
+  profileOptions?: Record<string, unknown>;
+  userAtmospherePreferences?: Record<string, unknown>[];
 }
 
 const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOptions, userAtmospherePreferences }) => {
@@ -139,7 +139,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
   };
 
   // UserInfo型からUser型への変換（編集モーダル用）
-  const convertUserInfoToUser = (userInfo: UserInfo): Record<string, any> => {
+  const convertUserInfoToUser = (userInfo: UserInfo): Record<string, unknown> => {
     if (!userInfo) return null;
     return {
       ...userInfo,
