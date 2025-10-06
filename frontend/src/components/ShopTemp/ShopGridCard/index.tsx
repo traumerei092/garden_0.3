@@ -4,8 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin } from 'lucide-react';
 import { Card, CardBody } from '@nextui-org/react';
-import ShopMatchRate from '@/components/Shop/ShopMatchRate';
-import ShopActionButton from '@/components/Shop/ShopActionButton';
+import ShopMatchRate from '@/components/ShopTemp/ShopMatchRate';
+import ShopActionButton from '@/components/ShopTemp/ShopActionButton';
 import { RelationType } from '@/types/shops';
 import styles from './style.module.scss';
 

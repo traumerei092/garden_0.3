@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './style.module.scss';
-import ShopList from "@/components/Shop/ShopList";
+import ShopList from "@/components/ShopTemp/ShopList";
 import Header from "@/components/Layout/Header";
-import ShopListHeader from "@/components/Shop/ShopListHeader";
-import ShopSearchModal from "@/components/Shop/ShopSearchModal";
+import ShopListHeader from "@/components/ShopTemp/ShopListHeader";
+import ShopSearchModal from "@/components/ShopTemp/ShopSearchModal";
 import { SearchFilters } from '@/types/search';
 import { getDefaultSortKey } from '@/actions/shop/sort';
 

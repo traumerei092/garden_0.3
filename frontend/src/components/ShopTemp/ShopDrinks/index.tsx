@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Wine, Coffee, Sparkles, RefreshCw, Search, Filter, SortAsc, X, Tag, Star, Crown, Zap } from 'lucide-react';
 import { Shop, ShopDrink } from '@/types/shops';
 import { fetchShopDrinks } from '@/actions/shop/drinks';
-import DrinkCard from '@/components/Shop/DrinkCard';
-import DrinkRegisterModal from '@/components/Shop/DrinkRegisterModal';
+import DrinkCard from '@/components/ShopTemp/DrinkCard';
+import DrinkRegisterModal from '@/components/ShopTemp/DrinkRegisterModal';
 import ButtonGradient from '@/components/UI/ButtonGradient';
 import styles from './style.module.scss';
 

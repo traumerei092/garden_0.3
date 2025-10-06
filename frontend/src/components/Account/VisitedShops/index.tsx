@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import styles from './style.module.scss';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
-import ShopGridCard from '@/components/Shop/ShopGridCard';
+import ShopGridCard from '@/components/ShopTemp/ShopGridCard';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchVisitedShops, UserShop } from '@/actions/shop/fetchUserShops';
 import { fetchShopStats, toggleShopRelation } from '@/actions/shop/relation';

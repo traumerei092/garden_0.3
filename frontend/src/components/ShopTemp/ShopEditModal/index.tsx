@@ -16,7 +16,7 @@ import { updateShopBasicInfo } from '@/actions/shop/updateShopBasicInfo';
 import { CheckCircle, MapPin, Phone, Clock, Users, CreditCard, Store, LayoutDashboard, Settings, Sparkles } from 'lucide-react';
 import RowSteps from '@/components/UI/RowSteps';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
-import ShopBusinessHourTable from '@/components/Shop/ShopBusinessHourTable';
+import ShopBusinessHourTable from '@/components/ShopTemp/ShopBusinessHourTable';
 import ModalButtons from '@/components/UI/ModalButtons';
 import { Time } from '@internationalized/date';
 import styles from './style.module.scss';

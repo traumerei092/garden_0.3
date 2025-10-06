@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import Header from "@/components/Layout/Header";
-import ShopSearchModal from "@/components/Shop/ShopSearchModal";
+import ShopSearchModal from "@/components/ShopTemp/ShopSearchModal";
 import { Card, CardBody, Input } from '@nextui-org/react';
 import { SearchFilters } from '@/types/search';
 
