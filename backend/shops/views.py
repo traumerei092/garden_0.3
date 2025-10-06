@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction, models
-from django.db.models import Count, F
+from django.db.models import Count, F, Avg, Sum, Q
 from django.shortcuts import get_object_or_404
 from .models import (
     Shop, ShopType, ShopLayout, ShopOption, ShopReview, ShopReviewLike,
@@ -14,7 +14,7 @@ from .models import (
     BusinessHour, PaymentMethod, ShopEditHistory, HistoryEvaluation,
     ShopDrink, ShopDrinkReaction, Area,
     AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
-    RegularUsageScene
+    RegularUsageScene, ShopRegularStatistics, WelcomeAction
 )
 from accounts.dashboard_views import track_shop_view
 from .serializers import (
@@ -3472,3 +3472,131 @@ class RegularUsageSceneViewSet(viewsets.ModelViewSet):
         else:
             # 全ての利用シーンを取得
             return super().list(request, *args, **kwargs)
+
+
+class ShopSortAPIView(APIView):
+    """
+    店舗ソート機能API
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        """
+        ソート条件に基づいて店舗リストを取得
+        """
+        sort_key = request.GET.get('sort', 'created_at')
+        filters = request.GET.dict()
+        # sortパラメータを除去
+        filters.pop('sort', None)
+
+        # 基本クエリセット
+        queryset = Shop.objects.all().select_related('area').prefetch_related(
+            'shop_types', 'shop_layouts', 'shop_options', 'images',
+            'business_hours', 'tags', 'reviews', 'drinks', 'welcome_actions'
+        )
+
+        # フィルタリング（既存のShopSearchAPIViewのロジックを簡略化）
+        if filters:
+            queryset = self.apply_basic_filters(queryset, filters)
+
+        # ソート処理
+        if sort_key == 'welcome_count':
+            queryset = queryset.annotate(
+                welcome_count=Count('welcome_actions')
+            ).order_by('-welcome_count', '-created_at')
+
+        elif sort_key == 'distance':
+            # 距離ソート（簡易実装：位置情報がある店舗を優先）
+            queryset = queryset.filter(
+                latitude__isnull=False,
+                longitude__isnull=False
+            ).order_by('latitude', 'longitude', 'created_at')
+
+        elif sort_key == 'favorite_count':
+            queryset = queryset.annotate(
+                favorite_count=Count('usershoprelation', filter=Q(usershoprelation__relation_type=1))
+            ).order_by('-favorite_count', '-created_at')
+
+        elif sort_key == 'visited_count':
+            queryset = queryset.annotate(
+                visited_count=Count('usershoprelation', filter=Q(usershoprelation__relation_type=2))
+            ).order_by('-visited_count', '-created_at')
+
+        elif sort_key == 'interested_count':
+            queryset = queryset.annotate(
+                interested_count=Count('usershoprelation', filter=Q(usershoprelation__relation_type=3))
+            ).order_by('-interested_count', '-created_at')
+
+        elif sort_key == 'solitude_friendly':
+            # 一人で過ごすのに向いてる順（雰囲気スコア平均が-2に近い）
+            queryset = queryset.filter(
+                atmosphere_aggregate__isnull=False
+            ).order_by('atmosphere_aggregate__overall_average', '-created_at')
+
+        elif sort_key == 'community_friendly':
+            # みんなと交流できるのに向いてる順（雰囲気スコア平均が+2に近い）
+            queryset = queryset.filter(
+                atmosphere_aggregate__isnull=False
+            ).order_by('-atmosphere_aggregate__overall_average', '-created_at')
+
+        elif sort_key == 'tag_count':
+            queryset = queryset.annotate(
+                tag_count=Count('tags')
+            ).order_by('-tag_count', '-created_at')
+
+        elif sort_key == 'tag_reaction_count':
+            queryset = queryset.annotate(
+                tag_reaction_count=Sum('tags__reaction_count')
+            ).order_by('-tag_reaction_count', '-created_at')
+
+        elif sort_key == 'review_count':
+            queryset = queryset.annotate(
+                review_count=Count('reviews')
+            ).order_by('-review_count', '-created_at')
+
+        elif sort_key == 'drink_count':
+            queryset = queryset.annotate(
+                drink_count=Count('drinks', filter=Q(drinks__is_available=True))
+            ).order_by('-drink_count', '-created_at')
+
+        else:
+            # デフォルト: 新着順
+            queryset = queryset.order_by('-created_at')
+
+        # ページネーション（簡易実装）
+        page_size = 20
+        page = int(request.GET.get('page', 1))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        shops = queryset[start:end]
+
+        # シリアライズ
+        from .serializers import ShopSerializer
+        serializer = ShopSerializer(shops, many=True, context={'request': request})
+
+        return Response({
+            'results': serializer.data,
+            'count': queryset.count(),
+            'page': page,
+            'page_size': page_size,
+        })
+
+    def apply_basic_filters(self, queryset, filters):
+        """基本的なフィルタリング"""
+        # 簡易フィルタリング実装
+        if 'area_ids' in filters:
+            try:
+                area_ids = [int(x) for x in filters['area_ids'].split(',')]
+                queryset = queryset.filter(area_id__in=area_ids)
+            except:
+                pass
+
+        if 'shop_types' in filters:
+            try:
+                shop_type_ids = [int(x) for x in filters['shop_types'].split(',')]
+                queryset = queryset.filter(shop_types__in=shop_type_ids)
+            except:
+                pass
+
+        return queryset

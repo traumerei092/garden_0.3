@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Shop } from "@/types/shops";
 import { fetchShops } from "@/actions/shop/fetchShop";
+import { fetchSortedShops, getDefaultSortKey } from "@/actions/shop/sort";
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { SearchFilters } from '@/types/search';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
@@ -19,10 +20,11 @@ import { Button, Spinner } from "@nextui-org/react";
 interface ShopListProps {
     viewMode?: string;
     searchFilters?: SearchFilters;
+    sortKey?: string;
     onShopCountChange?: (count: number) => void;
 }
 
-const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, onShopCountChange }) => {
+const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, sortKey, onShopCountChange }) => {
 
     const [shops, setShops] = useState<Shop[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -47,65 +49,26 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, o
         onFeedbackModalOpen: setFeedbackModalShopId
     });
 
-    // 検索条件に基づく店舗データ取得
-    const fetchShopsWithFilters = async (filters?: SearchFilters) => {
-        try {
-            console.log('fetchShopsWithFilters called with filters:', filters);
-            
-            if (filters && Object.keys(filters).length > 0) {
-                // 検索条件がある場合は検索APIを使用
-                const queryParams = new URLSearchParams();
-                Object.entries(filters).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null) {
-                        if (Array.isArray(value)) {
-                            if (value.length > 0) {
-                                value.forEach(item => {
-                                    queryParams.append(key, item.toString());
-                                });
-                            }
-                        } else if (typeof value === 'object') {
-                            queryParams.append(key, JSON.stringify(value));
-                        } else {
-                            queryParams.append(key, value.toString());
-                        }
-                    }
-                });
-                
-                console.log('=== ShopList API Call Debug ===');
-                console.log('Raw filters object:', filters);
-                console.log('Query params:', queryParams.toString());
-                const apiUrl = `/shops/search/?${queryParams.toString()}`;
-                console.log('API URL:', apiUrl);
-                console.log('=== End Debug ===');
 
-                const response = await fetchWithAuth(apiUrl, {
-                    method: 'GET',
-                    cache: 'no-store'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const shopData = data.results || data.shops || [];
-                    console.log('フィルタリング後の店舗データ:', shopData);
-                    
-                    // 親コンポーネントに件数を通知
-                    if (onShopCountChange) {
-                        onShopCountChange(data.count || shopData.length);
-                    }
-                    
-                    return shopData;
-                } else {
-                    console.error('検索APIエラー:', response.status);
-                    return [];
-                }
-            } else {
-                // 検索条件がない場合は全件取得
-                const data = await fetchShops();
-                if (onShopCountChange) {
-                    onShopCountChange(data.length);
-                }
-                return data;
+    // 検索条件に基づく店舗データ取得
+    const fetchShopsWithFilters = async (filters?: SearchFilters, currentSortKey?: string) => {
+        try {
+            console.log('fetchShopsWithFilters called with filters:', filters, 'sortKey:', currentSortKey);
+
+            // 常にソートAPIを使用（より安定した動作のため）
+            const sortKey = currentSortKey || getDefaultSortKey();
+            console.log('=== Using Sort API ===');
+            console.log('Final sort key:', sortKey);
+
+            const response = await fetchSortedShops(sortKey, filters || {});
+
+            // 親コンポーネントに件数を通知
+            if (onShopCountChange) {
+                onShopCountChange(response.count || response.results.length);
             }
+
+            console.log('ソート済み店舗データ:', response.results);
+            return response.results;
         } catch (error) {
             console.error('店舗データ取得エラー:', error);
             return [];
@@ -115,13 +78,14 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, o
     useEffect(() => {
         console.log('=== ShopList useEffect triggered ===');
         console.log('searchFilters changed:', searchFilters);
+        console.log('sortKey changed:', sortKey);
         console.log('searchFilters type:', typeof searchFilters);
         console.log('searchFilters keys:', searchFilters ? Object.keys(searchFilters) : 'null');
 
         const loadShops = async () => {
             try {
                 setIsLoading(true);
-                const data = await fetchShopsWithFilters(searchFilters);
+                const data = await fetchShopsWithFilters(searchFilters, sortKey);
                 console.log('ShopList: API結果取得:', data ? data.length : 0, '件');
                 setShops(data);
             } catch (error) {
@@ -140,7 +104,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, o
         };
 
         loadShops();
-    }, [searchFilters]);
+    }, [searchFilters, sortKey]);
 
     // 店舗データが更新されたら距離を計算する
     useEffect(() => {

@@ -8,6 +8,7 @@ import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import CustomTabs from "@/components/UI/CustomTabs";
 import {useRouter} from "next/navigation";
 import {useAuthStore} from "@/store/useAuthStore";
+import { getSortOptions, getDefaultSortKey } from '@/actions/shop/sort';
 
 interface ShopListHeaderProps {
     selectedTab?: string;
@@ -15,21 +16,20 @@ interface ShopListHeaderProps {
     shopCount?: number;
     filterCount?: number;
     onSearch?: () => void;
+    onSortChange?: (sortKey: string) => void;
 }
 
-const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch }) => {
+const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch, onSortChange }) => {
 
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
-    
-    // Autocompleteのオプション定義
-    const sortOptions: AutocompleteOption[] = [
-        { key: "match", label: "マッチ率が高い順" },
-        { key: "gone", label: "「行った」が多い順" },
-        { key: "interested", label: "「気になる」が多い順" },
-        { key: "review", label: "口コミが多い順" },
-        { key: "tag", label: "タグが多い順" }
-    ];
+
+    // 動的ソートオプション取得
+    const sortOptions: AutocompleteOption[] = getSortOptions().map(option => ({
+        key: option.key,
+        label: option.label,
+        value: option.key
+    }));
     const targetUrl = user ? '/shops/create' : '/login';
     const handleCreateShop = () => {
             router.push(targetUrl); // ショップ詳細ページへ遷移
@@ -79,14 +79,15 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                 <div className={styles.mobileAutocomplete}>
                     <StyledAutocomplete
                         options={sortOptions}
-                        defaultSelectedKey="match"
-                        placeholder="マッチ率が高い順"
+                        defaultSelectedKey={getDefaultSortKey()}
+                        placeholder={sortOptions.find(opt => opt.key === getDefaultSortKey())?.label || 'ソート順を選択'}
                         aria-label="並び順を選択"
                         size="sm"
                         radius="sm"
                         onSelectionChange={(key) => {
-                            // 並び順変更のロジックをここに追加
-                            console.log('Selected sort option:', key);
+                            if (key && onSortChange) {
+                                onSortChange(key);
+                            }
                         }}
                     />
                 </div>
@@ -94,15 +95,16 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
             <div className={styles.headerRight}>
                 <StyledAutocomplete
                     options={sortOptions}
-                    defaultSelectedKey="match"
-                    placeholder="マッチ率が高い順"
+                    defaultSelectedKey={getDefaultSortKey()}
+                    placeholder={sortOptions.find(opt => opt.key === getDefaultSortKey())?.label || 'ソート順を選択'}
                     aria-label="並び順を選択"
                     size="sm"
                     radius="sm"
                     className={styles.desktopAutocomplete}
                     onSelectionChange={(key) => {
-                        // 並び順変更のロジックをここに追加
-                        console.log('Selected sort option:', key);
+                        if (key && onSortChange) {
+                            onSortChange(key);
+                        }
                     }}
                 />
                 <Tooltip

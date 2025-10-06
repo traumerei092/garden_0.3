@@ -8,7 +8,7 @@ from .views import (
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet,
     AreaViewSet, RegularsSnapshotAPIView, RegularsDetailedAnalysisAPIView,
     CommonalitiesAPIView, ShopWelcomeAPIView, ShopSearchAPIView,
-    AtmosphereIndicatorViewSet, RegularUsageSceneViewSet
+    AtmosphereIndicatorViewSet, RegularUsageSceneViewSet, ShopSortAPIView
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -31,6 +31,8 @@ router.register(r'atmosphere-indicators', AtmosphereIndicatorViewSet)
 urlpatterns = [
     # 店舗検索API（より具体的なパターンを先に配置）
     path('shops/search/', ShopSearchAPIView.as_view(), name='shop-search'),
+    # 店舗ソートAPI
+    path('shops/sort/', ShopSortAPIView.as_view(), name='shop-sort'),
     
     path('', include(router.urls)),
     path('shops/<int:shop_pk>/reviews/', ShopReviewViewSet.as_view({'get': 'list', 'post': 'create'}), name='shop-reviews'),

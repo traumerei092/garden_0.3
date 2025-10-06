@@ -1,5 +1,4 @@
 .autocomplete {
-  min-width: 140px;
   font-size: 11px;
   color: white;
   border: none;
@@ -110,6 +109,8 @@
   border: 1px solid rgba(0, 255, 255, 0.6) !important;
   backdrop-filter: blur(20px) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  max-width: 280px !important;
+  min-width: 200px !important;
 }
 
 .autocompleteEndContentWrapper {
@@ -140,29 +141,34 @@
 }
 
 .autocompleteItem {
-  font-size: 0.8rem !important;
+  font-size: 0.65rem !important;
   color: white !important;
-  padding: 8px 12px !important;
+  padding: 6px 10px !important;
   transition: all 0.2s ease !important;
   border-radius: 6px !important;
   margin: 2px !important;
+  line-height: 1.2 !important;
+  min-height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
 
   &:hover {
     background-color: rgba(0, 255, 255, 0.12) !important;
     color: rgba(0, 255, 255, 1) !important;
   }
-  
+
   &[data-selected="true"] {
     background-color: rgba(0, 255, 255, 0.2) !important;
     color: rgba(0, 255, 255, 1) !important;
   }
-  
+
   &:focus {
     background-color: rgba(0, 255, 255, 0.15) !important;
     outline: none !important;
   }
 
   @media (max-width: 768px) {
-    font-size: 0.6rem;
+    font-size: 0.6rem !important;
+    padding: 5px 8px !important;
   }
 }

@@ -7,6 +7,7 @@ import Header from "@/components/Layout/Header";
 import ShopListHeader from "@/components/Shop/ShopListHeader";
 import ShopSearchModal from "@/components/Shop/ShopSearchModal";
 import { SearchFilters } from '@/types/search';
+import { getDefaultSortKey } from '@/actions/shop/sort';
 
 const shops = () => {
     const [selectedTab, setSelectedTab] = useState<string>('list');
@@ -14,6 +15,7 @@ const shops = () => {
     const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null);
     const [shopCount, setShopCount] = useState<number>(0);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+    const [currentSort, setCurrentSort] = useState<string>(getDefaultSortKey());
 
     // モバイル判定
     React.useEffect(() => {
@@ -31,6 +33,12 @@ const shops = () => {
         if (typeof window !== 'undefined') {
             const urlParams = new URLSearchParams(window.location.search);
             const filters: SearchFilters = {};
+
+            // ソートパラメータの読み取り
+            const sortParam = urlParams.get('sort');
+            if (sortParam) {
+                setCurrentSort(sortParam);
+            }
 
             // URLパラメータが存在しない場合は空のオブジェクトを設定
             if (urlParams.toString() === '') {
@@ -123,6 +131,11 @@ const shops = () => {
             }
         });
 
+        // 現在のソート情報も保持
+        if (currentSort) {
+            params.set('sort', currentSort);
+        }
+
         console.log('構築されたURLパラメータ:', params.toString());
 
         // URLを更新（ページリロードなし）
@@ -134,20 +147,38 @@ const shops = () => {
         setIsSearchModalOpen(false);
     };
 
+    const handleSortChange = (sortKey: string) => {
+        console.log('=== ソート変更 ===');
+        console.log('新しいソートキー:', sortKey);
+
+        setCurrentSort(sortKey);
+
+        // URLパラメータにソート情報を追加
+        const params = new URLSearchParams(window.location.search);
+        params.set('sort', sortKey);
+
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+
+        console.log('ソート更新後のURL:', newUrl);
+    };
+
     return (
         <div className={styles.container}>
             <Header/>
-            <ShopListHeader 
+            <ShopListHeader
                 selectedTab={selectedTab}
                 onTabChange={setSelectedTab}
                 shopCount={shopCount}
                 filterCount={filterCount}
                 onSearch={handleSearch}
+                onSortChange={handleSortChange}
             />
             {searchFilters !== null && (
                 <ShopList
                     viewMode={effectiveViewMode}
                     searchFilters={searchFilters}
+                    sortKey={currentSort}
                     onShopCountChange={setShopCount}
                 />
             )}
