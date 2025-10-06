@@ -108,7 +108,7 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
             try {
                 const errorJson = JSON.parse(errorText);
                 return { success: false, error: errorJson.message || errorJson.detail || '店舗の登録に失敗しました' };
-            } catch (_) {
+            } catch {
                 return { success: false, error: errorText || '店舗の登録に失敗しました' };
             }
         }

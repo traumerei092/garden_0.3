@@ -26,40 +26,43 @@ export const fetchShops = async (): Promise<Shop[]> => {
         console.log('取得データ:', data);
 
         // APIレスポンスを適切な形式に変換
-        const shops: Shop[] = data.map((shop: Record<string, any>) => ({
-            id: shop.id,
-            name: shop.name,
-            zip_code: shop.zip_code || null,
-            address: shop.address,
-            prefecture: shop.prefecture,
-            city: shop.city,
-            area: shop.area,
-            street: shop.street,
-            building: shop.building,
-            capacity: shop.capacity,
-            images: shop.images || null,
-            // StringRelatedFieldから返される文字列配列を{id, name}形式に変換
-            shop_types: Array.isArray(shop.shop_types) ? shop.shop_types.map((name: string, index: number) => ({
-                id: index + 1,
-                name: name
-            })) : [],
-            shop_layouts: Array.isArray(shop.shop_layouts) ? shop.shop_layouts.map((name: string, index: number) => ({
-                id: index + 1,
-                name: name
-            })) : [],
-            shop_options: Array.isArray(shop.shop_options) ? shop.shop_options.map((name: string, index: number) => ({
-                id: index + 1,
-                name: name
-            })) : [],
-            business_hours: shop.business_hours || [],
-            latitude: shop.latitude,
-            longitude: shop.longitude,
-            tags: Array.isArray(shop.tags) ? shop.tags : [],
-            phone_number: shop.phone_number || null,
-            access: shop.access || null,
-            // payment_methodsが既にオブジェクトの配列であることを確認
-            payment_methods: Array.isArray(shop.payment_methods) ? shop.payment_methods : []
-        }));
+        const shops: Shop[] = data.map((shop: unknown) => {
+            const shopData = shop as Record<string, any>;
+            return {
+                id: shopData.id,
+                name: shopData.name,
+                zip_code: shopData.zip_code || null,
+                address: shopData.address,
+                prefecture: shopData.prefecture,
+                city: shopData.city,
+                area: shopData.area,
+                street: shopData.street,
+                building: shopData.building,
+                capacity: shopData.capacity,
+                images: shopData.images || null,
+                // StringRelatedFieldから返される文字列配列を{id, name}形式に変換
+                shop_types: Array.isArray(shopData.shop_types) ? shopData.shop_types.map((name: string, index: number) => ({
+                    id: index + 1,
+                    name: name
+                })) : [],
+                shop_layouts: Array.isArray(shopData.shop_layouts) ? shopData.shop_layouts.map((name: string, index: number) => ({
+                    id: index + 1,
+                    name: name
+                })) : [],
+                shop_options: Array.isArray(shopData.shop_options) ? shopData.shop_options.map((name: string, index: number) => ({
+                    id: index + 1,
+                    name: name
+                })) : [],
+                business_hours: shopData.business_hours || [],
+                latitude: shopData.latitude,
+                longitude: shopData.longitude,
+                tags: Array.isArray(shopData.tags) ? shopData.tags : [],
+                phone_number: shopData.phone_number || null,
+                access: shopData.access || null,
+                // payment_methodsが既にオブジェクトの配列であることを確認
+                payment_methods: Array.isArray(shopData.payment_methods) ? shopData.payment_methods : []
+            };
+        });
 
         console.log('変換後のデータ:', shops);
         return shops;
@@ -109,8 +112,9 @@ export async function fetchShopById(id: string): Promise<Shop> {
         // タグデータのデバッグ
         if (Array.isArray(shop.tags)) {
             console.log('タグデータの詳細:');
-            shop.tags.forEach((tag: Record<string, any>) => {
-                console.log(`タグID: ${tag.id}, 値: ${tag.value}, user_has_reacted: ${tag.user_has_reacted}, is_creator: ${tag.is_creator}`);
+            shop.tags.forEach((tag: unknown) => {
+                const tagData = tag as Record<string, any>;
+                console.log(`タグID: ${tagData.id}, 値: ${tagData.value}, user_has_reacted: ${tagData.user_has_reacted}, is_creator: ${tagData.is_creator}`);
             });
         }
         
@@ -136,15 +140,16 @@ export async function fetchShopById(id: string): Promise<Shop> {
             business_hours: shop.business_hours || [],
             latitude: shop.latitude,
             longitude: shop.longitude,
-            tags: Array.isArray(shop.tags) ? shop.tags.map((tag: Record<string, any>) => {
+            tags: Array.isArray(shop.tags) ? shop.tags.map((tag: unknown) => {
+                const tagData = tag as Record<string, any>;
                 // 明示的にboolean型に変換して確実に正しい型になるようにする
-                const userHasReacted = tag.user_has_reacted === true;
-                const isCreator = tag.is_creator === true;
-                
-                console.log(`変換後のタグ ${tag.id} (${tag.value}): user_has_reacted=${userHasReacted}, is_creator=${isCreator}`);
-                
+                const userHasReacted = tagData.user_has_reacted === true;
+                const isCreator = tagData.is_creator === true;
+
+                console.log(`変換後のタグ ${tagData.id} (${tagData.value}): user_has_reacted=${userHasReacted}, is_creator=${isCreator}`);
+
                 return {
-                    ...tag,
+                    ...tagData,
                     user_has_reacted: userHasReacted,
                     is_creator: isCreator
                 };

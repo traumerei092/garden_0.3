@@ -7,6 +7,7 @@ import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchFavoriteShops, UserShop } from '@/actions/shop/fetchUserShops';
+import { Shop } from '@/types/shops';
 import { useShopActions } from '@/hooks/useShopActions';
 import { useAuthStore } from '@/store/useAuthStore';
 import Header from '@/components/Layout/Header';
@@ -21,7 +22,7 @@ const FavoritePage: React.FC = () => {
   const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
 
   // カスタムフックでShopActionButtonのロジックを統一
-  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as any[], [shops]);
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as unknown as Shop[], [shops]);
   const {
     handleRelationToggle,
     getUserRelations,
@@ -158,7 +159,7 @@ const FavoritePage: React.FC = () => {
         <ShopFeedbackModal
           isOpen={!!feedbackModalShopId}
           onClose={() => setFeedbackModalShopId(null)}
-          shop={shops.find(s => s.id === feedbackModalShopId) as any}
+          shop={shops.find(s => s.id === feedbackModalShopId)! as unknown as Shop}
           onDataUpdate={() => feedbackModalShopId && refreshShopStats(feedbackModalShopId)}
         />
       )}

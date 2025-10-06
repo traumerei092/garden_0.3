@@ -20,7 +20,7 @@ export const signupUser = async (formData: {
     let data;
     try {
       data = await res.json(); // ここでHTMLが返るとエラーになるので try にする
-    } catch (_) {
+    } catch {
       const text = await res.text();
       console.error("🛑 Response is not JSON:", text);
       return {

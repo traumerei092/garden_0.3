@@ -7,6 +7,7 @@ import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchWishlistShops, UserShop } from '@/actions/shop/fetchUserShops';
+import { Shop } from '@/types/shops';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useShopActions } from '@/hooks/useShopActions';
 import Header from '@/components/Layout/Header';
@@ -21,7 +22,7 @@ const WishlistPage: React.FC = () => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState<number | null>(null);
 
   // カスタムフックでShopActionButtonのロジックを統一
-  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as any[], [shops]);
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as unknown as Shop[], [shops]);
   const {
     handleRelationToggle,
     getUserRelations,
@@ -159,7 +160,7 @@ const WishlistPage: React.FC = () => {
         <ShopFeedbackModal
           isOpen={!!feedbackModalOpen}
           onClose={() => setFeedbackModalOpen(null)}
-          shop={shops.find(s => s.id === feedbackModalOpen) as any}
+          shop={shops.find(s => s.id === feedbackModalOpen)! as unknown as Shop}
           onDataUpdate={() => feedbackModalOpen && refreshShopStats(feedbackModalOpen)}
         />
       )}

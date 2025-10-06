@@ -82,7 +82,7 @@ const Shops = () => {
                             (filters as Record<string, any>)[key] = values;
                         }
                     }
-                } catch (error) {
+                } catch {
                     // パースに失敗した場合は文字列として扱う
                     (filters as Record<string, any>)[key] = values.length === 1 ? values[0] : values;
                 }
