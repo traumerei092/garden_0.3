@@ -10,7 +10,7 @@ from .models import (
     UserShopRelation, RelationType, PaymentMethod,
     AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
     ShopDrink, ShopDrinkReaction, Area, WelcomeAction, RegularUsageScene,
-    ShopRegularStatistics
+    ShopRegularStatistics, ShopEditHistory, HistoryEvaluation
 )
 
 # AreaモデルのカスタムフォームでGeoJSON編集機能を追加
@@ -412,6 +412,102 @@ class ShopRegularStatisticsAdmin(admin.ModelAdmin):
             )
 
     refresh_statistics.short_description = "選択した店舗の統計を更新"
+
+
+# 店舗編集履歴の管理画面設定
+@admin.register(ShopEditHistory)
+class ShopEditHistoryAdmin(admin.ModelAdmin):
+    list_display = ('shop', 'field_name', 'user', 'old_value_short', 'new_value_short', 'edited_at', 'evaluation_counts')
+    list_filter = ('field_name', 'edited_at', 'user')
+    search_fields = ('shop__name', 'field_name', 'user__name', 'user__email')
+    readonly_fields = ('edited_at', 'evaluation_summary')
+    autocomplete_fields = ('shop', 'user')
+    date_hierarchy = 'edited_at'
+    ordering = ('-edited_at',)
+
+    def old_value_short(self, obj):
+        """変更前の値を短縮表示"""
+        if obj.old_value:
+            value = str(obj.old_value)
+            return value[:50] + "..." if len(value) > 50 else value
+        return "未設定"
+    old_value_short.short_description = '変更前'
+
+    def new_value_short(self, obj):
+        """変更後の値を短縮表示"""
+        if obj.new_value:
+            value = str(obj.new_value)
+            return value[:50] + "..." if len(value) > 50 else value
+        return "未設定"
+    new_value_short.short_description = '変更後'
+
+    def evaluation_counts(self, obj):
+        """評価数を表示"""
+        good_count = obj.evaluations.filter(evaluation='GOOD').count()
+        bad_count = obj.evaluations.filter(evaluation='BAD').count()
+        return f"Good: {good_count}, Bad: {bad_count}"
+    evaluation_counts.short_description = '評価'
+
+    def evaluation_summary(self, obj):
+        """評価の詳細表示"""
+        evaluations = obj.evaluations.all()
+        if not evaluations:
+            return "評価なし"
+
+        good_users = [e.user.name for e in evaluations if e.evaluation == 'GOOD']
+        bad_users = [e.user.name for e in evaluations if e.evaluation == 'BAD']
+
+        result = []
+        if good_users:
+            result.append(f"Good: {', '.join(good_users)}")
+        if bad_users:
+            result.append(f"Bad: {', '.join(bad_users)}")
+
+        return "; ".join(result)
+    evaluation_summary.short_description = '評価詳細'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('shop', 'user').prefetch_related('evaluations__user')
+
+    fieldsets = (
+        ('編集情報', {
+            'fields': ('shop', 'field_name', 'user', 'edited_at')
+        }),
+        ('変更内容', {
+            'fields': ('old_value', 'new_value'),
+            'description': '変更前後の値'
+        }),
+        ('評価情報', {
+            'fields': ('evaluation_summary',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+# 編集履歴評価の管理画面設定
+@admin.register(HistoryEvaluation)
+class HistoryEvaluationAdmin(admin.ModelAdmin):
+    list_display = ('history_summary', 'user', 'evaluation', 'created_at')
+    list_filter = ('evaluation', 'created_at', 'history__field_name')
+    search_fields = ('history__shop__name', 'user__name', 'user__email', 'history__field_name')
+    readonly_fields = ('created_at',)
+    autocomplete_fields = ('history', 'user')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+
+    def history_summary(self, obj):
+        """履歴の概要を表示"""
+        return f"{obj.history.shop.name} - {obj.history.field_name}"
+    history_summary.short_description = '編集履歴'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('history__shop', 'user')
+
+    fieldsets = (
+        ('評価情報', {
+            'fields': ('history', 'user', 'evaluation', 'created_at')
+        }),
+    )
 
 
 # 常連利用シーンの管理画面設定

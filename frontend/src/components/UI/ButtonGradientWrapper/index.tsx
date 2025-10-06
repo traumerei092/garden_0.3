@@ -7,7 +7,7 @@ import classNames from "classnames";
 type Props = {
     children: React.ReactNode;
     onClick?: () => void;
-    anotherStyle: string;
+    anotherStyle?: string;
     type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
 }

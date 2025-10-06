@@ -128,18 +128,20 @@ export interface Shop {
   budget_weekend_min: number | null;
   budget_weekend_max: number | null;
   budget_note: string | null;
+  created_by: ReviewAuthor | null;
 }
 
 export interface ShopEditHistory {
   id: number;
   shop: number;
-  user: { id: number; name: string; } | null;
+  user: { id: number; name: string; uid: string; } | null;
   field_name: string;
   old_value: string;
   new_value: string;
   edited_at: string;
   good_count: number;
   bad_count: number;
+  user_evaluation: 'GOOD' | 'BAD' | null;
 }
 
 export interface HistoryEvaluation {

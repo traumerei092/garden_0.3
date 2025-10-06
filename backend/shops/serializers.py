@@ -147,7 +147,7 @@ class ShopSerializer(serializers.ModelSerializer):
     shop_layouts = serializers.StringRelatedField(many=True)
     shop_options = serializers.StringRelatedField(many=True)
     payment_methods = PaymentMethodSerializer(many=True, read_only=True)
-    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by = ReviewAuthorSerializer(read_only=True)
     tags = serializers.SerializerMethodField()
     area = serializers.StringRelatedField(read_only=True)
 
@@ -424,19 +424,27 @@ class ShopTagCreateSerializer(serializers.ModelSerializer):
 
 
 class ShopEditHistorySerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = ReviewAuthorSerializer(read_only=True)
     good_count = serializers.SerializerMethodField()
     bad_count = serializers.SerializerMethodField()
+    user_evaluation = serializers.SerializerMethodField()
 
     class Meta:
         model = ShopEditHistory
-        fields = ('id', 'shop', 'user', 'field_name', 'old_value', 'new_value', 'edited_at', 'good_count', 'bad_count')
+        fields = ('id', 'shop', 'user', 'field_name', 'old_value', 'new_value', 'edited_at', 'good_count', 'bad_count', 'user_evaluation')
 
     def get_good_count(self, obj):
         return obj.evaluations.filter(evaluation=HistoryEvaluation.EvaluationType.GOOD).count()
 
     def get_bad_count(self, obj):
         return obj.evaluations.filter(evaluation=HistoryEvaluation.EvaluationType.BAD).count()
+
+    def get_user_evaluation(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            evaluation = obj.evaluations.filter(user=request.user).first()
+            return evaluation.evaluation if evaluation else None
+        return None
 
 
 class HistoryEvaluationSerializer(serializers.ModelSerializer):

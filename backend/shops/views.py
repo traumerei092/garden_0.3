@@ -38,8 +38,14 @@ class ShopUpdateAPIView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        # 変更前のインスタンスの状態を保持
+
+        # 変更前の通常フィールドの状態を保持
         old_instance_dict = {field.name: str(getattr(instance, field.name)) for field in instance._meta.fields}
+
+        # 変更前のManyToManyFieldの状態を保持
+        old_m2m_dict = {}
+        for field in instance._meta.many_to_many:
+            old_m2m_dict[field.name] = list(getattr(instance, field.name).values_list('id', flat=True))
 
         response = super().update(request, *args, **kwargs)
 
@@ -47,7 +53,12 @@ class ShopUpdateAPIView(generics.UpdateAPIView):
         instance.refresh_from_db()
         new_instance_dict = {field.name: str(getattr(instance, field.name)) for field in instance._meta.fields}
 
-        # 変更点を履歴に保存
+        # 変更後のManyToManyFieldの状態を取得
+        new_m2m_dict = {}
+        for field in instance._meta.many_to_many:
+            new_m2m_dict[field.name] = list(getattr(instance, field.name).values_list('id', flat=True))
+
+        # 通常フィールドの変更点を履歴に保存
         for field_name, old_value in old_instance_dict.items():
             new_value = new_instance_dict.get(field_name)
             if old_value != new_value:
@@ -58,6 +69,24 @@ class ShopUpdateAPIView(generics.UpdateAPIView):
                     old_value=old_value,
                     new_value=new_value
                 )
+
+        # ManyToManyFieldの変更点を履歴に保存
+        for field_name, old_values in old_m2m_dict.items():
+            new_values = new_m2m_dict.get(field_name, [])
+            if set(old_values) != set(new_values):
+                # 関連オブジェクトの名前を取得
+                field = instance._meta.get_field(field_name)
+                old_names = list(field.related_model.objects.filter(id__in=old_values).values_list('name', flat=True))
+                new_names = list(field.related_model.objects.filter(id__in=new_values).values_list('name', flat=True))
+
+                ShopEditHistory.objects.create(
+                    shop=instance,
+                    user=request.user,
+                    field_name=field_name,
+                    old_value=', '.join(old_names) if old_names else '未設定',
+                    new_value=', '.join(new_names) if new_names else '未設定'
+                )
+
         return response
 
 
@@ -69,6 +98,9 @@ class ShopEditHistoryListAPIView(generics.ListAPIView):
         shop_id = self.kwargs.get('pk')
         return ShopEditHistory.objects.filter(shop_id=shop_id)
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
 
 class HistoryEvaluationAPIView(generics.CreateAPIView):
     serializer_class = HistoryEvaluationSerializer
@@ -76,16 +108,49 @@ class HistoryEvaluationAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         history_id = self.kwargs.get('pk')
-        history = ShopEditHistory.objects.get(id=history_id)
+        history = get_object_or_404(ShopEditHistory, id=history_id)
         evaluation_type = serializer.validated_data.get('evaluation')
 
-        # ユーザーが既に評価しているか確認
-        evaluation, created = HistoryEvaluation.objects.update_or_create(
+        # 既存の評価を確認
+        existing_evaluation = HistoryEvaluation.objects.filter(
+            history=history,
+            user=self.request.user
+        ).first()
+
+        if existing_evaluation:
+            if existing_evaluation.evaluation == evaluation_type:
+                # 同じ評価なら削除（toggle off）
+                existing_evaluation.delete()
+                serializer.instance = None
+                return
+            else:
+                # 違う評価なら更新
+                existing_evaluation.evaluation = evaluation_type
+                existing_evaluation.save()
+                serializer.instance = existing_evaluation
+                return
+
+        # 新しい評価を作成
+        evaluation = HistoryEvaluation.objects.create(
             history=history,
             user=self.request.user,
-            defaults={'evaluation': evaluation_type}
+            evaluation=evaluation_type
         )
         serializer.instance = evaluation
+
+    def create(self, request, *args, **kwargs):
+        history_id = self.kwargs.get('pk')
+        history = get_object_or_404(ShopEditHistory, id=history_id)
+
+        # リクエストデータを取得してhistoryを追加
+        data = request.data.copy()
+        data['history'] = history.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ShopViewSet(viewsets.ModelViewSet):

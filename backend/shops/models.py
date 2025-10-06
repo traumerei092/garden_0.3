@@ -204,20 +204,20 @@ class Area(models.Model):
 # 店舗モデル
 class Shop(models.Model):
 
-    name = models.CharField(max_length=100)
-    zip_code = models.CharField(max_length=10, blank=True, null=True)
-    address = models.CharField(max_length=255)
-    prefecture = models.CharField(max_length=100, blank=True, null=True)  # 例: 福岡県
-    city = models.CharField(max_length=100, blank=True, null=True)        # 例: 福岡市
-    street = models.CharField(max_length=100, blank=True, null=True)
-    building = models.CharField(max_length=100, blank=True, null=True)
-    area = models.CharField(max_length=100, blank=True, null=True)
-    capacity = models.IntegerField(null=True, blank=True, default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
+    name = models.CharField("店舗名", max_length=100)
+    zip_code = models.CharField("郵便番号", max_length=10, blank=True, null=True)
+    address = models.CharField("住所", max_length=255)
+    prefecture = models.CharField("都道府県", max_length=100, blank=True, null=True)
+    city = models.CharField("市区町村", max_length=100, blank=True, null=True)
+    street = models.CharField("町名・番地", max_length=100, blank=True, null=True)
+    building = models.CharField("建物名", max_length=100, blank=True, null=True)
+    area = models.CharField("エリア", max_length=100, blank=True, null=True)
+    capacity = models.IntegerField("収容人数", null=True, blank=True, default=0)
+    created_at = models.DateTimeField("作成日時", auto_now_add=True)
+
     # 新しいフィールド
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    access = models.TextField(blank=True, null=True)  # アクセス情報
+    phone_number = models.CharField("電話番号", max_length=20, blank=True, null=True)
+    access = models.TextField("アクセス情報", blank=True, null=True)
     
     # 位置情報フィールドを追加
     latitude = models.FloatField(null=True, blank=True)
@@ -244,11 +244,11 @@ class Shop(models.Model):
     )
 
     # 予算関連フィールド
-    budget_weekday_min = models.IntegerField(null=True, blank=True, help_text="平日の最低予算")
-    budget_weekday_max = models.IntegerField(null=True, blank=True, help_text="平日の最高予算")
-    budget_weekend_min = models.IntegerField(null=True, blank=True, help_text="週末の最低予算")
-    budget_weekend_max = models.IntegerField(null=True, blank=True, help_text="週末の最高予算")
-    budget_note = models.TextField(blank=True, null=True, help_text="予算に関する補足情報")
+    budget_weekday_min = models.IntegerField("平日予算（最低）", null=True, blank=True, help_text="平日の最低予算")
+    budget_weekday_max = models.IntegerField("平日予算（最高）", null=True, blank=True, help_text="平日の最高予算")
+    budget_weekend_min = models.IntegerField("週末予算（最低）", null=True, blank=True, help_text="週末の最低予算")
+    budget_weekend_max = models.IntegerField("週末予算（最高）", null=True, blank=True, help_text="週末の最高予算")
+    budget_note = models.TextField("予算メモ", blank=True, null=True, help_text="予算に関する補足情報")
 
     class Meta:
         db_table = 'shops'
