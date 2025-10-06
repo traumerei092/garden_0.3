@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
 import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide } from 'lucide-react';
@@ -57,7 +57,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const isLoggedIn = !!user;
 
   // 店舗情報を取得
-  const loadShop = async () => {
+  const loadShop = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -98,7 +98,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
 
   // リレーションの切り替え処理（統一ロジック）
   const handleRelationToggle = async (relationTypeId: number) => {
@@ -196,7 +196,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     loadShop();
-  }, [params.id]);
+  }, [loadShop]);
 
   // デバッグ用のログ追加
   useEffect(() => {
@@ -562,7 +562,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           setShowImageGalleryModal(false);
           setShowShopImageModal(true);
         }}
-        onImageClick={(_index) => {
+        onImageClick={() => {
           setShowImageGalleryModal(false);
           // 必要に応じてメインカルーセルの該当画像にスライド
         }}

@@ -21,9 +21,8 @@ const FavoritePage: React.FC = () => {
   const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
 
   // カスタムフックでShopActionButtonのロジックを統一
-  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id } as any)), [shops]);
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as any[], [shops]);
   const {
-    shopStats,
     handleRelationToggle,
     getUserRelations,
     refreshShopStats,

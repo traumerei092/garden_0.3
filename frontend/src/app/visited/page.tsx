@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MapPin, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Calendar, Star } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
@@ -21,9 +21,8 @@ const VisitedPage: React.FC = () => {
   const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
 
   // カスタムフックでShopActionButtonのロジックを統一
-  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id } as any)), [shops]);
+  const shopsForHook = useMemo(() => shops.map(s => ({ ...s, id: s.id })) as any[], [shops]);
   const {
-    shopStats,
     handleRelationToggle,
     getUserRelations,
     refreshShopStats,

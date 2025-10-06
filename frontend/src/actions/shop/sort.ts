@@ -34,7 +34,7 @@ export const SORT_OPTIONS: SortOption[] = [
  */
 export const fetchSortedShops = async (
   sortKey: string,
-  filters: Record<string, any> = {},
+  filters: Record<string, string | number | boolean | string[]> = {},
   page: number = 1
 ): Promise<SortedShopsResponse> => {
   try {

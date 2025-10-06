@@ -18,8 +18,6 @@ import {
   type RecentActivityItem,
   type AtmosphereFeedbackHistoryItem,
   type TagReactionHistoryItem,
-  type FavoriteShopDetail,
-  type VisitedShopDetail
 } from '@/actions/profile/fetchDashboardData';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';

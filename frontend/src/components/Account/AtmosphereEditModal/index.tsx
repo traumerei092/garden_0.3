@@ -7,7 +7,7 @@ import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import styles from './style.module.scss';
-import { AtmosphereIndicator, UserAtmospherePreference } from '@/types/users';
+import { AtmosphereIndicator } from '@/types/users';
 import { fetchAtmosphereIndicators, fetchUserAtmospherePreferences } from '@/actions/profile/fetchAtmosphereData';
 import { updateAtmospherePreferences } from '@/actions/profile/updateAtmospherePreferences';
 import { useProfileVisibility } from '@/hooks/useProfileVisibility';

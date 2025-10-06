@@ -1,9 +1,6 @@
-import { 
-  ShopDrink, 
-  DrinkMasterData, 
-  AlcoholCategory, 
-  AlcoholBrand, 
-  DrinkStyle 
+import {
+  ShopDrink,
+  DrinkMasterData
 } from '@/types/shops'
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth'
 

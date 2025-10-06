@@ -28,7 +28,7 @@ export const fetchShopEditHistory = async (shopId: string): Promise<ShopEditHist
  * @param historyId 評価する履歴のID
  * @param evaluation 'GOOD' または 'BAD'
  */
-export const evaluateShopEditHistory = async (historyId: number, evaluation: 'GOOD' | 'BAD'): Promise<any> => {
+export const evaluateShopEditHistory = async (historyId: number, evaluation: 'GOOD' | 'BAD'): Promise<{ success: boolean; message?: string }> => {
   try {
     const response = await fetchWithAuth(`${API_URL}/history/${historyId}/evaluate/`, {
       method: 'POST',

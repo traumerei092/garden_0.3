@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Provider from "@/app/Provider";
 import React from "react";
-import styles from './style.module.scss';
 
 export const metadata: Metadata = {
   title: "GARDEN",

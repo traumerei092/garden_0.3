@@ -8,7 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
  * @param shopId 更新する店舗のID
  * @param data 更新するデータ
  */
-export const updateShopBasicInfo = async (shopId: string, data: any) => {
+export const updateShopBasicInfo = async (shopId: string, data: Record<string, any>) => {
   try {
     const response = await fetchWithAuth(`${API_URL}/shops/${shopId}/update/`, {
       method: 'PATCH',

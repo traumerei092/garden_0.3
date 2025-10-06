@@ -18,7 +18,7 @@ export const loginUser = async (formData: {
     let data;
     try {
       data = await res.json();
-    } catch (e) {
+    } catch (_) {
       const text = await res.text();
       console.error('🛑 Response is not JSON:', text);
       return {

@@ -4,7 +4,7 @@ import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 /**
  * 店舗とユーザーの関係を切り替える
  */
-export const toggleShopRelation = async (shopId: string, relationTypeId: number): Promise<any> => {
+export const toggleShopRelation = async (shopId: string, relationTypeId: number): Promise<{ success: boolean; message?: string }> => {
     try {
         const response = await fetchWithAuth(
             `${process.env.NEXT_PUBLIC_API_URL}/user-shop-relations/toggle/`,
@@ -54,7 +54,7 @@ export const fetchShopStats = async (shopId: string): Promise<ShopStats> => {
 /**
  * タグの反応を切り替える
  */
-export const toggleTagReaction = async (tagId: number): Promise<any> => {
+export const toggleTagReaction = async (tagId: number): Promise<{ success: boolean; message?: string; reaction_count?: number }> => {
     try {
         console.log(`toggleTagReaction called with tagId: ${tagId}`);
         const response = await fetchWithAuth(

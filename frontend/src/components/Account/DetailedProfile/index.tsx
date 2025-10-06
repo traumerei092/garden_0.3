@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Switch } from '@nextui-org/react';
 import { Eye, EyeOff, Plus, Sparkle } from 'lucide-react';
 import ProfileCompletion from '@/components/UI/ProfileCompletion';
 import styles from './style.module.scss';

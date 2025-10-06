@@ -8,7 +8,6 @@ import DetailedProfile from '@/components/Account/DetailedProfile';
 import Dashboard from '@/components/Account/Dashboard';
 import styles from './style.module.scss';
 import Header from '@/components/Layout/Header';
-import LinkDefault from '@/components/UI/LinkDefault';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import useSWR from 'swr';
 import { User as UserType } from '@/types/users';
