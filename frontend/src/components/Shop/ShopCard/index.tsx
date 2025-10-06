@@ -12,9 +12,9 @@ import {
 } from "@nextui-org/react";
 import styles from './style.module.scss';
 import ChipCondition from "@/components/UI/ChipCondition";
-import ShopImpressionTag from "@/components/ShopTemp/ShopImpressionTag";
-import ShopMatchRate from "@/components/ShopTemp/ShopMatchRate";
-import ShopActionButton from "@/components/ShopTemp/ShopActionButton";
+import ShopImpressionTag from "@/components/Shop/ShopImpressionTag";
+import ShopMatchRate from "@/components/Shop/ShopMatchRate";
+import ShopActionButton from "@/components/Shop/ShopActionButton";
 import { MapPin } from 'lucide-react';
 import { ShopImage, ShopTag, ShopStats, RelationType } from '@/types/shops';
 

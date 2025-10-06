@@ -7,17 +7,17 @@ import RowSteps from "@/components/UI/RowSteps";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import {useRouter} from "next/navigation";
-import ShopAddressInputs from "@/components/ShopTemp/ShopAddressInputs";
+import ShopAddressInputs from "@/components/Shop/ShopAddressInputs";
 import {ShopFormValues, ShopType, ShopLayout, ShopOption, BusinessHourForm, WeekDay, PaymentMethod} from "@/types/shops";
 import CheckboxGroup from "@/components/UI/CheckboxGroup";
 import { fetchShopTypes } from '@/actions/shop/fetchShopTypes';
 import { fetchShopLayouts } from "@/actions/shop/fetchShopLayouts";
 import { fetchShopOptions } from "@/actions/shop/fetchShopOptions";
 import { fetchPaymentMethods } from "@/actions/shop/fetchPaymentMethods";
-import ShopBusinessHourTable from "@/components/ShopTemp/ShopBusinessHourTable";
+import ShopBusinessHourTable from "@/components/Shop/ShopBusinessHourTable";
 import ChipSelected from "@/components/UI/ChipSelected";
 import { Time } from '@internationalized/date';
-import ShopCreateModal from "@/components/ShopTemp/ShopCreateModal";
+import ShopCreateModal from "@/components/Shop/ShopCreateModal";
 import {PictureUpload} from "@/components/UI/PictureUpload";
 
 const steps = [

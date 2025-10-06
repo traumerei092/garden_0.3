@@ -6,99 +6,95 @@ import RowSteps from '@/components/UI/RowSteps';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
 import InputDefault from '@/components/UI/InputDefault';
 import ButtonGradient from '@/components/UI/ButtonGradient';
-import ShopImpressionTag from '@/components/ShopTemp/ShopImpressionTag';
-import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
+import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
 import { Star } from 'lucide-react';
 import styles from './style.module.scss';
 import { Shop } from '@/types/shops';
-import { AtmosphereIndicator } from '@/types/users';
-import { VisitPurpose } from '@/types/shops';
+import { AtmosphereIndicator } from '@/types/search';
 import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
-import { fetchVisitPurposes } from '@/actions/shop/reviews';
-import { submitRegularUsageScene } from '@/actions/shop/regularUsageScene';
 import { toggleTagReaction } from '@/actions/shop/relation';
 import { submitShopFeedback, FeedbackData } from '@/actions/shop/feedback';
 import { getUserShopFeedbackFromStorage } from '@/utils/feedbackStorage';
 import { saveShopFeedbackToStorage } from '@/utils/feedbackActions';
 import { addImpressionTag } from '@/actions/shop/impressionTag';
 
-interface RegularFeedbackModalProps {
+interface ShopFeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
   shop: Shop;
-  onDataUpdate: () => void;
+  onDataUpdate: () => void; // データ更新コールバック
 }
 
-const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
+
+const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
   isOpen,
   onClose,
   shop,
   onDataUpdate
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
-
-  // Step 1: 利用シーン関連
-  const [visitPurposes, setVisitPurposes] = useState<VisitPurpose[]>([]);
-  const [selectedVisitPurposes, setSelectedVisitPurposes] = useState<string[]>([]);
-
-  // Step 2: 雰囲気フィードバック関連
   const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
   const [atmosphereScores, setAtmosphereScores] = useState<{ [key: number]: number }>({});
-
-  // Step 3: 印象タグ関連
   const [impressionTags, setImpressionTags] = useState<string[]>([]);
   const [newTagValue, setNewTagValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [existingTags, setExistingTags] = useState(shop.tags || []);
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  // モーダルが開かれた時に必要なデータを取得
+  // モーダルが開かれた時に雰囲気指標と既存データを取得
   useEffect(() => {
     if (isOpen) {
-      loadInitialData();
+      loadAtmosphereIndicators();
       setExistingTags(shop.tags || []);
       loadUserFeedback();
     }
   }, [isOpen, shop.tags]);
 
-  const loadInitialData = async () => {
-    setIsLoading(true);
+  const loadUserFeedback = async () => {
     try {
-      const [purposesData, indicatorsResponse] = await Promise.all([
-        fetchVisitPurposes(),
-        fetchAtmosphereIndicators()
-      ]);
-      setVisitPurposes(purposesData);
+      console.log('フィードバック取得開始 - shopId:', shop.id);
 
-      if (indicatorsResponse.success && indicatorsResponse.data) {
-        setAtmosphereIndicators(indicatorsResponse.data);
+      // まずlocalStorageから取得を試行
+      const existingFeedback = getUserShopFeedbackFromStorage(shop.id);
+      console.log('localStorage取得結果:', existingFeedback);
+
+      if (existingFeedback && existingFeedback.atmosphere_scores) {
+        console.log('atmosphere_scores found:', existingFeedback.atmosphere_scores);
+
+        // 既存のフィードバックデータを状態にセット
+        const scores: { [key: number]: number } = {};
+        Object.entries(existingFeedback.atmosphere_scores).forEach(([indicatorId, score]) => {
+          const numericId = parseInt(indicatorId);
+          scores[numericId] = score as number;
+          console.log(`Setting score for indicator ${numericId}: ${score}`);
+        });
+
+        console.log('最終的に設定する雰囲気スコア:', scores);
+        setAtmosphereScores(scores);
       } else {
-        console.error('雰囲気指標の取得に失敗:', indicatorsResponse.error);
+        console.log('既存フィードバックが存在しないか、atmosphere_scoresが空です');
+        console.log('existingFeedback:', existingFeedback);
       }
     } catch (error) {
-      console.error('初期データ取得エラー:', error);
+      console.error('既存フィードバック取得エラー:', error);
+    }
+  };
+
+  const loadAtmosphereIndicators = async () => {
+    try {
+      setIsLoading(true);
+      const result = await fetchAtmosphereIndicators();
+      if (result.success && result.data) {
+        setAtmosphereIndicators(result.data);
+      } else {
+        console.error('雰囲気指標の取得に失敗:', result.error);
+      }
+    } catch (error) {
+      console.error('雰囲気指標の取得に失敗:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadUserFeedback = async () => {
-    try {
-      const savedFeedback = getUserShopFeedbackFromStorage(shop.id);
-      if (savedFeedback?.atmosphere_scores) {
-        setAtmosphereScores(savedFeedback.atmosphere_scores);
-      }
-    } catch (error) {
-      console.error('保存済みフィードバック取得エラー:', error);
-    }
-  };
-
-  // 利用シーン選択の処理
-  const handleVisitPurposeChange = (purposes: string[]) => {
-    setSelectedVisitPurposes(purposes);
-  };
-
-  // 雰囲気スコア変更の処理
   const handleAtmosphereScoreChange = (indicatorId: number, score: number) => {
     setAtmosphereScores(prev => ({
       ...prev,
@@ -106,12 +102,13 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
     }));
   };
 
-  // 印象タグ追加の処理
   const handleAddTag = async () => {
     if (newTagValue.trim() && !impressionTags.includes(newTagValue.trim())) {
       try {
+        // タグをサーバーに追加（ShopTagModal統一版）
         const apiResult = await addImpressionTag(shop.id, newTagValue.trim());
 
+        // API結果をShopTag形式に変換して既存タグリストに追加
         const newTag: typeof shop.tags[0] = {
           id: apiResult.id,
           shop: apiResult.shop,
@@ -123,6 +120,8 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
           created_by: apiResult.created_by
         };
         setExistingTags(prev => [...prev, newTag]);
+
+        // 追加したタグリストにも追加
         setImpressionTags(prev => [...prev, newTagValue.trim()]);
         setNewTagValue('');
 
@@ -139,6 +138,7 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
 
   const handleTagReaction = async (tagId: number) => {
     try {
+      // タグの状態を楽観的に更新
       const updatedTags = existingTags.map(tag => {
         if (tag.id === tagId) {
           const newUserHasReacted = !tag.user_has_reacted;
@@ -156,25 +156,16 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
       });
 
       setExistingTags(updatedTags);
+
+      // サーバーにリクエスト送信
       await toggleTagReaction(tagId);
     } catch (error) {
       console.error('タグリアクションエラー:', error);
+      // エラーの場合は元の状態に戻す
       setExistingTags(shop.tags || []);
     }
   };
 
-  // 利用シーン登録処理
-  const handleUsageSceneSubmit = async () => {
-    try {
-      const visitPurposeIds = selectedVisitPurposes.map(id => parseInt(id));
-      await submitRegularUsageScene(shop.id, { visit_purpose_ids: visitPurposeIds });
-      console.log('利用シーン登録完了');
-    } catch (error) {
-      console.error('利用シーン登録エラー:', error);
-    }
-  };
-
-  // 雰囲気フィードバック登録処理
   const handleAtmosphereFeedbackSubmit = async () => {
     try {
       const feedbackData: FeedbackData = {
@@ -183,9 +174,11 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
       };
 
       try {
+        // まずAPIに送信を試行
         await submitShopFeedback(shop.id, feedbackData);
         console.log('雰囲気フィードバック送信完了');
       } catch (error) {
+        // API失敗時はlocalStorageに保存
         console.log('API失敗のためlocalStorageに保存:', error);
         saveShopFeedbackToStorage(shop.id, feedbackData);
       }
@@ -195,13 +188,13 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
   };
 
   const handleComplete = () => {
+    // 完了ボタンはモーダルを閉じて親コンポーネントのデータ更新を実行
     handleModalClose();
-    onDataUpdate();
+    onDataUpdate(); // 親コンポーネントでデータ更新処理を実行
   };
 
   const handleModalClose = () => {
     setCurrentStep(0);
-    setSelectedVisitPurposes([]);
     setAtmosphereScores({});
     setImpressionTags([]);
     setNewTagValue('');
@@ -210,30 +203,6 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
 
   // ステップの定義
   const steps = [
-    {
-      title: '利用シーン',
-      description: 'どのような目的でこの店舗を利用しますか？',
-      content: (
-        <div className={styles.usageSceneStep}>
-          <div className={styles.stepDescription}>
-            <p>常連客として、どのような場面でこの店舗を利用するかを選択してください。複数選択可能です。</p>
-          </div>
-          {isLoading ? (
-            <div className={styles.loading}>読み込み中...</div>
-          ) : (
-            <CustomCheckboxGroup
-              name="visitPurposes"
-              values={selectedVisitPurposes}
-              onChange={handleVisitPurposeChange}
-              options={visitPurposes.map(purpose => ({
-                label: purpose.name,
-                value: purpose.id.toString()
-              }))}
-            />
-          )}
-        </div>
-      )
-    },
     {
       title: '雰囲気',
       description: 'この店舗の雰囲気はいかがでしたか？',
@@ -334,14 +303,14 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
     },
     {
       title: '完了',
-      description: '常連フィードバックありがとうございました！',
+      description: 'フィードバックありがとうございました！',
       content: (
         <div className={styles.completeStep}>
           <div className={styles.completionMessage}>
             <Star className={styles.starIcon} size={48} />
-            <h3>常連フィードバック完了</h3>
-            <p>{shop.name}への常連フィードバックをありがとうございました。</p>
-            <p>あなたの利用シーンと評価は他のユーザーの参考情報として活用されます。</p>
+            <h3>フィードバック完了</h3>
+            <p>{shop.name}へのフィードバックをありがとうございました。</p>
+            <p>あなたの評価は他のユーザーの参考情報として活用されます。</p>
           </div>
         </div>
       )
@@ -350,11 +319,9 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
 
   const canProceedToNext = () => {
     switch (currentStep) {
-      case 0: // 利用シーン
-        return selectedVisitPurposes.length > 0;
-      case 1: // 雰囲気フィードバック
+      case 0: // 雰囲気フィードバック
         return Object.keys(atmosphereScores).length > 0;
-      case 2: // 印象タグ
+      case 1: // 印象タグ
         return true; // タグは任意なので常に進める
       default:
         return true;
@@ -363,10 +330,7 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
 
   const handleNext = async () => {
     if (currentStep === 0) {
-      // 利用シーンSTEPで登録
-      await handleUsageSceneSubmit();
-    } else if (currentStep === 1) {
-      // 雰囲気STEPで登録
+      // 雰囲気STEPで「更新して次へ」
       await handleAtmosphereFeedbackSubmit();
     }
 
@@ -387,10 +351,10 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
     <CustomModal
       isOpen={isOpen}
       onClose={handleModalClose}
-      title={`${shop.name}の常連フィードバック`}
+      title={`${shop.name}へのフィードバック`}
       size="2xl"
     >
-      <div className={styles.regularFeedbackModal}>
+      <div className={styles.feedbackModal}>
         <RowSteps
           steps={steps}
           currentStep={currentStep}
@@ -402,10 +366,8 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
             currentStep === steps.length - 1
               ? '完了'
               : currentStep === 0
-                ? '登録して次へ'
-                : currentStep === 1
-                  ? '更新して次へ'
-                  : '次へ'
+                ? '更新して次へ'
+                : '次へ'
           }
         />
       </div>
@@ -413,4 +375,4 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
   );
 };
 
-export default RegularFeedbackModal;
+export default ShopFeedbackModal;

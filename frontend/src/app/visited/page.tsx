@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, Calendar, Star } from 'lucide-react';
-import ShopGridCard from '@/components/ShopTemp/ShopGridCard';
-import ShopFeedbackModal from '@/components/ShopTemp/ShopFeedbackModal';
+import ShopGridCard from '@/components/Shop/ShopGridCard';
+import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchVisitedShops, UserShop } from '@/actions/shop/fetchUserShops';
 import { useShopActions } from '@/hooks/useShopActions';
