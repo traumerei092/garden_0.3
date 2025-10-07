@@ -35,6 +35,7 @@ import {
   UserProfile,
   SearchCategory
 } from '@/types/search';
+import { ProfileOptions } from '@/types/users';
 
 
 const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
@@ -51,7 +52,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const [selectedMyArea, setSelectedMyArea] = useState<Area | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [activeCategory, setActiveCategory] = useState<SearchCategory>('regulars');
-  const [profileOptions, setProfileOptions] = useState<any>(null);
+  const [profileOptions, setProfileOptions] = useState<ProfileOptions | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagSuggestions, setTagSuggestions] = useState<Array<{ id: number; value: string }>>([]);
@@ -268,7 +269,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
         // エリア情報の復元（profileOptionsにエリアデータがある場合）
         if (initialFilters.area_ids && initialFilters.area_ids.length > 0 && profileOptions.areas) {
-          const restoredAreas = profileOptions.areas.filter((area: any) =>
+          const restoredAreas = profileOptions.areas.filter((area) =>
             initialFilters.area_ids?.includes(area.id)
           );
           if (restoredAreas.length > 0) {
@@ -479,7 +480,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
       // 利用シーンを自動入力（visit_purposes）
       if (userProfile.visit_purposes && Array.isArray(userProfile.visit_purposes) && userProfile.visit_purposes.length > 0) {
-        profileFilters.visit_purposes = userProfile.visit_purposes.map((p: any) => p.name);
+        profileFilters.visit_purposes = userProfile.visit_purposes.map((p) => p.name);
       }
 
       // プライマリエリアまたは最初のマイエリアを自動入力
@@ -500,7 +501,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         const interests = (userProfile as any).interests;
         if (interests && interests.length > 0) {
           const interestIds = interests
-            .map((interest: any) => interest.id?.toString() || interest)
+            .map((interest) => interest.id?.toString() || interest)
             .filter(Boolean);
           if (interestIds.length > 0) {
             profileFilters.regular_interests = interestIds;
@@ -512,7 +513,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         const alcoholBrands = (userProfile as any).alcohol_brands;
         if (alcoholBrands && alcoholBrands.length > 0) {
           const brandIds = alcoholBrands
-            .map((brand: any) => brand.id || brand)
+            .map((brand) => brand.id || brand)
             .filter(Boolean);
           if (brandIds.length > 0) {
             profileFilters.alcohol_brands = brandIds;
@@ -523,7 +524,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         const alcoholCategories = (userProfile as any).alcohol_categories;
         if (alcoholCategories && alcoholCategories.length > 0) {
           const categoryIds = alcoholCategories
-            .map((category: any) => category.id || category)
+            .map((category) => category.id || category)
             .filter(Boolean);
           if (categoryIds.length > 0) {
             profileFilters.regular_alcohol_preferences = categoryIds;
@@ -567,7 +568,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         const dietaryPreferences = (userProfile as any).dietary_preferences;
         if (dietaryPreferences && dietaryPreferences.length > 0) {
           const dietaryIds = dietaryPreferences
-            .map((pref: any) => pref.id?.toString() || pref)
+            .map((pref) => pref.id?.toString() || pref)
             .filter(Boolean);
           if (dietaryIds.length > 0) {
             profileFilters.regular_dietary_preferences = dietaryIds;
@@ -946,15 +947,15 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         
         // デバッグ用に店舗名も保存
         if (data.results && Array.isArray(data.results)) {
-          setDebugShops(data.results.map((shop: any) => ({ 
-            id: shop.id, 
-            name: shop.name 
+          setDebugShops(data.results.map((shop: { id: number; name: string }) => ({
+            id: shop.id,
+            name: shop.name
           })));
         } else if (data.shops && Array.isArray(data.shops)) {
           // APIが'shops'キーを使う場合
-          setDebugShops(data.shops.map((shop: any) => ({ 
-            id: shop.id, 
-            name: shop.name 
+          setDebugShops(data.shops.map((shop: { id: number; name: string }) => ({
+            id: shop.id,
+            name: shop.name
           })));
         } else {
           console.log('店舗データの形式が不明:', data);
@@ -1133,7 +1134,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     if (filters.regular_interests?.length) {
       filters.regular_interests.forEach(id => {
-        const interest = profileOptions?.interests?.find((i: any) => i.id.toString() === id);
+        const interest = profileOptions?.interests?.find((i) => i.id.toString() === id);
         const labelName = interest ? interest.name : `ID:${id}`;
         tags.push({ key: `interest_${id}`, label: `興味：${labelName}`, category: '興味' });
       });
@@ -1145,7 +1146,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     if (filters.regular_blood_types?.length) {
       const bloodTypeNames = filters.regular_blood_types.map(id => {
-        const bloodType = profileOptions?.blood_types?.find((bt: any) => bt.id.toString() === id);
+        const bloodType = profileOptions?.blood_types?.find((bt) => bt.id.toString() === id);
         return bloodType?.name || `ID:${id}`;
       });
       tags.push({ key: 'blood_types', label: bloodTypeNames.join('、'), category: '血液型' });
@@ -1153,7 +1154,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     if (filters.regular_mbti_types?.length) {
       const mbtiNames = filters.regular_mbti_types.map(id => {
-        const mbti = profileOptions?.mbti_types?.find((m: any) => m.id.toString() === id);
+        const mbti = profileOptions?.mbti_types?.find((m) => m.id.toString() === id);
         return mbti?.name || `ID:${id}`;
       });
       tags.push({ key: 'mbti_types', label: mbtiNames.join('、'), category: 'MBTI' });
@@ -1161,7 +1162,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     if (filters.regular_exercise_frequency?.length) {
       const exerciseNames = filters.regular_exercise_frequency.map(id => {
-        const exercise = profileOptions?.exercise_frequencies?.find((e: any) => e.id.toString() === id);
+        const exercise = profileOptions?.exercise_frequencies?.find((e) => e.id.toString() === id);
         return exercise?.name || `ID:${id}`;
       });
       tags.push({ key: 'exercise_frequency', label: exerciseNames.join('、'), category: '運動頻度' });
@@ -1169,7 +1170,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     if (filters.regular_dietary_preferences?.length) {
       const dietaryNames = filters.regular_dietary_preferences.map(id => {
-        const dietary = profileOptions?.dietary_preferences?.find((d: any) => d.id.toString() === id);
+        const dietary = profileOptions?.dietary_preferences?.find((d) => d.id.toString() === id);
         return dietary?.name || `ID:${id}`;
       });
       tags.push({ key: 'dietary_preferences', label: dietaryNames.join('、'), category: '食事制限' });
@@ -1294,10 +1295,10 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   // ヘルパー関数
 
   // 興味をカテゴリごとにグループ化
-  const groupInterestsByCategory = (interests: any[]) => {
-    const groups: { [categoryName: string]: any[] } = {};
-    
-    interests?.forEach((interest: any) => {
+  const groupInterestsByCategory = (interests: Array<{ id: number; name: string; category: { id: number; name: string } }>) => {
+    const groups: { [categoryName: string]: Array<{ id: number; name: string; category: { id: number; name: string } }> } = {};
+
+    interests?.forEach((interest) => {
       const categoryName = interest.category?.name || '未分類';
       if (!groups[categoryName]) {
         groups[categoryName] = [];

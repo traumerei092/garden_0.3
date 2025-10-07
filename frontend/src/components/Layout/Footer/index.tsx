@@ -11,7 +11,6 @@ import {
     DropdownMenu,
     DropdownItem,
     Image,
-    Divider,
     DropdownSection
 } from "@nextui-org/react";
 import Logo from "@/components/UI/Logo";

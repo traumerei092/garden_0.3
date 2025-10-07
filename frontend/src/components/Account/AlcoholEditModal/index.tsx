@@ -66,15 +66,15 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
     setIsLoading(true);
     try {
       // お酒のジャンルを更新
-      const updatedUser1 = await updateAlcoholCategories(selectedCategories.map(id => parseInt(id)));
-      
+      await updateAlcoholCategories(selectedCategories.map(id => parseInt(id)));
+
       // お酒の銘柄を更新
-      const updatedUser2 = await updateAlcoholBrands(selectedBrands.map(id => parseInt(id)));
-      
+      await updateAlcoholBrands(selectedBrands.map(id => parseInt(id)));
+
       // 飲み方・カクテルを更新
-      const updatedUser3 = await updateDrinkStyles(selectedDrinkStyles.map(id => parseInt(id)));
-      
-      onUpdate(updatedUser3);
+      const updatedUser = await updateDrinkStyles(selectedDrinkStyles.map(id => parseInt(id)));
+
+      onUpdate(updatedUser);
       showProfileUpdateToast();
       onClose();
     } catch (error) {

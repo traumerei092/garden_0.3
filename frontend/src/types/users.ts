@@ -151,39 +151,40 @@ export interface ProfileOptions {
   mbti_types: Array<{ id: number; name: string }>;
   alcohols: Array<{ id: number; name: string }>;
   alcohol_categories: Array<{ id: number; name: string }>;
-  alcohol_brands: Array<{ 
-    id: number; 
-    name: string; 
-    category: { id: number; name: string } 
+  alcohol_brands: Array<{
+    id: number;
+    name: string;
+    category: { id: number; name: string }
   }>;
-  drink_styles: Array<{ 
-    id: number; 
-    name: string; 
-    category: { id: number; name: string } 
+  drink_styles: Array<{
+    id: number;
+    name: string;
+    category: { id: number; name: string }
   }>;
   hobbies: Array<{ id: number; name: string }>;
   exercise_habits: Array<{ id: number; name: string }>;
   social_preferences: Array<{ id: number; name: string }>;
-  interests: Array<{ 
-    id: number; 
-    name: string; 
-    category: { id: number; name: string } 
+  interests: Array<{
+    id: number;
+    name: string;
+    category: { id: number; name: string }
   }>;
   exercise_frequencies: Array<{ id: number; name: string; order: number }>;
   dietary_preferences: Array<{ id: number; name: string; description: string }>;
-  budget_ranges: Array<{ 
-    id: number; 
-    name: string; 
-    min_price: number | null; 
-    max_price: number | null; 
-    order: number 
+  budget_ranges: Array<{
+    id: number;
+    name: string;
+    min_price: number | null;
+    max_price: number | null;
+    order: number
   }>;
-  visit_purposes: Array<{ 
-    id: number; 
-    name: string; 
-    description: string; 
-    order: number 
+  visit_purposes: Array<{
+    id: number;
+    name: string;
+    description: string;
+    order: number
   }>;
+  areas?: Array<{ id: number; name: string; level: number; parent?: number }>;
 }
 
 // プロフィール公開設定の型定義
@@ -236,7 +237,7 @@ export interface PublicUserProfile {
   reviews_count?: number;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

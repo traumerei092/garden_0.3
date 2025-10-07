@@ -48,7 +48,7 @@ export const getFieldLabel = (fieldName: string): string => {
 /**
  * 値を表示用にフォーマット
  */
-export const formatFieldValue = (fieldName: string, value: any): string => {
+export const formatFieldValue = (fieldName: string, value: unknown): string => {
   if (value === null || value === undefined) {
     return '未設定';
   }
@@ -86,8 +86,8 @@ export const formatFieldValue = (fieldName: string, value: any): string => {
  */
 export const formatChangeDescription = (
   fieldName: string,
-  oldValue: any,
-  newValue: any
+  oldValue: unknown,
+  newValue: unknown
 ): { __html: string } => {
   const fieldLabel = getFieldLabel(fieldName);
   const formattedOldValue = formatFieldValue(fieldName, oldValue);

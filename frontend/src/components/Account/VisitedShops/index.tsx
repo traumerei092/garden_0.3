@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Switch, Button } from '@nextui-org/react';
-import { Eye, EyeOff, MapPin, Plus, ExternalLink } from 'lucide-react';
+import { Button } from '@nextui-org/react';
+import { Plus, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './style.module.scss';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
@@ -176,8 +176,8 @@ const VisitedShops = () => {
               const userRelations: { [key: number]: boolean } = {};
               
               if (stats?.user_relations) {
-                stats.user_relations.forEach((relation: any) => {
-                  userRelations[relation.relation_type_id] = true;
+                stats.user_relations.forEach((relation: Record<string, unknown>) => {
+                  userRelations[relation.relation_type_id as number] = true;
                 });
               }
               

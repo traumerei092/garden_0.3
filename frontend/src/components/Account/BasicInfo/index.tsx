@@ -25,7 +25,7 @@ interface BasicInfoProps {
   userAtmospherePreferences?: Record<string, unknown>[];
 }
 
-const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOptions, userAtmospherePreferences }) => {
+const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtmospherePreferences }) => {
   // ユーザー情報をストアから取得
   const user = useAuthStore(state => state.user);
   const setUser = useAuthStore(state => state.setUser);
@@ -140,7 +140,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
 
   // UserInfo型からUser型への変換（編集モーダル用）
   const convertUserInfoToUser = (userInfo: UserInfo): Record<string, unknown> => {
-    if (!userInfo) return null;
+    if (!userInfo) return {};
     return {
       ...userInfo,
       username: userInfo.name || '',
@@ -203,7 +203,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, onUserUpdate, profileOp
     };
   };
 
-  const { lastName, firstName } = getNameParts();
+  getNameParts();
   
   return (
     <div className={styles.basicInfoContainer}>
