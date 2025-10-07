@@ -249,7 +249,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
       {/* プロフィール完成度 */}
       {userData && profileOptions && (
         <ProfileCompletion
-          userData={userData}
+          userData={userData as unknown as User}
           profileOptions={profileOptions}
           userAtmospherePreferences={userAtmospherePreferences || []}
         />
