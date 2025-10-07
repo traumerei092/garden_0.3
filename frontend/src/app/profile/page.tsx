@@ -67,7 +67,7 @@ const ProfilePage = () => {
           userData={userData as unknown as Record<string, unknown>}
           onUserUpdate={handleUserUpdate as unknown as (updatedUser: Record<string, unknown>) => void} 
           profileOptions={profileOptions}
-          userAtmospherePreferences={userAtmospherePreferences?.data || []}
+          userAtmospherePreferences={(userAtmospherePreferences?.data || []) as unknown as Record<string, unknown>[]}
         />
         <DetailedProfile userData={userData} profileOptions={profileOptions} onUserUpdate={handleUserUpdate} />
         <Dashboard />
