@@ -65,7 +65,7 @@ const ProfilePage = () => {
       <Tabs items={tabItems} defaultActiveKey="basic">
         <BasicInfo 
           userData={userData as unknown as Record<string, unknown>}
-          onUserUpdate={handleUserUpdate as (updatedUser: Record<string, unknown>) => void} 
+          onUserUpdate={handleUserUpdate as unknown as (updatedUser: Record<string, unknown>) => void} 
           profileOptions={profileOptions}
           userAtmospherePreferences={userAtmospherePreferences?.data || []}
         />
