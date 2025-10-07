@@ -5,6 +5,7 @@ export interface SearchFilters {
   welcome_min?: number;
   regular_count_min?: number;
   dominant_age_group?: string; // 最も多い年代（単一選択）
+  regular_age_groups?: string[]; // 年代グループ（複数選択）
   regular_genders?: string[];
   regular_interests?: string[];
   regular_blood_types?: string[];
