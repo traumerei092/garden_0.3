@@ -50,7 +50,7 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
 
     if (filters.regular_alcohol_preferences?.length) {
       filters.regular_alcohol_preferences.forEach(alcoholId => {
-        queryParams.append('regular_alcohol_preferences', alcoholId);
+        queryParams.append('regular_alcohol_preferences', alcoholId.toString());
       });
     }
 
