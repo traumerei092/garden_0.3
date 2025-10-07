@@ -106,4 +106,3 @@ const ShopImpressionTag: React.FC<ShopImpressionTagProps> = ({
 };
 
 export default ShopImpressionTag;
-''

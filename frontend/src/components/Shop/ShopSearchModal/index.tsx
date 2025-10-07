@@ -273,9 +273,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
             initialFilters.area_ids?.includes(area.id)
           );
           if (restoredAreas.length > 0) {
-            setSelectedAreas(restoredAreas);
+            setSelectedAreas(restoredAreas as Area[]);
             // 最初のエリアをprimaryAreaとして設定
-            setPrimaryArea(restoredAreas[0]);
+            setPrimaryArea(restoredAreas[0] as Area);
             console.log('エリア情報を復元:', restoredAreas);
           }
         }
@@ -498,11 +498,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       // プロフィールオプションからの自動入力
       if (profileOptions) {
         // 興味・趣味
-        const interests = (userProfile as any).interests;
-        if (interests && interests.length > 0) {
-          const interestIds = interests
-            .map((interest) => interest.id?.toString() || interest)
-            .filter(Boolean);
+        const interests = (userProfile as Record<string, unknown>).interests;
+        if (interests && Array.isArray(interests) && interests.length > 0) {
+          const interestIds = (interests as Record<string, unknown>[])
+            .map((interest: Record<string, unknown>) => interest.id?.toString() || interest)
+            .filter(Boolean) as string[];
           if (interestIds.length > 0) {
             profileFilters.regular_interests = interestIds;
           }
@@ -510,24 +510,24 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
 
         // お酒の銘柄
-        const alcoholBrands = (userProfile as any).alcohol_brands;
-        if (alcoholBrands && alcoholBrands.length > 0) {
-          const brandIds = alcoholBrands
-            .map((brand) => brand.id || brand)
-            .filter(Boolean);
+        const alcoholBrands = (userProfile as Record<string, unknown>).alcohol_brands;
+        if (alcoholBrands && Array.isArray(alcoholBrands) && alcoholBrands.length > 0) {
+          const brandIds = (alcoholBrands as Record<string, unknown>[])
+            .map((brand: Record<string, unknown>) => brand.id || brand)
+            .filter(Boolean) as string[];
           if (brandIds.length > 0) {
-            profileFilters.alcohol_brands = brandIds;
+            profileFilters.alcohol_brands = brandIds.map(id => parseInt(id.toString()));
           }
         }
 
         // お酒のカテゴリ（常連さんの好み）
-        const alcoholCategories = (userProfile as any).alcohol_categories;
-        if (alcoholCategories && alcoholCategories.length > 0) {
-          const categoryIds = alcoholCategories
-            .map((category) => category.id || category)
-            .filter(Boolean);
+        const alcoholCategories = (userProfile as Record<string, unknown>).alcohol_categories;
+        if (alcoholCategories && Array.isArray(alcoholCategories) && alcoholCategories.length > 0) {
+          const categoryIds = (alcoholCategories as Record<string, unknown>[])
+            .map((category: Record<string, unknown>) => category.id || category)
+            .filter(Boolean) as string[];
           if (categoryIds.length > 0) {
-            profileFilters.regular_alcohol_preferences = categoryIds;
+            profileFilters.regular_alcohol_preferences = categoryIds.map(id => parseInt(id.toString()));
           }
         }
 
@@ -565,11 +565,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         }
 
         // 食事制限・好み
-        const dietaryPreferences = (userProfile as any).dietary_preferences;
-        if (dietaryPreferences && dietaryPreferences.length > 0) {
-          const dietaryIds = dietaryPreferences
-            .map((pref) => pref.id?.toString() || pref)
-            .filter(Boolean);
+        const dietaryPreferences = (userProfile as Record<string, unknown>).dietary_preferences;
+        if (dietaryPreferences && Array.isArray(dietaryPreferences) && dietaryPreferences.length > 0) {
+          const dietaryIds = (dietaryPreferences as Record<string, unknown>[])
+            .map((pref: Record<string, unknown>) => pref.id?.toString() || pref)
+            .filter(Boolean) as string[];
           if (dietaryIds.length > 0) {
             profileFilters.regular_dietary_preferences = dietaryIds;
           }

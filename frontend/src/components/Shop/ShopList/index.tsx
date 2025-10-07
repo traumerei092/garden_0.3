@@ -60,7 +60,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
             console.log('=== Using Sort API ===');
             console.log('Final sort key:', sortKey);
 
-            const response = await fetchSortedShops(sortKey, filters || {});
+            const response = await fetchSortedShops(sortKey, (filters as Record<string, string | number | boolean | string[]>) || {});
 
             // 親コンポーネントに件数を通知
             if (onShopCountChange) {
