@@ -46,15 +46,15 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
 
     // ManyToManyフィールド - IDを数値に変換して送信（NaNの場合は元の値を使用）
     formValues.shopTypes.forEach(type => {
-        const parsedId = parseInt(type.id, 10);
+        const parsedId = typeof type.id === 'string' ? parseInt(type.id, 10) : type.id;
         formData.append('shop_types', String(isNaN(parsedId) ? type.id : parsedId));
     });
     formValues.shopLayouts.forEach(layout => {
-        const parsedId = parseInt(layout.id, 10);
+        const parsedId = typeof layout.id === 'string' ? parseInt(layout.id, 10) : layout.id;
         formData.append('shop_layouts', String(isNaN(parsedId) ? layout.id : parsedId));
     });
     formValues.shopOptions.forEach(option => {
-        const parsedId = parseInt(option.id, 10);
+        const parsedId = typeof option.id === 'string' ? parseInt(option.id, 10) : option.id;
         formData.append('shop_options', String(isNaN(parsedId) ? option.id : parsedId));
     });
     formValues.paymentMethods.forEach(method => {
