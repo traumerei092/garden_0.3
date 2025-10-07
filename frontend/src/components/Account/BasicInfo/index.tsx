@@ -16,7 +16,7 @@ import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import { getMyAreas } from '@/actions/areas/areaActions';
 import { Area } from '@/types/areas';
 import ChipSelected from '@/components/UI/ChipSelected';
-import { UserInfo, User as UserType } from '@/types/users';
+import { UserInfo, User as UserType, ProfileOptions } from '@/types/users';
 
 interface BasicInfoProps {
   userData?: Record<string, unknown>;
@@ -250,7 +250,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
       {userData && profileOptions && (
         <ProfileCompletion
           userData={userData as unknown as UserType}
-          profileOptions={profileOptions}
+          profileOptions={profileOptions as unknown as ProfileOptions}
           userAtmospherePreferences={userAtmospherePreferences || []}
         />
       )}
