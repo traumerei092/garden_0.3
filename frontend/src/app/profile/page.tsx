@@ -64,7 +64,7 @@ const ProfilePage = () => {
       
       <Tabs items={tabItems} defaultActiveKey="basic">
         <BasicInfo 
-          userData={userData as Record<string, unknown>}
+          userData={userData as unknown as Record<string, unknown>}
           onUserUpdate={handleUserUpdate} 
           profileOptions={profileOptions}
           userAtmospherePreferences={userAtmospherePreferences?.data || []}
