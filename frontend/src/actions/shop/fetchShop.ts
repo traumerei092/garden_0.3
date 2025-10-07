@@ -163,7 +163,8 @@ export async function fetchShopById(id: string): Promise<Shop> {
             budget_weekday_max: shop.budget_weekday_max || null,
             budget_weekend_min: shop.budget_weekend_min || null,
             budget_weekend_max: shop.budget_weekend_max || null,
-            budget_note: shop.budget_note || null
+            budget_note: shop.budget_note || null,
+            created_by: shop.created_by || null
         };
         
         console.log('変換後の店舗データ:', formattedShop);
