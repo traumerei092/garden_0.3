@@ -84,7 +84,7 @@ const ShopDrinks: React.FC<ShopDrinksProps> = ({ shop }) => {
 
   // 高度なフィルタリングとソート
   const { filteredDrinks, drinksByCategory, availableFilters } = useMemo(() => {
-    let filtered = drinks.filter(drink => {
+    const filtered = drinks.filter(drink => {
       // 検索クエリフィルター
       if (activeFilters.searchQuery) {
         const query = activeFilters.searchQuery.toLowerCase();
