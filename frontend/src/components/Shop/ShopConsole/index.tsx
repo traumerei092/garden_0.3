@@ -41,14 +41,15 @@ const ShopConsole = () => {
                         <InputDefault
                             label="keyword"
                             type="text"
-                            onChange={setIsConsoleOpen}
+                            value=""
+                            onChange={() => {}}
                         />
                     </div>
                     <div className={styles.consoleResult}>
                         <p>123,456 件</p>
                         <div className={styles.shopCondition}>
                             <ScrollShadow className={styles.chipWrapper}>
-                                <ChipCondition category="drink">
+                                <ChipCondition category="type">
                                     一人で飲める
                                 </ChipCondition>
                             </ScrollShadow>

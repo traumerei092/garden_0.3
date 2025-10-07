@@ -484,7 +484,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
         <BasicInfoEditModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          user={convertUserInfoToUser(user)}
+          user={convertUserInfoToUser(user) as unknown as UserType}
           onUpdate={(updatedUser) => {
             // User型からUserInfo型への変換
             const userInfo: UserInfo = {
@@ -509,7 +509,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
         <IntroductionEditModal
           isOpen={isIntroductionModalOpen}
           onClose={() => setIsIntroductionModalOpen(false)}
-          user={convertUserInfoToUser(user)}
+          user={convertUserInfoToUser(user) as unknown as UserType}
           onUpdate={(updatedUser) => {
             // User型からUserInfo型への変換
             const userInfo: UserInfo = {

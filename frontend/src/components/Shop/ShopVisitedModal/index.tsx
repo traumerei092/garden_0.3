@@ -206,7 +206,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
 
   if (!isLoggedIn) {
     return (
-      <Modal isOpen={isOpen} onClose={handleClose}>
+      <Modal isOpen={isOpen} onClose={handleClose} title="ログインが必要です">
         <div className={styles.modalContainer}>
           <div className={styles.modalHeader}>
             <h2 className={styles.modalTitle}>ログインが必要です</h2>
@@ -232,7 +232,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={`${shopName} に訪問`}>
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>

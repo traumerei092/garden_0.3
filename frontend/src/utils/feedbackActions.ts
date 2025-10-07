@@ -19,7 +19,7 @@ export function saveShopFeedbackToStorage(shopId: number, feedbackData: Feedback
   };
 
   // atmosphere_scoresを適切な形式に変換
-  feedbackData.atmosphereScores.forEach(score => {
+  (feedbackData.atmosphere_scores as unknown as any[]).forEach(score => {
     mockFeedback.atmosphere_scores[score.indicator_id.toString()] = score.score;
   });
 

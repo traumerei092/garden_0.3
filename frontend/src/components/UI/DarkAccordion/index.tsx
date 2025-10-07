@@ -82,7 +82,7 @@ const DarkAccordion: React.FC<DarkAccordionProps> = ({
         '--nextui-content2': 'rgba(255, 255, 255, 0.05)',
       } as React.CSSProperties}
     >
-      {children}
+      {children as any}
     </Accordion>
   );
 };

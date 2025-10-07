@@ -176,8 +176,8 @@ const VisitedShops = () => {
               const userRelations: { [key: number]: boolean } = {};
               
               if (stats?.user_relations) {
-                stats.user_relations.forEach((relation: Record<string, unknown>) => {
-                  userRelations[relation.relation_type_id as number] = true;
+                (stats.user_relations as unknown as {relation_type_id: number}[]).forEach((relation) => {
+                  userRelations[relation.relation_type_id] = true;
                 });
               }
               
