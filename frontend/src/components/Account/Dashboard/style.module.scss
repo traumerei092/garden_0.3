@@ -65,7 +65,6 @@
 
 .accordionTitle {
   font-size: 14px;
-  font-weight: 500;
   color: #fff;
   display: flex;
   align-items: center;
@@ -697,9 +696,23 @@
   justify-content: center;
   color: #00C2FF;
   transition: transform 0.2s ease;
-  
+
   &.rotated {
     transform: rotate(180deg);
+  }
+}
+
+// 完了状態表示スタイル
+.perfectStatus {
+  h3, span {
+    color: rgba(0, 255, 255, 0.9) !important;
+  }
+}
+
+.incompleteStatus {
+  h3, span {
+    color: rgb(235, 14, 242) !important;
+    font-weight: 600;
   }
 }
 
@@ -887,6 +900,28 @@
 .scoreValue {
   color: #00C2FF;
   font-weight: 500;
+}
+
+.atmosphereChip {
+  background: rgba(0, 194, 255, 0.15) !important;
+  border: 1px solid rgba(0, 194, 255, 0.3) !important;
+  color: #00C2FF !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+
+  span {
+    color: #00C2FF !important;
+  }
+}
+
+.atmosphereChipGradient {
+  background: linear-gradient(45deg, rgba(0, 194, 255, 0.15), rgba(235, 14, 242, 0.15)) !important;
+  border: 1px solid rgba(117, 106, 149, 0.3) !important;
+  color: #fff !important;
+
+  span {
+    color: #fff !important;
+  }
 }
 
 .moreScores {

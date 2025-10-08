@@ -75,23 +75,6 @@ export default function RowSteps({
                 ))}
             </div>
 
-            {/* ステップコンテンツ */}
-            {currentStepData && (
-                <div className={styles.stepContent}>
-                    {currentStepData.description && (
-                        <div className={styles.stepDescription}>
-                            <p>{currentStepData.description}</p>
-                        </div>
-                    )}
-
-                    {currentStepData.content && (
-                        <div className={styles.contentArea}>
-                            {currentStepData.content}
-                        </div>
-                    )}
-                </div>
-            )}
-
             {/* ナビゲーションボタン */}
             {(onNext || onPrevious) && (
                 <div className={styles.navigation}>

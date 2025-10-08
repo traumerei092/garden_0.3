@@ -309,7 +309,7 @@ const ShopEditModal: React.FC<ShopEditModalProps> = ({ shop, onUpdate }) => {
       isOpen={isEditModalOpen}
       onClose={handleClose}
       title="店舗基本情報の編集"
-      size="4xl"
+      size="full"
       footer={renderFooter()}
     >
       <div className={styles.modalContent}>
@@ -355,7 +355,7 @@ const ShopEditForm: React.FC<ShopEditFormProps> = ({ control, errors, options, b
   return (
     <div className={styles.formSection}>
       <div className={styles.formHeader}>
-        <Sparkles className={styles.headerIcon} size={24} />
+        <Sparkles className={styles.headerIcon} size={24} strokeWidth={1} />
         <h3 className={styles.formTitle}>基本情報を更新</h3>
         <p className={styles.formSubtitle}>店舗の最新情報を入力してください</p>
       </div>

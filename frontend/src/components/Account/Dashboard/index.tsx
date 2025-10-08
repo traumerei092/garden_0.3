@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link, Chip } from '@nextui-org/react';
 import DarkAccordion, { DarkAccordionItem } from '@/components/UI/DarkAccordion';
-import { Crown, Star, Heart, Eye, MessageSquare, Clock, ChevronRight, ChevronDown, ChevronUp, BarChart3, Tag, ChartBar, HeartHandshake, ClipboardList } from 'lucide-react';
-import { 
-  fetchDashboardSummary, 
-  fetchViewHistory, 
-  fetchReviewHistory, 
+import { Crown, Star, Heart, Eye, MessageSquare, Clock, ChevronRight, ChevronDown, ChevronUp, BarChart3, Tag, HeartHandshake, ClipboardList } from 'lucide-react';
+import {
+  fetchDashboardSummary,
+  fetchViewHistory,
+  fetchReviewHistory,
   fetchRecentActivity,
   fetchAtmosphereFeedbackHistory,
   fetchTagReactionHistory,
@@ -19,6 +19,9 @@ import {
   type AtmosphereFeedbackHistoryItem,
   type TagReactionHistoryItem,
 } from '@/actions/profile/fetchDashboardData';
+import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
+import { getScoreText } from '@/utils/atmosphere';
+import { AtmosphereIndicator } from '@/types/users';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import styles from './style.module.scss';
@@ -35,7 +38,8 @@ const Dashboard = () => {
   const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
   const [atmosphereFeedbackHistory, setAtmosphereFeedbackHistory] = useState<AtmosphereFeedbackHistoryItem[]>([]);
   const [tagReactionHistory, setTagReactionHistory] = useState<TagReactionHistoryItem[]>([]);
-  
+  const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
+
   // Expandable sections states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
@@ -45,13 +49,14 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
 
-      const [summaryData, viewData, reviewData, activityData, atmosphereData, tagData] = await Promise.all([
+      const [summaryData, viewData, reviewData, activityData, atmosphereData, tagData, indicatorsResponse] = await Promise.all([
         fetchDashboardSummary(),
         fetchViewHistory(220),
-        fetchReviewHistory(20), 
+        fetchReviewHistory(20),
         fetchRecentActivity(20),
         fetchAtmosphereFeedbackHistory(20),
-        fetchTagReactionHistory(20)
+        fetchTagReactionHistory(20),
+        fetchAtmosphereIndicators()
       ]);
 
       setSummary(summaryData);
@@ -60,6 +65,10 @@ const Dashboard = () => {
       setRecentActivity(activityData);
       setAtmosphereFeedbackHistory(atmosphereData);
       setTagReactionHistory(tagData);
+
+      if (indicatorsResponse.success) {
+        setAtmosphereIndicators(indicatorsResponse.data || []);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
       setError('データの読み込みに失敗しました');
@@ -78,13 +87,32 @@ const Dashboard = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes}分前`;
     } else if (diffInMinutes < 1440) {
       return `${Math.floor(diffInMinutes / 60)}時間前`;
     } else {
       return `${Math.floor(diffInMinutes / 1440)}日前`;
+    }
+  };
+
+  // Helper function to get atmosphere indicator by ID
+  const getAtmosphereIndicator = (indicatorId: string) => {
+    return atmosphereIndicators.find(indicator => indicator.id.toString() === indicatorId);
+  };
+
+  // Helper function to get atmosphere score color
+  const getAtmosphereScoreColor = (score: number): string => {
+    if (score === 0) {
+      return 'gradient'; // グラデーション用の特別な値
+    } else if (score === 1 || score === 2) {
+      return 'rgb(235, 14, 242)'; // ピンク
+    } else if (score === -1 || score === -2) {
+      return 'rgb(0, 198, 255)'; // シアン
+    } else {
+      // その他のスコア値の場合はデフォルト
+      return 'rgb(0, 198, 255)'; // シアン
     }
   };
 
@@ -158,7 +186,7 @@ const Dashboard = () => {
               <Crown size={18} fill='#00ffff' strokeWidth={0}/>
             </div>
             <div className={styles.statInfo}>
-              <h3 className={styles.statValue}>行きつけの店舗数：
+              <h3 className={styles.statValue}>サードプレイス：
                 <span className={styles.statFavoriteCount}>{summary?.favorite_shops_count || 0}</span>
               </h3>
             </div>
@@ -178,8 +206,12 @@ const Dashboard = () => {
                   key="welcome"
                   aria-label="ウェルカム状況"
                   startContent={<HeartHandshake size={16} strokeWidth={1} className={styles.accordionIcon} />}
-                  title={`行きつけの店舗：${summary.favorite_shops_count}件　そのうち${summary.total_welcome_count}件でウェルカム済み`}
-                  className={styles.accordionItem}
+                  title={
+                    summary.total_welcome_count === summary.favorite_shops_count
+                      ? "素晴らしい！全てのサードプレイスでウェルカムしてます。"
+                      : `サードプレイス：${summary.favorite_shops_count}件　${summary.favorite_shops_count - summary.total_welcome_count}件でウェルカムができていません`
+                  }
+                  className={`${styles.accordionItem} ${summary.total_welcome_count === summary.favorite_shops_count ? styles.perfectStatus : styles.incompleteStatus}`}
                 >
                   <div className={styles.shopList}>
                     {summary.favorite_shops_details.map(shop => (
@@ -203,79 +235,6 @@ const Dashboard = () => {
                   </div>
                 </DarkAccordionItem>
 
-                <DarkAccordionItem
-                  key="atmosphere-gap"
-                  aria-label="雰囲気ギャップ分析"
-                  startContent={<ChartBar size={16} strokeWidth={1} className={styles.accordionIcon} />}
-                  title="あなたの好みと実際のギャップ"
-                  className={styles.accordionItem}
-                >
-                  <div className={styles.atmosphereComparisonNew}>
-                    <div className={styles.comparisonGrid}>
-                      <div className={styles.comparisonColumn}>
-                        <h4 className={styles.sectionHeading}>設定した好みの雰囲気</h4>
-                        <div className={styles.atmosphereGrid}>
-                          {Object.entries(summary.user_atmosphere_preferences || {}).map(([indicatorId, score]) => {
-                            const safeScore = typeof score === 'number' ? score : 0;
-                            const intensity = Math.abs(safeScore) / 2;
-                            const isPositive = safeScore > 0;
-                            return (
-                              <div key={indicatorId} className={styles.atmosphereItem}>
-                                <div className={styles.atmosphereLabel}>指標{indicatorId}</div>
-                                <div 
-                                  className={`${styles.atmosphereIndicator} ${isPositive ? styles.positive : styles.negative}`}
-                                  style={{ 
-                                    opacity: Math.max(0.3, intensity),
-                                    transform: `scale(${0.8 + intensity * 0.4})`
-                                  }}
-                                >
-                                  {safeScore > 0 ? '+' : ''}{safeScore}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      
-                      <div className={styles.comparisonColumn}>
-                        <h4 className={styles.sectionHeading}>行きつけの店舗の平均</h4>
-                        <div className={styles.atmosphereGrid}>
-                          {Object.entries(summary.favorite_shops_atmosphere_average || {}).map(([indicatorId, score]) => {
-                            const safeScore = typeof score === 'number' ? score : 0;
-                            const intensity = Math.abs(safeScore) / 2;
-                            const isPositive = safeScore > 0;
-                            const userScore = summary.user_atmosphere_preferences?.[indicatorId] || 0;
-                            const gap = Math.abs(safeScore - userScore);
-                            const hasLargeGap = gap > 1;
-                            return (
-                              <div key={indicatorId} className={styles.atmosphereItem}>
-                                <div className={styles.atmosphereLabel}>
-                                  指標{indicatorId}
-                                  {hasLargeGap && <span className={styles.gapWarning}>⚠️</span>}
-                                </div>
-                                <div 
-                                  className={`${styles.atmosphereIndicator} ${isPositive ? styles.positive : styles.negative} ${hasLargeGap ? styles.hasGap : ''}`}
-                                  style={{ 
-                                    opacity: Math.max(0.3, intensity),
-                                    transform: `scale(${0.8 + intensity * 0.4})`
-                                  }}
-                                >
-                                  {safeScore > 0 ? '+' : ''}{safeScore.toFixed(1)}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className={styles.gapInsight}>
-                      <p className={styles.insightText}>
-                        💡 ⚠️マークがある項目は大きなギャップあり！新しい発見のチャンスかも
-                      </p>
-                    </div>
-                  </div>
-                </DarkAccordionItem>
               </DarkAccordion>
             </div>
           )}
@@ -308,8 +267,12 @@ const Dashboard = () => {
                   key="feedback-status"
                   aria-label="フィードバック状況"
                   startContent={<ClipboardList size={16} strokeWidth={1} className={styles.accordionIcon} />}
-                  title={`雰囲気フィードバック完了率: ${Math.round(((summary.visited_shops_count - summary.visited_without_feedback_count) / summary.visited_shops_count) * 100)}%`}
-                  className={styles.accordionItem}
+                  title={
+                    summary.visited_without_feedback_count === 0
+                      ? "素晴らしい！全ての店舗でフィードバック済みです。"
+                      : `行った店舗：${summary.visited_shops_count}件　${summary.visited_without_feedback_count}件でフィードバックができていません`
+                  }
+                  className={`${styles.accordionItem} ${summary.visited_without_feedback_count === 0 ? styles.perfectStatus : styles.incompleteStatus}`}
                 >
                   <div className={styles.feedbackStats}>
                     <div className={styles.progressBar}>
@@ -522,74 +485,105 @@ const Dashboard = () => {
             </div>
             <h3 className={styles.sectionTitle}>雰囲気フィードバック履歴</h3>
           </div>
-          
-          <div className={styles.previewList}>
-            {atmosphereFeedbackHistory.length > 0 ? (
-              atmosphereFeedbackHistory.slice(0, 3).map(item => (
+
+          {!expandedSections.atmosphere ? (
+            <div className={styles.previewList}>
+              {atmosphereFeedbackHistory.length > 0 ? (
+                atmosphereFeedbackHistory.slice(0, 3).map(item => (
+                  <div key={item.id} className={styles.atmosphereItem}>
+                    <div className={styles.atmosphereHeader}>
+                      <Link href={`/shops/${item.shop_id}`} className={styles.atmosphereShop}>{item.shop_name}</Link>
+                      <p className={styles.atmosphereTime}>{formatTimeAgo(item.created_at)}</p>
+                    </div>
+                    <div className={styles.atmosphereScores}>
+                      {Object.entries(item.atmosphere_scores).slice(0, 2).map(([indicatorId, score]) => {
+                        const indicator = getAtmosphereIndicator(indicatorId);
+                        const scoreText = indicator ?
+                          getScoreText(score, indicator.description_left, indicator.description_right) :
+                          `スコア: ${score}`;
+                        const scoreColor = getAtmosphereScoreColor(score);
+                        const chipClassName = scoreColor === 'gradient'
+                          ? `${styles.atmosphereChip} ${styles.atmosphereChipGradient}`
+                          : styles.atmosphereChip;
+
+                        return (
+                          <Chip
+                            key={indicatorId}
+                            size="sm"
+                            className={chipClassName}
+                            style={scoreColor !== 'gradient' ? {
+                              background: `${scoreColor}15 !important`,
+                              border: `1px solid ${scoreColor}30 !important`,
+                              color: `${scoreColor} !important`
+                            } : {}}
+                          >
+                            <span style={scoreColor !== 'gradient' ? { color: `${scoreColor} !important` } : {}}>
+                              {indicator?.name || `指標${indicatorId}`}: {scoreText}
+                            </span>
+                          </Chip>
+                        );
+                      })}
+                      {Object.keys(item.atmosphere_scores).length > 2 && (
+                        <span className={styles.moreScores}>+{Object.keys(item.atmosphere_scores).length - 2}</span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyState}>
+                  <p>まだ雰囲気フィードバックがありません</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.scrollableList}>
+              {atmosphereFeedbackHistory.map(item => (
                 <div key={item.id} className={styles.atmosphereItem}>
                   <div className={styles.atmosphereHeader}>
                     <Link href={`/shops/${item.shop_id}`} className={styles.atmosphereShop}>{item.shop_name}</Link>
                     <p className={styles.atmosphereTime}>{formatTimeAgo(item.created_at)}</p>
                   </div>
                   <div className={styles.atmosphereScores}>
-                    {Object.entries(item.atmosphere_scores).slice(0, 3).map(([key, value]) => (
-                      <div key={key} className={styles.scoreChip}>
-                        <span className={styles.scoreValue}>{value}</span>
-                      </div>
-                    ))}
-                    {Object.keys(item.atmosphere_scores).length > 3 && (
-                      <span className={styles.moreScores}>+{Object.keys(item.atmosphere_scores).length - 3}</span>
-                    )}
+                    {Object.entries(item.atmosphere_scores).map(([indicatorId, score]) => {
+                      const indicator = getAtmosphereIndicator(indicatorId);
+                      const scoreText = indicator ?
+                        getScoreText(score, indicator.description_left, indicator.description_right) :
+                        `スコア: ${score}`;
+                      const scoreColor = getAtmosphereScoreColor(score);
+                      const chipClassName = scoreColor === 'gradient'
+                        ? `${styles.atmosphereChip} ${styles.atmosphereChipGradient}`
+                        : styles.atmosphereChip;
+
+                      return (
+                        <Chip
+                          key={indicatorId}
+                          size="sm"
+                          className={chipClassName}
+                          style={scoreColor !== 'gradient' ? {
+                            background: `${scoreColor}15 !important`,
+                            border: `1px solid ${scoreColor}30 !important`,
+                            color: `${scoreColor} !important`
+                          } : {}}
+                        >
+                          <span style={scoreColor !== 'gradient' ? { color: `${scoreColor} !important` } : {}}>
+                            {indicator?.name || `指標${indicatorId}`}: {scoreText}
+                          </span>
+                        </Chip>
+                      );
+                    })}
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <p>まだ雰囲気フィードバックがありません</p>
-              </div>
-            )}
-          </div>
-          
+              ))}
+            </div>
+          )}
+
           {atmosphereFeedbackHistory.length > 3 && (
-            <>
-              {!expandedSections.atmosphere ? (
-                <button 
-                  className={styles.expandButton}
-                  onClick={() => toggleSection('atmosphere')}
-                >
-                  <ChevronDown size={20} strokeWidth={1} />
-                </button>
-              ) : (
-                <>
-                  <div className={styles.scrollableList}>
-                    {atmosphereFeedbackHistory.slice(3).map(item => (
-                      <div key={item.id} className={styles.atmosphereItem}>
-                        <div className={styles.atmosphereHeader}>
-                          <Link href={`/shops/${item.shop_id}`} className={styles.atmosphereShop}>{item.shop_name}</Link>
-                          <p className={styles.atmosphereTime}>{formatTimeAgo(item.created_at)}</p>
-                        </div>
-                        <div className={styles.atmosphereScores}>
-                          {Object.entries(item.atmosphere_scores).slice(0, 3).map(([key, value]) => (
-                            <div key={key} className={styles.scoreChip}>
-                              <span className={styles.scoreValue}>{value}</span>
-                            </div>
-                          ))}
-                          {Object.keys(item.atmosphere_scores).length > 3 && (
-                            <span className={styles.moreScores}>+{Object.keys(item.atmosphere_scores).length - 3}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button 
-                    className={styles.collapseButton}
-                    onClick={() => toggleSection('atmosphere')}
-                  >
-                    <ChevronUp size={20} strokeWidth={1} />
-                  </button>
-                </>
-              )}
-            </>
+            <button
+              className={expandedSections.atmosphere ? styles.collapseButton : styles.expandButton}
+              onClick={() => toggleSection('atmosphere')}
+            >
+              {expandedSections.atmosphere ? <ChevronUp size={20} strokeWidth={1} /> : <ChevronDown size={20} strokeWidth={1} />}
+            </button>
           )}
         </div>
         
@@ -602,9 +596,31 @@ const Dashboard = () => {
             <h3 className={styles.sectionTitle}>印象タグ履歴</h3>
           </div>
           
-          <div className={styles.previewList}>
-            {tagReactionHistory.length > 0 ? (
-              tagReactionHistory.slice(0, 3).map(item => (
+          {!expandedSections.tags ? (
+            <div className={styles.previewList}>
+              {tagReactionHistory.length > 0 ? (
+                tagReactionHistory.slice(0, 3).map(item => (
+                  <div key={item.id} className={styles.tagItem}>
+                    <div className={styles.tagHeader}>
+                      <Link href={`/shops/${item.shop_id}`} className={styles.tagShop}>{item.shop_name}</Link>
+                      <p className={styles.tagTime}>{formatTimeAgo(item.reacted_at)}</p>
+                    </div>
+                    <div className={styles.tagContent}>
+                      <Chip size="sm" className={styles.tagChip}>
+                        {item.tag_text}
+                      </Chip>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.emptyState}>
+                  <p>まだタグ反応がありません</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.scrollableList}>
+              {tagReactionHistory.map(item => (
                 <div key={item.id} className={styles.tagItem}>
                   <div className={styles.tagHeader}>
                     <Link href={`/shops/${item.shop_id}`} className={styles.tagShop}>{item.shop_name}</Link>
@@ -616,49 +632,17 @@ const Dashboard = () => {
                     </Chip>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className={styles.emptyState}>
-                <p>まだタグ反応がありません</p>
-              </div>
-            )}
-          </div>
-          
+              ))}
+            </div>
+          )}
+
           {tagReactionHistory.length > 3 && (
-            <>
-              {!expandedSections.tags ? (
-                <button 
-                  className={styles.expandButton}
-                  onClick={() => toggleSection('tags')}
-                >
-                  <ChevronDown size={20} strokeWidth={1} />
-                </button>
-              ) : (
-                <>
-                  <div className={styles.scrollableList}>
-                    {tagReactionHistory.slice(3).map(item => (
-                      <div key={item.id} className={styles.tagItem}>
-                        <div className={styles.tagHeader}>
-                          <Link href={`/shops/${item.shop_id}`} className={styles.tagShop}>{item.shop_name}</Link>
-                          <p className={styles.tagTime}>{formatTimeAgo(item.reacted_at)}</p>
-                        </div>
-                        <div className={styles.tagContent}>
-                          <Chip size="sm" className={styles.tagChip}>
-                            {item.tag_text}
-                          </Chip>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button 
-                    className={styles.collapseButton}
-                    onClick={() => toggleSection('tags')}
-                  >
-                    <ChevronUp size={20} strokeWidth={1} />
-                  </button>
-                </>
-              )}
-            </>
+            <button
+              className={expandedSections.tags ? styles.collapseButton : styles.expandButton}
+              onClick={() => toggleSection('tags')}
+            >
+              {expandedSections.tags ? <ChevronUp size={20} strokeWidth={1} /> : <ChevronDown size={20} strokeWidth={1} />}
+            </button>
           )}
         </div>
       </div>
