@@ -9,6 +9,7 @@ import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/l
 import { SearchFilters } from '@/types/search';
 import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { useShopActions } from '@/hooks/useShopActions';
+import { fetchWelcomeData } from "@/actions/shop/welcome";
 import styles from './style.module.scss';
 import LinkDefault from "@/components/UI/LinkDefault";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -31,6 +32,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
     const [error, setError] = useState<string | null>(null);
     const [isLocationLoading, setIsLocationLoading] = useState(false);
     const [distances, setDistances] = useState<{ [key: number]: string | null }>({});
+    const [welcomeCounts, setWelcomeCounts] = useState<{ [key: number]: number }>({});
     const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
@@ -106,12 +108,13 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
         loadShops();
     }, [searchFilters, sortKey]);
 
-    // 店舗データが更新されたら距離を計算する
+    // 店舗データが更新されたら距離とウェルカム数を取得する
     useEffect(() => {
         console.log('shops state更新:', shops);
         if (shops && shops.length > 0) {
-            console.log('店舗データが存在するため、距離計算を実行します');
+            console.log('店舗データが存在するため、距離計算とウェルカム数取得を実行します');
             loadLocationData();
+            loadWelcomeData();
         }
     }, [shops]); // shopsの変更を監視
 
@@ -168,6 +171,42 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
         }
     };
 
+    // ウェルカム数を取得
+    const loadWelcomeData = async () => {
+        console.log('loadWelcomeData開始');
+        if (!shops.length) {
+            console.log('店舗データが空のため、ウェルカム数取得をスキップします');
+            return;
+        }
+
+        try {
+            const newWelcomeCounts: { [key: number]: number } = {};
+
+            for (const shop of shops) {
+                console.log('店舗のウェルカム数を取得中:', {
+                    shopId: shop.id,
+                    shopName: shop.name
+                });
+
+                const welcomeData = await fetchWelcomeData(shop.id);
+                if (welcomeData) {
+                    newWelcomeCounts[shop.id] = welcomeData.welcome_count;
+                    console.log('ウェルカム数取得結果:', {
+                        shopName: shop.name,
+                        welcomeCount: welcomeData.welcome_count
+                    });
+                } else {
+                    newWelcomeCounts[shop.id] = 0;
+                }
+            }
+
+            console.log('取得されたウェルカム数一覧:', newWelcomeCounts);
+            setWelcomeCounts(newWelcomeCounts);
+        } catch (error) {
+            console.error('ウェルカム数の取得に失敗しました:', error);
+        }
+    };
+
     if (isLoading) {
         return <div><Spinner className={styles.loading}/></div>;
     }
@@ -203,7 +242,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
                             area={`${shop.prefecture} ${shop.city}`}
                             imageUrl={shop.images && shop.images.length > 0 ? shop.images[0].image_url : null}
                             distance={distances[shop.id] || undefined}
-                            matchRate={75}
+                            welcomeCount={welcomeCounts[shop.id] || 0}
                             favoriteRelation={relations.favorite}
                             visitedRelation={relations.visited}
                             interestedRelation={relations.interested}
@@ -226,7 +265,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
                             shopDetail={`/shops/${shop.id}`}
                             distance={distances[shop.id]}
                             tags={shop.tags}
-                            matchRate={75}
+                            welcomeCount={welcomeCounts[shop.id] || 0}
                             shopStats={stats}
                             onRelationToggle={(relationTypeId) => handleRelationToggle(shop.id, relationTypeId)}
                         />

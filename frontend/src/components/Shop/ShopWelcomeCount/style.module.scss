@@ -1,0 +1,196 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcomeIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.countNumber {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+/* Card variant - with container and text */
+.card {
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 140px;
+  backdrop-filter: blur(10px);
+  gap: 8px;
+
+  .welcomeIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .countNumber {
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+
+.welcomeContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.welcomeText {
+  text-align: center;
+}
+
+.countText {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* Grid variant - minimal */
+.grid {
+  padding: 8px;
+  min-width: 50px;
+
+  .welcomeIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .countNumber {
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+}
+
+/* ウェルカム数によるカラーリング */
+.neutral {
+  .welcomeIcon {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .countNumber {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.low {
+  .welcomeIcon {
+    color: rgba(0, 255, 255, 0.7);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.3));
+  }
+
+  .countNumber {
+    color: #ffffff;
+  }
+}
+
+.medium {
+  .welcomeIcon {
+    color: rgba(0, 255, 255, 0.9);
+    filter: drop-shadow(0 0 12px rgba(0, 255, 255, 0.5));
+  }
+
+  .countNumber {
+    color: #ffffff;
+  }
+}
+
+.high {
+  .welcomeIcon {
+    color: #00ffff;
+    filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.7));
+    animation: welcomePulse 2s ease-in-out infinite;
+  }
+
+  .countNumber {
+    color: #ffffff;
+    font-weight: 800;
+  }
+}
+
+/* アニメーション */
+@keyframes welcomePulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.7));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 24px rgba(0, 255, 255, 0.9));
+    transform: scale(1.05);
+  }
+}
+
+/* ホバー効果 */
+.container:hover {
+  .low .welcomeIcon,
+  .medium .welcomeIcon,
+  .high .welcomeIcon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8));
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .card {
+    padding: 8px;
+    min-width: 60px;
+
+    .welcomeIcon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .countNumber {
+      font-size: 0.875rem;
+    }
+  }
+
+  .grid {
+    padding: 4px;
+    min-width: 32px;
+
+    .welcomeIcon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .countNumber {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+  .container {
+    transition: none;
+  }
+
+  .welcomeIcon {
+    transition: none;
+    animation: none !important;
+    padding: 0;
+  }
+
+  .high .welcomeIcon {
+    animation: none;
+  }
+}

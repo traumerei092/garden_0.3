@@ -13,7 +13,7 @@ import {
 import styles from './style.module.scss';
 import ChipCondition from "@/components/UI/ChipCondition";
 import ShopImpressionTag from "@/components/Shop/ShopImpressionTag";
-import ShopMatchRate from "@/components/Shop/ShopMatchRate";
+import ShopWelcomeCount from "@/components/Shop/ShopWelcomeCount";
 import ShopActionButton from "@/components/Shop/ShopActionButton";
 import { MapPin } from 'lucide-react';
 import { ShopImage, ShopTag, ShopStats, RelationType } from '@/types/shops';
@@ -30,7 +30,7 @@ type Props = {
     shopDetail: string;
     distance: string | null;
     tags: ShopTag[];
-    matchRate?: number;
+    welcomeCount?: number;
     shopStats?: ShopStats;
     onActionClick?: (actionType: string) => void;
     onRelationToggle?: (relationTypeId: number) => void;
@@ -48,7 +48,7 @@ const ShopCard = ({
     shopDetail, 
     distance, 
     tags,
-    matchRate = 75,
+    welcomeCount = 0,
     shopStats,
     onActionClick,
     onRelationToggle
@@ -216,9 +216,9 @@ const ShopCard = ({
                         
                     </div>
                     
-                    {/* マッチ率表示 */}
-                    <div className={styles.matchRateWrapper}>
-                        <ShopMatchRate rate={matchRate} />
+                    {/* ウェルカム数表示 */}
+                    <div className={styles.welcomeCountWrapper}>
+                        <ShopWelcomeCount count={welcomeCount} variant="card" />
                     </div>
                 </div>
             </CardBody>

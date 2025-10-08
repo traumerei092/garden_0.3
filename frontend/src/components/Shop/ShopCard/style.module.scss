@@ -100,6 +100,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  min-width: 0; /* flex itemでのoverflow対策 */
+  max-width: calc(100% - 180px); /* welcomeCountWrapper分を除く */
 }
 
 .shopHeader {
@@ -212,12 +214,13 @@
   margin-top: auto;
 }
 
-.matchRateWrapper {
+.welcomeCountWrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-width: 120px;
+  width: 170px; /* 固定幅に変更 */
+  flex-shrink: 0; /* 縮小しないように設定 */
   padding-left: 1rem;
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -245,7 +248,7 @@
     gap: 1rem;
   }
   
-  .matchRateWrapper {
+  .welcomeCountWrapper {
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-left: 0;

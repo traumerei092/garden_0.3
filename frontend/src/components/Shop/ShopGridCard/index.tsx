@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin } from 'lucide-react';
 import { Card, CardBody } from '@nextui-org/react';
-import ShopMatchRate from '@/components/Shop/ShopMatchRate';
+import ShopWelcomeCount from '@/components/Shop/ShopWelcomeCount';
 import ShopActionButton from '@/components/Shop/ShopActionButton';
 import { RelationType } from '@/types/shops';
 import styles from './style.module.scss';
@@ -15,7 +15,7 @@ interface ShopGridCardProps {
   area: string;
   imageUrl?: string | null;
   distance?: string;
-  matchRate?: number;
+  welcomeCount?: number;
   onClick?: () => void;
   favoriteRelation?: RelationType;
   visitedRelation?: RelationType;
@@ -30,7 +30,7 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
   area,
   imageUrl,
   distance,
-  matchRate = 75,
+  welcomeCount = 0,
   onClick,
   favoriteRelation,
   visitedRelation,
@@ -137,12 +137,12 @@ const ShopGridCard: React.FC<ShopGridCardProps> = ({
             </div>
           </div>
           
-          <div className={styles.matchRateContainer}>
-            <ShopMatchRate 
-              rate={matchRate} 
-              showTitle={false} 
-              size="sm"
-              className={styles.compactMatchRate}
+          <div className={styles.welcomeCountContainer}>
+            <ShopWelcomeCount
+              count={welcomeCount}
+              showTitle={false}
+              variant="grid"
+              className={styles.compactWelcomeCount}
             />
           </div>
         </div>

@@ -128,7 +128,7 @@ const FavoritePage: React.FC = () => {
                   area={shop.area}
                   imageUrl={shop.image_url}
                   distance="1.2km"
-                  matchRate={75}
+                  welcomeCount={0}
                   favoriteRelation={relations.favorite}
                   visitedRelation={relations.visited}
                   interestedRelation={relations.interested}

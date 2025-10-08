@@ -188,13 +188,13 @@
   }
 }
 
-.matchRateContainer {
+.welcomeCountContainer {
   flex-shrink: 0;
 }
 
-.compactMatchRate {
-  // Liquid Glass スタイルでマッチ率を表示
-  background: linear-gradient(135deg, 
+.compactWelcomeCount {
+  // Liquid Glass スタイルでウェルカム数を表示
+  background: linear-gradient(135deg,
     rgba(0, 255, 255, 0.15) 0%,
     rgba(0, 255, 255, 0.08) 50%,
     rgba(0, 255, 255, 0.05) 100%
