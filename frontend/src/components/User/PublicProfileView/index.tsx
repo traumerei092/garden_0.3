@@ -527,7 +527,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                 name={shop.name}
                 area={shop.area}
                 imageUrl={shop.image_url}
-                matchRate={75}
+                welcomeCount={0}
                 favoriteRelation={favoriteRelation}
                 visitedRelation={visitedRelation}
                 interestedRelation={interestedRelation}
@@ -593,7 +593,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
                 name={shop.name}
                 area={shop.area}
                 imageUrl={shop.image_url}
-                matchRate={75}
+                welcomeCount={0}
                 favoriteRelation={favoriteRelation}
                 visitedRelation={visitedRelation}
                 interestedRelation={interestedRelation}
