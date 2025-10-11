@@ -14,8 +14,7 @@ import { AtmosphereIndicator } from '@/types/search';
 import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
 import { toggleTagReaction } from '@/actions/shop/relation';
 import { submitShopFeedback, FeedbackData } from '@/actions/shop/feedback';
-import { getUserShopFeedbackFromStorage } from '@/utils/feedbackStorage';
-import { saveShopFeedbackToStorage } from '@/utils/feedbackActions';
+import { fetchUserAtmosphereFeedback } from '@/actions/shop/atmosphere';
 import { addImpressionTag } from '@/actions/shop/impressionTag';
 
 interface ShopFeedbackModalProps {
@@ -53,9 +52,9 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
     try {
       console.log('フィードバック取得開始 - shopId:', shop.id);
 
-      // まずlocalStorageから取得を試行
-      const existingFeedback = getUserShopFeedbackFromStorage(shop.id);
-      console.log('localStorage取得結果:', existingFeedback);
+      // APIからユーザーの既存フィードバックを取得
+      const existingFeedback = await fetchUserAtmosphereFeedback(shop.id);
+      console.log('✅ API取得結果:', existingFeedback);
 
       if (existingFeedback && existingFeedback.atmosphere_scores) {
         console.log('atmosphere_scores found:', existingFeedback.atmosphere_scores);
@@ -75,7 +74,9 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
         console.log('existingFeedback:', existingFeedback);
       }
     } catch (error) {
-      console.error('既存フィードバック取得エラー:', error);
+      console.error('❌ APIフィードバック取得エラー:', error);
+      // APIエラーの場合は空の状態で開始
+      setAtmosphereScores({});
     }
   };
 
@@ -178,9 +179,9 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
         await submitShopFeedback(shop.id, feedbackData);
         console.log('雰囲気フィードバック送信完了');
       } catch (error) {
-        // API失敗時はlocalStorageに保存
-        console.log('API失敗のためlocalStorageに保存:', error);
-        saveShopFeedbackToStorage(shop.id, feedbackData);
+        // API失敗時のエラーハンドリング
+        console.error('❌ フィードバック送信API失敗:', error);
+        throw error;
       }
     } catch (error) {
       console.error('雰囲気フィードバック送信エラー:', error);

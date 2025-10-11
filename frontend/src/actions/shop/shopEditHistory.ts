@@ -1,5 +1,5 @@
 
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { ShopEditHistory } from '@/types/shops';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
  */
 export const fetchShopEditHistory = async (shopId: string): Promise<ShopEditHistory[]> => {
   try {
-    const response = await fetchWithAuth(`${API_URL}/shops/${shopId}/history/`);
+    const response = await fetchWithSession(`${API_URL}/shops/${shopId}/history/`);
 
     if (!response.ok) {
       throw new Error('編集履歴の取得に失敗しました');
@@ -30,7 +30,7 @@ export const fetchShopEditHistory = async (shopId: string): Promise<ShopEditHist
  */
 export const evaluateShopEditHistory = async (historyId: number, evaluation: 'GOOD' | 'BAD'): Promise<{ success: boolean; message?: string }> => {
   try {
-    const response = await fetchWithAuth(`${API_URL}/history/${historyId}/evaluate/`, {
+    const response = await fetchWithSession(`${API_URL}/history/${historyId}/evaluate/`, {
       method: 'POST',
       body: JSON.stringify({ evaluation }),
     });

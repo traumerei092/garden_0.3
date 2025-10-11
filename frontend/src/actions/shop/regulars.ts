@@ -10,12 +10,12 @@
  * パラメータ: axis（age_group, atmosphere_preference, usage_scenes, occupation, interests）
  */
 
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 // 常連客スナップショット取得
 export async function fetchRegularsSnapshot(shopId: number) {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regulars/snapshot/`,
       {
         method: 'GET',
@@ -47,7 +47,7 @@ export async function fetchRegularsAnalysis(shopId: number, axis: string) {
 
     console.log('Request URL:', url.toString());
 
-    const response = await fetchWithAuth(url.toString(), {
+    const response = await fetchWithSession(url.toString(), {
       method: 'GET',
       cache: 'no-store'
     });

@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 
 export interface CommonPoint {
   category: string;
@@ -16,7 +16,7 @@ export interface CommonalitiesData {
 
 export const fetchCommonalities = async (shopId: number): Promise<CommonalitiesData> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/commonalities/`,
       {
         method: 'GET',

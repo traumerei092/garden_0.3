@@ -2,11 +2,11 @@ import {
   ShopDrink,
   DrinkMasterData
 } from '@/types/shops'
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth'
+import { fetchWithSession } from '@/app/lib/fetchWithSession'
 
 // 店舗のドリンクメニュー取得
 export const fetchShopDrinks = async (shopId: number): Promise<{ drinks: ShopDrink[] }> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/shop_drinks/?shop_id=${shopId}`)
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/shop_drinks/?shop_id=${shopId}`)
 
   if (!res.ok) {
     throw new Error('Failed to fetch shop drinks')
@@ -58,7 +58,7 @@ export const createShopDrink = async (params: CreateDrinkParams): Promise<ShopDr
   const url = `${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/create_drink/`
   console.log('🚀 Creating drink:', { url, payload })
 
-  const res = await fetchWithAuth(url, {
+  const res = await fetchWithSession(url, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
@@ -79,7 +79,7 @@ export const toggleDrinkReaction = async (
   drinkId: number, 
   reactionType: string = 'like'
 ): Promise<{ status: string; reaction_count: number }> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/toggle_reaction/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/toggle_reaction/`, {
     method: 'POST',
     body: JSON.stringify({ reaction_type: reactionType })
   })
@@ -94,7 +94,7 @@ export const toggleDrinkReaction = async (
 
 // ドリンク詳細取得
 export const fetchShopDrink = async (drinkId: number): Promise<ShopDrink> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/`)
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/`)
 
   if (!res.ok) {
     throw new Error('Failed to fetch shop drink')
@@ -118,7 +118,7 @@ export const updateShopDrink = async (params: UpdateDrinkParams): Promise<ShopDr
     ...(params.drinkStyleId && { drink_style_id: params.drinkStyleId })
   }
 
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${params.drinkId}/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${params.drinkId}/`, {
     method: 'PUT',
     body: JSON.stringify(payload)
   })
@@ -133,7 +133,7 @@ export const updateShopDrink = async (params: UpdateDrinkParams): Promise<ShopDr
 
 // ドリンク削除
 export const deleteShopDrink = async (drinkId: number): Promise<void> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-drinks/${drinkId}/`, {
     method: 'DELETE'
   })
 

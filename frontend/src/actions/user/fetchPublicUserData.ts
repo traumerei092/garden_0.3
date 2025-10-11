@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { UserShop } from '@/actions/shop/fetchUserShops';
 import { ShopReview } from '@/types/shops';
 
@@ -12,7 +12,7 @@ export interface PublicUserReviewsResponse {
 
 export const fetchPublicUserFavoriteShops = async (uid: string): Promise<UserShop[]> => {
   try {
-    const response = await fetchWithAuth(`/user-shop-relations/public/${uid}/favorite_shops/`);
+    const response = await fetchWithSession(`/user-shop-relations/public/${uid}/favorite_shops/`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -28,7 +28,7 @@ export const fetchPublicUserFavoriteShops = async (uid: string): Promise<UserSho
 
 export const fetchPublicUserVisitedShops = async (uid: string): Promise<UserShop[]> => {
   try {
-    const response = await fetchWithAuth(`/user-shop-relations/public/${uid}/visited_shops/`);
+    const response = await fetchWithSession(`/user-shop-relations/public/${uid}/visited_shops/`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,7 +44,7 @@ export const fetchPublicUserVisitedShops = async (uid: string): Promise<UserShop
 
 export const fetchPublicUserReviews = async (uid: string): Promise<ShopReview[]> => {
   try {
-    const response = await fetchWithAuth(`/shop-reviews/public/user/${uid}/`);
+    const response = await fetchWithSession(`/shop-reviews/public/user/${uid}/`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

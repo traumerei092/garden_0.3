@@ -1,10 +1,10 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { UpdateBasicInfoRequest, ApiResponse, User } from '@/types/users';
 
 export const updateBasicInfo = async (data: UpdateBasicInfoRequest): Promise<ApiResponse<User>> => {
   try {
     console.log('updateBasicInfo - Sending data:', data);
-    const response = await fetchWithAuth('/accounts/users/me/', {
+    const response = await fetchWithSession('/accounts/users/me/', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

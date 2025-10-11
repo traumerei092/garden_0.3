@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, DoorOpen, Gamepad2, TrendingUp } from 'lucide-react';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchRegularsSnapshot } from '@/actions/shop/regulars';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
 
@@ -37,19 +37,7 @@ const RegularsSnapshot: React.FC<RegularsSnapshotProps> = ({
     const loadData = async () => {
       try {
         setLoading(true);
-        const response = await fetchWithAuth(
-          `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regulars/snapshot/`,
-          {
-            method: 'GET',
-            cache: 'no-store'
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const snapshotData = await response.json();
+        const snapshotData = await fetchRegularsSnapshot(shopId);
         setData(snapshotData);
       } catch (err) {
         console.error('Failed to fetch regulars snapshot:', err);

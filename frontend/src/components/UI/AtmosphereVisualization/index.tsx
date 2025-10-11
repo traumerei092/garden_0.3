@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
+import { fetchShopAtmosphereAggregate } from '@/actions/shop/atmosphere';
 import {
   getScoreText,
   scoreToRightPercentage,
@@ -58,16 +58,16 @@ const AtmosphereVisualization: React.FC<AtmosphereVisualizationProps> = ({
         setIndicators(indicatorsResult.data);
 
         // アグリゲートデータを取得
-        const aggregateResponse = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_aggregate/`);
-
-        if (aggregateResponse.ok) {
-          const aggregateData = await aggregateResponse.json();
+        try {
+          const aggregateData = await fetchShopAtmosphereAggregate(shopId);
           setAggregate(aggregateData);
-        } else if (aggregateResponse.status === 404) {
-          // アグリゲートデータがない場合（まだフィードバックがない）
-          setAggregate(null);
-        } else {
-          throw new Error('アグリゲートデータの取得に失敗しました');
+        } catch (error: any) {
+          if (error.message.includes('404')) {
+            // アグリゲートデータがない場合（まだフィードバックがない）
+            setAggregate(null);
+          } else {
+            throw new Error('アグリゲートデータの取得に失敗しました');
+          }
         }
 
       } catch (err) {

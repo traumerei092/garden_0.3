@@ -1,5 +1,5 @@
 import { ShopReview, VisitPurpose } from "@/types/shops";
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 
 // 口コミ取得
 export const fetchShopReviews = async (
@@ -14,7 +14,7 @@ export const fetchShopReviews = async (
     query.append('status', filters.status);
   }
 
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/reviews/?${query.toString()}`);
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/reviews/?${query.toString()}`);
 
   if (!res.ok) {
     throw new Error('Failed to fetch reviews');
@@ -28,7 +28,7 @@ export const createShopReview = async (
   comment: string,
   visitPurposeId: number | null
 ): Promise<ShopReview> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/reviews/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/reviews/`, {
     method: 'POST',
     body: JSON.stringify({ comment, visit_purpose_id: visitPurposeId }),
   });
@@ -41,7 +41,7 @@ export const createShopReview = async (
 
 // 口コミのいいね切り替え
 export const toggleReviewLike = async (reviewId: number): Promise<{ status: string; likes_count: number }> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${reviewId}/like/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${reviewId}/like/`, {
     method: 'POST',
   });
 

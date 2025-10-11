@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Input, Button, Link, Textarea } from '@nextui-org/react';
 import { Camera, User, Mail, Lock, MapPin, Edit, Eye, EyeOff, Plus, Sparkle, Star } from 'lucide-react';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
@@ -10,8 +10,7 @@ import PasswordChangeModal from '@/components/Account/PasswordChangeModal';
 import ImageEditModal from '@/components/Account/ImageEditModal';
 import BasicInfoEditModal from '@/components/Account/BasicInfoEditModal';
 import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
-import { useAuthStore } from '@/store/useAuthStore';
-import { getUserClient } from '@/actions/auth/getUserClient';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { useProfileVisibility } from '@/hooks/useProfileVisibility';
 import { getMyAreas } from '@/actions/areas/areaActions';
 import { Area } from '@/types/areas';
@@ -26,9 +25,8 @@ interface BasicInfoProps {
 }
 
 const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtmospherePreferences }) => {
-  // ユーザー情報をストアから取得
-  const user = useAuthStore(state => state.user);
-  const setUser = useAuthStore(state => state.setUser);
+  // ユーザー情報をセッションから取得
+  const { user } = useAuthSession();
   
   // モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -44,39 +42,40 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
   
   // 公開設定フック
   const { visibilitySettings, updateVisibilitySetting } = useProfileVisibility();
+
+  // デバッグ: ユーザーデータの状態確認
+  console.log('🔍 BasicInfo - User data:', {
+    user,
+    hasHeaderImage: !!user?.header_image,
+    hasGender: !!user?.gender,
+    hasBirthdate: !!user?.birthdate,
+    hasMyArea: !!user?.my_area
+  });
   
-  // ユーザー情報を取得
-  useEffect(() => {
-    const fetchUser = async () => {
-      await getUserClient();
-    };
-    
-    if (!user) {
-      fetchUser();
-    }
-  }, [user]);
 
-  // マイエリア情報を取得
-  useEffect(() => {
-    const fetchMyAreas = async () => {
-      setIsLoadingAreas(true);
-      try {
-        const result = await getMyAreas();
-        if (result.success && result.data) {
-          setMyAreas(result.data.my_areas);
-          setPrimaryArea(result.data.primary_area);
-        }
-      } catch (error) {
-        console.error('Failed to fetch my areas:', error);
-      } finally {
-        setIsLoadingAreas(false);
+  // マイエリア情報を取得（memoized）
+  const fetchMyAreas = useCallback(async () => {
+    if (isLoadingAreas) return; // 既に読み込み中の場合は何もしない
+
+    setIsLoadingAreas(true);
+    try {
+      const result = await getMyAreas();
+      if (result.success && result.data) {
+        setMyAreas(result.data.my_areas);
+        setPrimaryArea(result.data.primary_area);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch my areas:', error);
+    } finally {
+      setIsLoadingAreas(false);
+    }
+  }, []); // 依存配列を空にして関数を安定化
 
-    if (user) {
+  useEffect(() => {
+    if (user?.id && !isLoadingAreas) {
       fetchMyAreas();
     }
-  }, [user]);
+  }, [user?.id, fetchMyAreas]); // fetchMyAreasを依存配列に追加
   
   
   // BasicInfo用レコメンドロジック
@@ -121,22 +120,13 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
   };
 
   // ユーザー情報更新ハンドラー
-  const handleUserUpdate = (updatedUser: UserInfo) => {
-    setUser(updatedUser);
-    // ユーザー情報更新後にマイエリア情報も再読み込み
-    const fetchMyAreas = async () => {
-      try {
-        const result = await getMyAreas();
-        if (result.success && result.data) {
-          setMyAreas(result.data.my_areas);
-          setPrimaryArea(result.data.primary_area);
-        }
-      } catch (error) {
-        console.error('Failed to fetch my areas after user update:', error);
-      }
-    };
-    fetchMyAreas();
-  };
+  const handleUserUpdate = useCallback((updatedUser: UserInfo) => {
+    // NextAuth.js will automatically update session on next request
+    // ユーザー情報更新後にマイエリア情報も再読み込み（debounced）
+    setTimeout(() => {
+      fetchMyAreas();
+    }, 300); // 300ms遅延を追加してAPI呼び出しを安定化
+  }, [fetchMyAreas]);
 
   // UserInfo型からUser型への変換（編集モーダル用）
   const convertUserInfoToUser = (userInfo: UserInfo): Record<string, unknown> => {

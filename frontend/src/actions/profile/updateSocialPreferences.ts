@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { User } from '@/types/users';
 
 interface UpdateSocialPreferencesResponse {
@@ -9,7 +9,7 @@ interface UpdateSocialPreferencesResponse {
 
 export async function updateSocialPreferences(socialPreferences: number[]): Promise<UpdateSocialPreferencesResponse> {
   try {
-    const response = await fetchWithAuth('/accounts/update-social-preferences/', {
+    const response = await fetchWithSession('/accounts/update-social-preferences/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

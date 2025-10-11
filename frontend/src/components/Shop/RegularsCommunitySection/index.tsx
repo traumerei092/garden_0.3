@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Users, TrendingUp } from 'lucide-react';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchRegularsSnapshot } from '@/actions/shop/regulars';
 import { fetchCommonalities, CommonalitiesData } from '@/actions/shop/commonalities';
 import { fetchRegularCommunityStats, RegularCommunityStatsResponse, formatPercentage } from '@/actions/shop/regularCommunityStats';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import styles from './style.module.scss';
 
@@ -42,7 +42,7 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
   const [commonalitiesData, setCommonalitiesData] = useState<CommonalitiesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
 
   // データ変換ユーティリティ
   const convertToPercentage = (count: number, total: number): number => {
@@ -76,25 +76,15 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
       setError(null);
 
       // 常連データの取得
-      const regularsResponse = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regulars/snapshot/`,
-        {
-          method: 'GET',
-          cache: 'no-store'
-        }
-      );
-
-      if (!regularsResponse.ok) {
-        throw new Error(`HTTP error! status: ${regularsResponse.status}`);
-      }
-
-      const regularsSnapshot = await regularsResponse.json();
+      const regularsSnapshot = await fetchRegularsSnapshot(shopId);
       setRegularsData(regularsSnapshot);
 
       // 常連コミュニティ統計の取得
       try {
         const statsData = await fetchRegularCommunityStats(shopId);
         setCommunityStats(statsData);
+        console.log('🏆 Community stats received:', statsData);
+        console.log('🤝 Commonalities from community stats:', statsData.commonalities);
       } catch (err) {
         console.error('Community stats fetch failed:', err);
         setCommunityStats(null);
@@ -103,13 +93,17 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
       // 共通点データの取得（ユーザーがログインしている場合のみ）
       if (user?.id) {
         try {
+          console.log('🔍 Fetching commonalities for shopId:', shopId, 'userId:', user.id);
           const commonalitiesSnapshot = await fetchCommonalities(shopId);
+          console.log('✅ Commonalities data received:', commonalitiesSnapshot);
           setCommonalitiesData(commonalitiesSnapshot);
         } catch (err) {
-          console.error('Commonalities fetch failed:', err);
+          console.error('❌ Commonalities fetch failed:', err);
           // 共通点データの取得に失敗しても常連データは表示する
           setCommonalitiesData(null);
         }
+      } else {
+        console.log('🔍 No user.id, skipping commonalities fetch. User:', user);
       }
 
     } catch (err) {
@@ -118,17 +112,17 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [shopId, user]);
+  }, [shopId, user?.id]); // user?.idを依存配列に追加
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [loadData]); // loadDataのみに依存
 
   useEffect(() => {
     if (refreshTrigger !== undefined) {
       loadData();
     }
-  }, [refreshTrigger, loadData]);
+  }, [refreshTrigger, loadData]); // loadDataを追加
 
   if (loading) {
     return (

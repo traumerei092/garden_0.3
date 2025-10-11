@@ -7,8 +7,8 @@ import AtmosphereInput, { AtmosphereScores } from '@/components/UI/AtmosphereInp
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
-import { useAuthStore } from '@/store/useAuthStore';
+import { fetchUserAtmosphereFeedback, submitAtmosphereFeedback } from '@/actions/shop/atmosphere';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
 
 interface ShopVisitedModalProps {
@@ -41,8 +41,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditingAtmosphere, setIsEditingAtmosphere] = useState(false);
   
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user, session, isLoggedIn } = useAuthSession();
 
   // 既存の雰囲気フィードバックを取得
   useEffect(() => {
@@ -51,21 +50,13 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
         try {
           setLoading(true);
           setError(null);
-          
-          const response = await fetchWithAuth(`/shops/${shopId}/my_atmosphere_feedback/`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            setInitialAtmosphereScores(data.atmosphere_scores || {});
-            setAtmosphereScores(data.atmosphere_scores || {});
-            setIsEditingAtmosphere(true);
-          } else if (response.status === 404) {
-            // フィードバックがない場合は新規作成モード
-            setInitialAtmosphereScores({});
-            setAtmosphereScores({});
-            setIsEditingAtmosphere(false);
-          }
+
+          const data = await fetchUserAtmosphereFeedback(shopId);
+          setInitialAtmosphereScores(data.atmosphere_scores || {});
+          setAtmosphereScores(data.atmosphere_scores || {});
+          setIsEditingAtmosphere(true);
         } catch (err) {
+          // フィードバックがない場合は新規作成モード
           console.error('Failed to fetch existing feedback:', err);
           setInitialAtmosphereScores({});
           setAtmosphereScores({});
@@ -112,18 +103,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
           setSubmitting(true);
           setError(null);
 
-          const response = await fetchWithAuth(`/shops/${shopId}/atmosphere_feedback/`, {
-            method: 'POST',
-            body: JSON.stringify({
-              atmosphere_scores: atmosphereScores
-            })
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || '雰囲気フィードバックの保存に失敗しました');
-          }
-
+          await submitAtmosphereFeedback(shopId, atmosphereScores);
           console.log('Atmosphere feedback saved successfully');
         } catch (err) {
           console.error('Failed to save atmosphere feedback:', err);
@@ -164,7 +144,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `JWT ${localStorage.getItem('access')}`
+          'Authorization': `JWT ${session?.accessToken}`
         },
         body: JSON.stringify({
           shop: shopId,

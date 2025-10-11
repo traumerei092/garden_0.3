@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { User } from '@/types/users';
 
 interface UpdateHobbiesResponse {
@@ -9,7 +9,7 @@ interface UpdateHobbiesResponse {
 
 export async function updateHobbies(hobbyNames: string[]): Promise<UpdateHobbiesResponse> {
   try {
-    const response = await fetchWithAuth('/accounts/hobbies/update/', {
+    const response = await fetchWithSession('/accounts/hobbies/update/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

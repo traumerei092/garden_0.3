@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export interface UserShop {
   id: number;
@@ -21,7 +21,7 @@ export interface UserShopsResponse {
 
 export const fetchVisitedShops = async (): Promise<UserShop[]> => {
   try {
-    const response = await fetchWithAuth('/user-shop-relations/visited_shops/');
+    const response = await fetchWithSession('/user-shop-relations/visited_shops/');
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,7 +37,7 @@ export const fetchVisitedShops = async (): Promise<UserShop[]> => {
 
 export const fetchWishlistShops = async (): Promise<UserShop[]> => {
   try {
-    const response = await fetchWithAuth('/user-shop-relations/wishlist_shops/');
+    const response = await fetchWithSession('/user-shop-relations/wishlist_shops/');
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -53,7 +53,7 @@ export const fetchWishlistShops = async (): Promise<UserShop[]> => {
 
 export const fetchFavoriteShops = async (): Promise<UserShop[]> => {
   try {
-    const response = await fetchWithAuth('/user-shop-relations/favorite_shops/');
+    const response = await fetchWithSession('/user-shop-relations/favorite_shops/');
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

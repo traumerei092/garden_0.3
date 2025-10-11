@@ -8,14 +8,14 @@ import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchWishlistShops, UserShop } from '@/actions/shop/fetchUserShops';
 import { Shop } from '@/types/shops';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { useShopActions } from '@/hooks/useShopActions';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
 
 const WishlistPage: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,17 +34,12 @@ const WishlistPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
     const loadWishlistShops = async () => {
       try {
         setLoading(true);
         const wishlistShops = await fetchWishlistShops();
         setShops(wishlistShops);
-        
+
       } catch (err) {
         console.error('Error loading wishlist shops:', err);
         setError('行きたい店舗の読み込みに失敗しました');
@@ -54,7 +49,7 @@ const WishlistPage: React.FC = () => {
     };
 
     loadWishlistShops();
-  }, [user, router]);
+  }, []);
 
   const handleBackClick = () => {
     router.back();

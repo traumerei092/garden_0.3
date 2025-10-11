@@ -12,7 +12,7 @@ import { MapPin, Star, MessageCircle, User, Store, Crown } from 'lucide-react';
 import { UserShop } from '@/actions/shop/fetchUserShops';
 import { ShopReview, RelationType, ShopStats } from '@/types/shops';
 import { fetchShopStats, toggleShopRelation } from '@/actions/shop/relation';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { fetchPublicUserFavoriteShops, fetchPublicUserVisitedShops, fetchPublicUserReviews } from '@/actions/user/fetchPublicUserData';
 import styles from './style.module.scss';
 
@@ -22,7 +22,7 @@ interface PublicProfileViewProps {
 
 const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) => {
   const [activeTab, setActiveTab] = useState('profile');
-  const user = useAuthStore((state) => state.user);
+  const { user } = useAuthSession();
   const [favoriteShops, setFavoriteShops] = useState<UserShop[]>([]);
   const [visitedShops, setVisitedShops] = useState<UserShop[]>([]);
   const [userReviews, setUserReviews] = useState<ShopReview[]>([]);

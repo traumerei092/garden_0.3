@@ -7,7 +7,7 @@ import { HousePlus, AlignJustify, LayoutGrid, MapPinned, Funnel } from 'lucide-r
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import CustomTabs from "@/components/UI/CustomTabs";
 import {useRouter} from "next/navigation";
-import {useAuthStore} from "@/store/useAuthStore";
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { getSortOptions, getDefaultSortKey } from '@/actions/shop/sort';
 
 interface ShopListHeaderProps {
@@ -22,7 +22,7 @@ interface ShopListHeaderProps {
 const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch, onSortChange }) => {
 
     const router = useRouter();
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuthSession();
 
     // 動的ソートオプション取得
     const sortOptions: AutocompleteOption[] = getSortOptions().map(option => ({

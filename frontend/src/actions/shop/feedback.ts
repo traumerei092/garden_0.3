@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export interface FeedbackData {
   atmosphere_scores: { [key: string]: number };
@@ -20,7 +20,7 @@ export interface ShopAtmosphereFeedback {
 export async function submitShopFeedback(shopId: number, feedbackData: FeedbackData): Promise<void> {
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/atmosphere_feedback/`;
-    const response = await fetchWithAuth(url, {
+    const response = await fetchWithSession(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export async function submitShopFeedback(shopId: number, feedbackData: FeedbackD
 export async function getUserShopFeedback(shopId: number): Promise<ShopAtmosphereFeedback | null> {
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/my_atmosphere_feedback/`;
-    const response = await fetchWithAuth(url, {
+    const response = await fetchWithSession(url, {
       method: 'GET',
     });
     if (response.status === 404) {

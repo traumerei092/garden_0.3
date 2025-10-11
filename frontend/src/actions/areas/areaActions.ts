@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { Area } from '@/types/areas';
 
 export interface ApiResponse<T> {
@@ -120,7 +120,7 @@ export const getAreaTree = async (): Promise<ApiResponse<Area[]>> => {
  */
 export const getMyAreas = async (): Promise<ApiResponse<MyAreasResponse>> => {
   try {
-    const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/accounts/my-areas/`, {
+    const response = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/accounts/my-areas/`, {
       method: 'GET',
     });
 
@@ -146,7 +146,7 @@ export const updateMyAreas = async (
   updateData: UpdateMyAreasRequest
 ): Promise<ApiResponse<MyAreasResponse>> => {
   try {
-    const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/accounts/my-areas/`, {
+    const response = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/accounts/my-areas/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

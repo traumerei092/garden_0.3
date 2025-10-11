@@ -19,7 +19,7 @@ import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import styles from './style.module.scss';
 import {useRouter} from "next/navigation";
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import LogoutModal from "@/components/Auth/LogoutModal";
 
 const Header = () => {
@@ -32,7 +32,7 @@ const Header = () => {
             router.push(`/signup`); // ショップ詳細ページへ遷移
     };
 
-    const { user } = useAuthStore();
+    const { user } = useAuthSession();
 
     const [showModal, setShowModal] = useState(false); // モーダル開閉用の状態
 

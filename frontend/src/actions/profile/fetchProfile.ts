@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 import { User } from "@/types/users";
 
 // ユーザープロフィールを取得する関数
@@ -9,7 +9,7 @@ export const fetchUserProfile = async (): Promise<User> => {
         const url = `${process.env.NEXT_PUBLIC_API_URL}/accounts/users/me/`;
         console.log('🔗 リクエストURL:', url);
         
-        const response = await fetchWithAuth(url, {
+        const response = await fetchWithSession(url, {
             method: "GET",
         });
 

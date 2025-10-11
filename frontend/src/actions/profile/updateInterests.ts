@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { User } from '@/types/users';
 
 interface UpdateInterestsResponse {
@@ -9,7 +9,7 @@ interface UpdateInterestsResponse {
 
 export async function updateInterests(interests: number[]): Promise<UpdateInterestsResponse> {
   try {
-    const response = await fetchWithAuth('/accounts/update-interests/', {
+    const response = await fetchWithSession('/accounts/update-interests/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

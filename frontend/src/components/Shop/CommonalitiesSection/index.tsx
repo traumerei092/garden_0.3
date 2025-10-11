@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserCheck, Users, Coffee, Heart } from 'lucide-react';
 import { fetchCommonalities, CommonalitiesData } from '@/actions/shop/commonalities';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
 
 interface CommonalitiesSectionProps {
@@ -20,7 +20,7 @@ const CommonalitiesSection: React.FC<CommonalitiesSectionProps> = ({
   const [data, setData] = useState<CommonalitiesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
 
   const loadData = useCallback(async () => {
     // ユーザー情報がない場合は何もしない

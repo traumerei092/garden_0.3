@@ -1,5 +1,5 @@
 import { PaymentMethod } from "@/types/shops";
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 
 // 支払方法の選択肢を取得する関数
 export const fetchPaymentMethods = async (): Promise<PaymentMethod[]> => {
@@ -9,7 +9,7 @@ export const fetchPaymentMethods = async (): Promise<PaymentMethod[]> => {
         console.log('リクエストURL:', url);
         
         // fetchWithAuthを使用して認証情報を含める
-        const response = await fetchWithAuth(url, {
+        const response = await fetchWithSession(url, {
             method: "GET",
             cache: "no-store",
         });

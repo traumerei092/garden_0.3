@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { UserAtmospherePreference } from '@/types/users';
 
 export interface UpdateAtmospherePreferencesRequest {
@@ -12,7 +12,7 @@ export async function updateAtmospherePreferences(
   data: UpdateAtmospherePreferencesRequest
 ): Promise<{ success: boolean; data?: UserAtmospherePreference[]; error?: string }> {
   try {
-    const response = await fetchWithAuth('/accounts/atmosphere-preferences/', {
+    const response = await fetchWithSession('/accounts/atmosphere-preferences/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

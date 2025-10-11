@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export interface WelcomeData {
   welcome_count: number;
@@ -17,7 +17,7 @@ export interface WelcomeResponse {
 // ウェルカムデータ取得
 export async function fetchWelcomeData(shopId: number): Promise<WelcomeData | null> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/welcome/`,
       {
         method: 'GET',
@@ -44,7 +44,7 @@ export async function fetchWelcomeData(shopId: number): Promise<WelcomeData | nu
 // ウェルカムトグル
 export async function toggleWelcome(shopId: number): Promise<WelcomeResponse | null> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/welcome/`,
       {
         method: 'POST',

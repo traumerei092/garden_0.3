@@ -1,9 +1,9 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { ProfileOptions, ApiResponse } from '@/types/users';
 
 export const fetchProfileOptions = async (): Promise<ApiResponse<ProfileOptions>> => {
   try {
-    const response = await fetchWithAuth('/accounts/profile-data/', {
+    const response = await fetchWithSession('/accounts/profile-data/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

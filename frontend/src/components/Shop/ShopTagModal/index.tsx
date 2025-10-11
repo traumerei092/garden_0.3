@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Chip } from '@nextui-org/react';
 import CustomModal from '@/components/UI/Modal';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { addImpressionTag } from '@/actions/shop/impressionTag';
 import styles from './style.module.scss';
 
@@ -26,8 +26,7 @@ const ShopTagModal: React.FC<ShopTagModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Array<{ id: number; value: string }>>([]);
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user, isLoggedIn } = useAuthSession();
 
   // タグ入力時に既存タグから候補を表示
   useEffect(() => {

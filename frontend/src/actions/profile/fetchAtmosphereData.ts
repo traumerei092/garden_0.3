@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { AtmosphereIndicator, UserAtmospherePreference } from '@/types/users';
 
 export async function fetchAtmosphereIndicators(): Promise<{
@@ -7,7 +7,7 @@ export async function fetchAtmosphereIndicators(): Promise<{
   error?: string;
 }> {
   try {
-    const response = await fetchWithAuth('/accounts/atmosphere-indicators/', {
+    const response = await fetchWithSession('/accounts/atmosphere-indicators/', {
       method: 'GET',
     });
 
@@ -38,7 +38,7 @@ export async function fetchUserAtmospherePreferences(): Promise<{
   error?: string;
 }> {
   try {
-    const response = await fetchWithAuth('/accounts/atmosphere-preferences/', {
+    const response = await fetchWithSession('/accounts/atmosphere-preferences/', {
       method: 'GET',
     });
 

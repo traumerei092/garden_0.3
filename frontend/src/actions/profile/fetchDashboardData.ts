@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 // ダッシュボードサマリーデータ
 export interface DashboardSummary {
@@ -80,7 +80,7 @@ export interface TagReactionHistoryItem {
 // ダッシュボードデータ取得
 export async function fetchDashboardSummary(): Promise<DashboardSummary> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/summary/`,
       {
         method: 'GET',
@@ -102,7 +102,7 @@ export async function fetchDashboardSummary(): Promise<DashboardSummary> {
 // 閲覧履歴取得（最新5件）
 export async function fetchViewHistory(limit: number = 5): Promise<ViewHistoryItem[]> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/view-history/?limit=${limit}`,
       {
         method: 'GET',
@@ -124,7 +124,7 @@ export async function fetchViewHistory(limit: number = 5): Promise<ViewHistoryIt
 // 口コミ履歴取得（最新5件）
 export async function fetchReviewHistory(limit: number = 5): Promise<ReviewHistoryItem[]> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/review-history/?limit=${limit}`,
       {
         method: 'GET',
@@ -146,7 +146,7 @@ export async function fetchReviewHistory(limit: number = 5): Promise<ReviewHisto
 // 最近のアクティビティ取得（最新5件）
 export async function fetchRecentActivity(limit: number = 5): Promise<RecentActivityItem[]> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/recent-activity/?limit=${limit}`,
       {
         method: 'GET',
@@ -168,7 +168,7 @@ export async function fetchRecentActivity(limit: number = 5): Promise<RecentActi
 // 雰囲気フィードバック履歴取得
 export async function fetchAtmosphereFeedbackHistory(limit: number = 5): Promise<AtmosphereFeedbackHistoryItem[]> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/atmosphere-feedback-history/?limit=${limit}`,
       {
         method: 'GET',
@@ -190,7 +190,7 @@ export async function fetchAtmosphereFeedbackHistory(limit: number = 5): Promise
 // 印象タグ履歴取得
 export async function fetchTagReactionHistory(limit: number = 5): Promise<TagReactionHistoryItem[]> {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/accounts/profile/dashboard/tag-reaction-history/?limit=${limit}`,
       {
         method: 'GET',

@@ -1,9 +1,9 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { UpdatePasswordRequest, ApiResponse } from '@/types/users';
 
 export const updatePassword = async (data: UpdatePasswordRequest): Promise<ApiResponse> => {
   try {
-    const response = await fetchWithAuth('/accounts/change-password/', {
+    const response = await fetchWithSession('/accounts/change-password/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

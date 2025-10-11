@@ -10,9 +10,10 @@ type Props = {
   anotherStyle: string;
   type?: 'button' | 'submit' | 'reset';
   size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
 };
 
-const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="md" }: Props) => {
+const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="md", isLoading = false }: Props) => {
   console.log("🧩 onPress in ButtonGradient:", onClick);
     return (
       <div className={classNames(styles.gradientWrapper, anotherStyle)}>
@@ -21,6 +22,7 @@ const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="
           onPress={onClick}
           type={type}
           size={size}
+          isLoading={isLoading}
         >
           {children}
         </Button>

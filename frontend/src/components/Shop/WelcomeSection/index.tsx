@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { HandHeart, ThumbsUp } from 'lucide-react';
 import { Button, Tooltip } from '@nextui-org/react';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { fetchWelcomeData, toggleWelcome, type WelcomeData } from '@/actions/shop/welcome';
 import styles from './style.module.scss';
 
@@ -21,7 +21,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   const [data, setData] = useState<WelcomeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
 
   const loadData = useCallback(async () => {
     // ログインしていない場合は何もしない

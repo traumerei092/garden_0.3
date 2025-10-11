@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { Shop } from '@/types/shops';
 
 export interface SortOption {
@@ -53,7 +53,7 @@ export const fetchSortedShops = async (
       }
     });
 
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/sort/?${params.toString()}`
     );
 

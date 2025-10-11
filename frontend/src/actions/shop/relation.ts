@@ -1,12 +1,12 @@
 import { ShopStats } from '@/types/shops';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 /**
  * 店舗とユーザーの関係を切り替える
  */
 export const toggleShopRelation = async (shopId: string, relationTypeId: number): Promise<{ success: boolean; message?: string }> => {
     try {
-        const response = await fetchWithAuth(
+        const response = await fetchWithSession(
             `${process.env.NEXT_PUBLIC_API_URL}/user-shop-relations/toggle/`,
             {
                 method: 'POST',
@@ -33,7 +33,7 @@ export const toggleShopRelation = async (shopId: string, relationTypeId: number)
  */
 export const fetchShopStats = async (shopId: string): Promise<ShopStats> => {
     try {
-        const response = await fetchWithAuth(
+        const response = await fetchWithSession(
             `${process.env.NEXT_PUBLIC_API_URL}/user-shop-relations/shop_stats/?shop_id=${shopId}`
         );
 
@@ -57,7 +57,7 @@ export const fetchShopStats = async (shopId: string): Promise<ShopStats> => {
 export const toggleTagReaction = async (tagId: number): Promise<{ success: boolean; message?: string; reaction_count?: number }> => {
     try {
         console.log(`toggleTagReaction called with tagId: ${tagId}`);
-        const response = await fetchWithAuth(
+        const response = await fetchWithSession(
             `${process.env.NEXT_PUBLIC_API_URL}/shop-tag-reactions/toggle/${tagId}/`,
             {
                 method: 'POST',

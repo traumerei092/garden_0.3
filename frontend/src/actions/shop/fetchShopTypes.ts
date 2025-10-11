@@ -1,8 +1,8 @@
 import { ShopType } from '@/types/shops'
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export async function fetchShopTypes(): Promise<ShopType[]> {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-types/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-types/`, {
     method: 'GET',
   });
 

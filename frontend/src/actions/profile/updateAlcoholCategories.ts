@@ -1,8 +1,8 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { User } from '@/types/users';
 
 export async function updateAlcoholCategories(alcoholCategoryIds: number[]): Promise<User> {
-  const response = await fetchWithAuth('/accounts/update-alcohol-categories/', {
+  const response = await fetchWithSession('/accounts/update-alcohol-categories/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

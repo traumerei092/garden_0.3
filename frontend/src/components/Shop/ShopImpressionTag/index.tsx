@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
 import { X } from 'lucide-react';
 
@@ -25,8 +25,7 @@ const ShopImpressionTag: React.FC<ShopImpressionTagProps> = ({
   onClick,
   disabled = false
 }) => {
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user, isLoggedIn } = useAuthSession();
 
   // isCreator または userHasReacted に基づいてアクティブ状態を決定
   const isActive = isLoggedIn && userHasReacted;

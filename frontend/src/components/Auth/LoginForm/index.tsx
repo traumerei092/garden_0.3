@@ -8,9 +8,7 @@ import Logo from "@/components/UI/Logo";
 import InputDefault from "@/components/UI/InputDefault";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser } from "@/actions/auth/login";
-import { useAuthStore } from '@/store/useAuthStore';
-import {getUserClient} from "@/actions/auth/getUserClient";
+import { signIn, getSession } from "next-auth/react";
 import {showLoginToast} from "@/utils/toasts";
 
 const LoginForm = () => {
@@ -21,8 +19,7 @@ const LoginForm = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
-
-  const { setTokens } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
@@ -33,26 +30,38 @@ const LoginForm = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setIsLoading(true);
 
-    const res = await loginUser(form);
+    try {
+      const result = await signIn('credentials', {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
 
-    // トークンの保存
-    if (res.success && typeof window !== 'undefined') {
-      localStorage.setItem('access', res.data.access);
-      localStorage.setItem('refresh', res.data.refresh);
-      setTokens(res.data.access, res.data.refresh); // Zustand に保存
-
-      // ✅ ユーザー情報をAPI経由で取得 → Zustandに保存
-      await getUserClient();
-
-      router.push(nextUrl);
-      showLoginToast();
-    } else {
-      if (res.error?.non_field_errors) {
-        setError(res.error.non_field_errors[0]);
-      } else {
-        setError('ログインに失敗しました。');
+      if (result?.error) {
+        setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。');
+      } else if (result?.ok) {
+        showLoginToast();
+        router.push(nextUrl);
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('ログインに失敗しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'line') => {
+    try {
+      setIsLoading(true);
+      await signIn(provider, { callbackUrl: nextUrl });
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      setError(`${provider}ログインに失敗しました。`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -101,6 +110,7 @@ const LoginForm = () => {
 
           <ButtonGradient
               type="submit"
+              isLoading={isLoading}
               anotherStyle={styles.submitButton}>
             LOG IN
           </ButtonGradient>
@@ -117,6 +127,8 @@ const LoginForm = () => {
               startContent={<Icon icon="flat-color-icons:google" width={24}/>}
               variant="bordered"
               className={styles.socialButton}
+              isLoading={isLoading}
+              onClick={() => handleSocialLogin('google')}
           >
             Continue with Google
           </Button>
@@ -124,15 +136,19 @@ const LoginForm = () => {
               startContent={<Icon icon="ri:line" width={24} className={styles.icon}/>}
               variant="bordered"
               className={styles.socialButton}
+              isLoading={isLoading}
+              onClick={() => handleSocialLogin('line')}
           >
             Continue with LINE
           </Button>
           <Button
-              startContent={<Icon icon="mdi:instagram" width={24} className={styles.icon}/>}
+              startContent={<Icon icon="mdi:facebook" width={24} className={styles.icon}/>}
               variant="bordered"
               className={styles.socialButton}
+              isLoading={isLoading}
+              onClick={() => handleSocialLogin('facebook')}
           >
-            Continue with Instagram
+            Continue with Facebook
           </Button>
         </div>
 

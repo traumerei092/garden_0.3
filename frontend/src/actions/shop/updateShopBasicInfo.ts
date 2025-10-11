@@ -1,5 +1,5 @@
 
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
  */
 export const updateShopBasicInfo = async (shopId: string, data: unknown) => {
   try {
-    const response = await fetchWithAuth(`${API_URL}/shops/${shopId}/update/`, {
+    const response = await fetchWithSession(`${API_URL}/shops/${shopId}/update/`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });

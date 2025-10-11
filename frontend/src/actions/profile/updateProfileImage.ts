@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { User } from '@/types/users';
 
 interface UpdateProfileImageResponse {
@@ -21,7 +21,7 @@ export async function updateProfileImage(imageFile: File, imageType: 'avatar' | 
     
     formData.append(fieldName, imageFile);
 
-    const response = await fetchWithAuth(endpoint, {
+    const response = await fetchWithSession(endpoint, {
       method: 'POST',
       body: formData,
     });

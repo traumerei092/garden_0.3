@@ -7,7 +7,7 @@ import CircularChart from '@/components/UI/CircularChart';
 import CustomModal from '@/components/UI/Modal';
 import { fetchRegularCommunityStats, RegularCommunityStatsResponse } from '@/actions/shop/regularCommunityStats';
 import { fetchRegularsAnalysis } from '@/actions/shop/regulars';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
 
 interface DistributionItem {
@@ -50,7 +50,7 @@ const RegularsAnalysisModal: React.FC<RegularsAnalysisModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tabDataCache, setTabDataCache] = useState<Record<string, TabData>>({});
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
 
   // タブ設定
   const tabs: TabConfig[] = [

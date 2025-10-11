@@ -13,7 +13,7 @@
  * regulars.ts の fetchRegularsAnalysis を使用すること
  */
 
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 // 型定義
 export interface AtmosphereTendencyData {
@@ -58,7 +58,7 @@ export const fetchRegularCommunityStats = async (
   shopId: number
 ): Promise<RegularCommunityStatsResponse> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetchWithSession(
       `${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regular_community_stats/`
     );
 

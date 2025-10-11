@@ -1,10 +1,10 @@
 import { getSession } from 'next-auth/react';
 
-export const fetchWithAuth = async (
+export const fetchWithSession = async (
     input: RequestInfo | URL,
     init: RequestInit = {}
 ): Promise<Response> => {
-  // NextAuth.jsセッションから認証情報を取得
+  // Get session data
   const session = await getSession();
   const accessToken = session?.accessToken || null;
 
@@ -35,12 +35,14 @@ export const fetchWithAuth = async (
 
   const res = await fetch(url, mergedInit);
 
-  // NextAuth.jsではトークンリフレッシュはセッション管理で自動化されているため
-  // 401エラーの場合は認証が必要であることを示す
-  if (res.status === 401) {
-    console.warn('Authentication required - session may have expired');
-    // 必要に応じてログインページにリダイレクトするロジックを追加可能
-  }
+  // NextAuth.jsが自動的にトークンリフレッシュを処理するため、
+  // 401エラー時の手動リフレッシュは不要
+  // 必要に応じて signIn() を呼び出してリダイレクトまたは再認証を促す
 
   return res;
+};
+
+// Hook版も提供（コンポーネントで使いやすい）
+export const useFetchWithSession = () => {
+  return fetchWithSession;
 };

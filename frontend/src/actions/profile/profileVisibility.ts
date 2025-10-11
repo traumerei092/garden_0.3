@@ -1,5 +1,5 @@
 import { ProfileVisibilitySettings, ApiResponse } from '@/types/users';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 /**
  * プロフィール公開設定を取得する
@@ -7,7 +7,7 @@ import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
  */
 export async function fetchProfileVisibilitySettings(): Promise<ApiResponse<ProfileVisibilitySettings>> {
   try {
-    const response = await fetchWithAuth('/accounts/profile-visibility/');
+    const response = await fetchWithSession('/accounts/profile-visibility/');
 
     if (!response.ok) {
       return {
@@ -39,7 +39,7 @@ export async function updateProfileVisibilitySettings(
   settings: Partial<ProfileVisibilitySettings>
 ): Promise<ApiResponse<ProfileVisibilitySettings>> {
   try {
-    const response = await fetchWithAuth('/accounts/profile-visibility/', {
+    const response = await fetchWithSession('/accounts/profile-visibility/', {
       method: 'PUT',
       body: JSON.stringify(settings),
     });

@@ -27,10 +27,10 @@ import ShopImageCarousel from '@/components/Shop/ShopImageCarousel';
 import ShopImageGalleryModal from '@/components/Shop/ShopImageGalleryModal';
 import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
 import LinkDefault from '@/components/UI/LinkDefault';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import ShopEditModal from '@/components/Shop/ShopEditModal';
 import ShopHistoryModal from '@/components/Shop/ShopHistoryModal';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
@@ -53,8 +53,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [welcomeRefreshTrigger, setWelcomeRefreshTrigger] = useState(0);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [regularFeedbackModalOpen, setRegularFeedbackModalOpen] = useState(false);
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user, isLoggedIn } = useAuthSession();
 
   // 店舗情報を取得
   const loadShop = useCallback(async () => {
@@ -276,7 +275,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
     // バックエンドと同期
     try {
-      const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/${tagId}/`, {
+      const response = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-tags/${tagId}/`, {
         method: 'DELETE'
       });
       
@@ -315,13 +314,8 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           formData.append('caption', caption);
           formData.append('shop', params.id);
 
-          // fetchWithAuthは FormData には使えないので、通常のfetchを使用
-          const accessToken = localStorage.getItem('access');
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-images/`, {
+          const response = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-images/`, {
               method: 'POST',
-              headers: {
-                  'Authorization': `JWT ${accessToken}`
-              },
               body: formData
           });
 

@@ -1,5 +1,5 @@
 import { PublicUserProfile } from '@/types/users';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 /**
  * 公開ユーザープロフィールを取得する（認証不要）
@@ -39,7 +39,7 @@ export async function fetchPublicUserProfile(uid: string): Promise<PublicUserPro
  */
 export async function fetchProfilePreview(): Promise<PublicUserProfile | null> {
   try {
-    const response = await fetchWithAuth('/accounts/profile-preview/');
+    const response = await fetchWithSession('/accounts/profile-preview/');
 
     if (!response.ok) {
       const errorText = await response.text();

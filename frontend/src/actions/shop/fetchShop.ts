@@ -1,6 +1,6 @@
 // Shopデータを取得する関数
 import { Shop } from "@/types/shops";
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 
 // 店舗データの取得関数
 export const fetchShops = async (): Promise<Shop[]> => {
@@ -11,7 +11,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
         console.log('リクエストURL:', url);
         
         // fetchWithAuthを使用して認証情報を含める
-        const response = await fetchWithAuth(url, {
+        const response = await fetchWithSession(url, {
             method: "GET",
         });
 
@@ -87,7 +87,7 @@ export async function fetchShopById(id: string): Promise<Shop> {
         console.log('リクエストURL:', url);
         
         // fetchWithAuthを使用して認証情報を含める
-        const res = await fetchWithAuth(url, {
+        const res = await fetchWithSession(url, {
             cache: "no-store",
         });
 

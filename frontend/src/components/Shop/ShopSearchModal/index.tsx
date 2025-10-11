@@ -22,8 +22,8 @@ import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData
 import { fetchShopTypes } from '@/actions/shop/fetchShopTypes';
 import { fetchShopLayouts } from "@/actions/shop/fetchShopLayouts";
 import { fetchShopOptions } from "@/actions/shop/fetchShopOptions";
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
-import { useAuthStore } from '@/store/useAuthStore';
+import { searchShops, fetchShopTags } from '@/actions/shop/search';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import { ShopType, ShopLayout, ShopOption } from "@/types/shops";
 import { Area } from '@/types/areas';
 import { getCurrentPosition } from '@/utils/location';
@@ -76,7 +76,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     { label: 'アート・文化', value: 'culture' }
   ];
   
-  const user = useAuthStore((state) => state.user);
+  const { user } = useAuthSession();
   const [shopTypeOptions, setShopTypeOptions] = useState<ShopType[]>([]);
   const [shopLayoutOptions, setShopLayoutOptions] = useState<ShopLayout[]>([]);
   const [shopOptionOptions, setShopOptionOptions] = useState<ShopOption[]>([]);
@@ -292,7 +292,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const fetchUserProfileData = async () => {
     try {
       console.log('=== ユーザープロフィール取得開始 ===');
-      console.log('user (from useAuthStore):', user);
+      console.log('user (from useAuthSession):', user);
 
       const profile = await fetchUserProfile();
 
@@ -765,202 +765,44 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       console.log('=== fetchShopCount呼び出し ===');
       console.log('searchFilters:', searchFilters);
 
-      // 件数のみを取得するためのクエリパラメータを構築
-      const queryParams = new URLSearchParams();
-      
-      // 常連さんで探す条件
-      if (searchFilters.welcome_min !== undefined) {
-        queryParams.append('welcome_min', searchFilters.welcome_min.toString());
-      }
-      if (searchFilters.regular_count_min !== undefined) {
-        queryParams.append('regular_count_min', searchFilters.regular_count_min.toString());
-      }
-      if (searchFilters.dominant_age_group) {
-        queryParams.append('dominant_age_group', searchFilters.dominant_age_group);
-      }
-      if (searchFilters.regular_genders?.length) {
-        searchFilters.regular_genders.forEach(gender => {
-          queryParams.append('regular_genders', gender);
-        });
-      }
-      if (searchFilters.regular_interests?.length) {
-        searchFilters.regular_interests.forEach(interest => {
-          queryParams.append('regular_interests', interest);
-        });
-      }
-      if (searchFilters.occupation) {
-        queryParams.append('occupation', searchFilters.occupation);
-      }
-      if (searchFilters.industry) {
-        queryParams.append('industry', searchFilters.industry);
-      }
-      if (searchFilters.regular_mbti_types?.length) {
-        searchFilters.regular_mbti_types.forEach(mbti => {
-          queryParams.append('regular_mbti_types', mbti);
-        });
-      }
-      if (searchFilters.regular_blood_types?.length) {
-        searchFilters.regular_blood_types.forEach(bloodType => {
-          queryParams.append('regular_blood_types', bloodType);
-        });
-      }
-      if (searchFilters.regular_exercise_frequency?.length) {
-        searchFilters.regular_exercise_frequency.forEach(frequency => {
-          queryParams.append('regular_exercise_frequency', frequency);
-        });
-      }
-      if (searchFilters.regular_dietary_preferences?.length) {
-        searchFilters.regular_dietary_preferences.forEach(preference => {
-          queryParams.append('regular_dietary_preferences', preference);
-        });
-      }
-      if (searchFilters.regular_alcohol_preferences?.length) {
-        searchFilters.regular_alcohol_preferences.forEach(category => {
-          queryParams.append('regular_alcohol_preferences', category.toString());
-        });
-      }
+      // Handle location data if needed
+      let processedFilters = { ...searchFilters };
 
-      // 雰囲気・利用シーン条件（新3択システム）
-      if (searchFilters.atmosphere_simple) {
-        console.log('🔥🔥🔥 雰囲気フィルター送信:', searchFilters.atmosphere_simple);
-        console.log('🔥🔥🔥 JSON化:', JSON.stringify(searchFilters.atmosphere_simple));
-        queryParams.append('atmosphere_simple', JSON.stringify(searchFilters.atmosphere_simple));
-      } else {
-        console.log('🔥🔥🔥 atmosphere_simpleが空またはundefined:', searchFilters.atmosphere_simple);
-      }
-      if (searchFilters.visit_purposes?.length) {
-        searchFilters.visit_purposes.forEach(purpose => {
-          queryParams.append('visit_purposes', purpose);
-        });
-      }
-      if (searchFilters.impression_tags) {
-        queryParams.append('impression_tags', searchFilters.impression_tags);
-      }
-
-      // エリア・基本条件
-      if (searchFilters.area_ids?.length) {
-        searchFilters.area_ids.forEach(areaId => {
-          queryParams.append('area_ids', areaId.toString());
-        });
-      }
-      if (searchFilters.use_my_area_only !== undefined) {
-        queryParams.append('use_my_area_only', searchFilters.use_my_area_only.toString());
-      }
-      if (searchFilters.budget_min !== undefined) {
-        queryParams.append('budget_min', searchFilters.budget_min.toString());
-      }
-      if (searchFilters.budget_max !== undefined) {
-        queryParams.append('budget_max', searchFilters.budget_max.toString());
-      }
-      if (searchFilters.budget_type) {
-        queryParams.append('budget_type', searchFilters.budget_type);
-      }
-      if (searchFilters.user_lat !== undefined) {
-        queryParams.append('user_lat', searchFilters.user_lat.toString());
-      }
-      if (searchFilters.user_lng !== undefined) {
-        queryParams.append('user_lng', searchFilters.user_lng.toString());
-      }
+      // Handle location data for distance-based searches
       if (searchFilters.distance_km !== undefined) {
-        queryParams.append('distance_km', searchFilters.distance_km.toString());
-        
-        // 現在地情報も必須で送信（同期的に処理）
         try {
           const position = await getCurrentPosition();
-          queryParams.append('user_lat', position.coords.latitude.toString());
-          queryParams.append('user_lng', position.coords.longitude.toString());
+          processedFilters.user_lat = position.coords.latitude;
+          processedFilters.user_lng = position.coords.longitude;
         } catch (error) {
           console.warn('位置情報の取得に失敗:', error);
           // デフォルト位置（東京駅）を使用
-          queryParams.append('user_lat', '35.6812');
-          queryParams.append('user_lng', '139.7671');
+          processedFilters.user_lat = 35.6812;
+          processedFilters.user_lng = 139.7671;
         }
       }
-      if (searchFilters.open_now !== undefined) {
-        queryParams.append('open_now', searchFilters.open_now.toString());
-      }
-      if (searchFilters.seat_count_min !== undefined) {
-        queryParams.append('seat_count_min', searchFilters.seat_count_min.toString());
-      }
-      if (searchFilters.seat_count_max !== undefined) {
-        queryParams.append('seat_count_max', searchFilters.seat_count_max.toString());
-      }
+      
+      // Use centralized searchShops function
+      const data = await searchShops(processedFilters);
+      console.log('フェッチ結果:', data); // デバッグログ
 
-      // お店の特徴条件
-      if (searchFilters.shop_types?.length) {
-        searchFilters.shop_types.forEach(type => {
-          queryParams.append('shop_types', type.toString());
-        });
+      const newCount = data.count || 0;
+      if (newCount !== shopCount) {
+        // カウンターアップアニメーション
+        animateCountUp(shopCount, newCount);
       }
-      if (searchFilters.shop_layouts?.length) {
-        searchFilters.shop_layouts.forEach(layout => {
-          queryParams.append('shop_layouts', layout.toString());
-        });
-      }
-      if (searchFilters.shop_options?.length) {
-        searchFilters.shop_options.forEach(option => {
-          queryParams.append('shop_options', option.toString());
-        });
-      }
+      setShopCount(newCount);
 
-      // ドリンク条件
-      if (searchFilters.alcohol_categories?.length) {
-        searchFilters.alcohol_categories.forEach(category => {
-          queryParams.append('alcohol_categories', category.toString());
-        });
-      }
-      if (searchFilters.alcohol_brands?.length) {
-        searchFilters.alcohol_brands.forEach(brand => {
-          queryParams.append('alcohol_brands', brand.toString());
-        });
-      }
-      if (searchFilters.drink_name) {
-        queryParams.append('drink_name', searchFilters.drink_name);
-      }
-      if (searchFilters.drink_names?.length) {
-        searchFilters.drink_names.forEach(name => {
-          queryParams.append('drink_names', name);
-        });
-      }
-      if (searchFilters.drink_likes_min !== undefined) {
-        queryParams.append('drink_likes_min', searchFilters.drink_likes_min.toString());
-      }
-      
-      // デバッグ用にactual shop namesも取得（最初の10件）
-      queryParams.append('page_size', '10');
-      
-      const response = await fetchWithAuth(`/shops/search/?${queryParams.toString()}`, {
-        method: 'GET',
-        cache: 'no-store'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('フェッチ結果:', data); // デバッグログ
-        
-        const newCount = data.count || 0;
-        if (newCount !== shopCount) {
-          // カウンターアップアニメーション
-          animateCountUp(shopCount, newCount);
-        }
-        setShopCount(newCount);
-        
-        // デバッグ用に店舗名も保存
-        if (data.results && Array.isArray(data.results)) {
-          setDebugShops(data.results.map((shop: { id: number; name: string }) => ({
-            id: shop.id,
-            name: shop.name
-          })));
-        } else if (data.shops && Array.isArray(data.shops)) {
-          // APIが'shops'キーを使う場合
-          setDebugShops(data.shops.map((shop: { id: number; name: string }) => ({
-            id: shop.id,
-            name: shop.name
-          })));
-        } else {
-          console.log('店舗データの形式が不明:', data);
-          setDebugShops([]);
-        }
+      // デバッグ用に店舗名も保存
+      if (data.shops && Array.isArray(data.shops)) {
+        // Use shops array from centralized API response
+        setDebugShops(data.shops.slice(0, 10).map((shop: any) => ({
+          id: shop.id,
+          name: shop.name
+        })));
+      } else {
+        console.log('店舗データの形式が不明:', data);
+        setDebugShops([]);
       }
     } catch (error) {
       console.error('店舗件数取得エラー:', error);
@@ -1312,38 +1154,15 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   // 全タグを取得する関数
   const fetchAllTags = async (): Promise<Array<{ id: number; value: string }>> => {
     try {
-      // 認証なしでトライ
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/shop-tags/`;
-      
-      let response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store'
-      });
-      
-      // 認証なしで失敗した場合、認証ありで再トライ
-      if (!response.ok) {
-        response = await fetchWithAuth('/shop-tags/', {
-          method: 'GET',
-          cache: 'no-store'
-        });
-      }
+      // Use centralized fetchShopTags function
+      const tags = await fetchShopTags();
 
-      if (!response.ok) {
-        return [];
-      }
-
-      const data = await response.json();
-      
-      // データ構造を確認して適切にマッピング
-      const tags = data.results || data;
+      // Map to the expected format if needed
       const mappedTags = Array.isArray(tags) ? tags.map((tag: any) => ({
         id: tag.id,
         value: tag.value
       })) : [];
-      
+
       return mappedTags;
     } catch (error) {
       console.error('Tags fetch error:', error);

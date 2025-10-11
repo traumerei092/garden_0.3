@@ -1,9 +1,9 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { ApiResponse, User } from '@/types/users';
 
 export const updateIntroduction = async (introduction: string): Promise<ApiResponse<User>> => {
   try {
-    const response = await fetchWithAuth('/accounts/users/me/', {
+    const response = await fetchWithSession('/accounts/users/me/', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

@@ -9,13 +9,13 @@ import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import { fetchFavoriteShops, UserShop } from '@/actions/shop/fetchUserShops';
 import { Shop } from '@/types/shops';
 import { useShopActions } from '@/hooks/useShopActions';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthSession } from '@/hooks/useAuthSession';
 import Header from '@/components/Layout/Header';
 import styles from './style.module.scss';
 
 const FavoritePage: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useAuthSession();
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +34,6 @@ const FavoritePage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
     const loadFavoriteShops = async () => {
       try {
         setLoading(true);
@@ -53,7 +48,7 @@ const FavoritePage: React.FC = () => {
     };
 
     loadFavoriteShops();
-  }, [user, router]);
+  }, []);
 
   const handleBackClick = () => {
     router.back();

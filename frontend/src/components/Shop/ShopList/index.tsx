@@ -7,12 +7,11 @@ import { fetchShops } from "@/actions/shop/fetchShop";
 import { fetchSortedShops, getDefaultSortKey } from "@/actions/shop/sort";
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { SearchFilters } from '@/types/search';
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
 import { useShopActions } from '@/hooks/useShopActions';
 import { fetchWelcomeData } from "@/actions/shop/welcome";
 import styles from './style.module.scss';
 import LinkDefault from "@/components/UI/LinkDefault";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import ShopCard from "../ShopCard";
 import ShopGridCard from "../ShopGridCard";
 import ShopFeedbackModal from "../ShopFeedbackModal";
@@ -35,7 +34,7 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
     const [welcomeCounts, setWelcomeCounts] = useState<{ [key: number]: number }>({});
     const [feedbackModalShopId, setFeedbackModalShopId] = useState<number | null>(null);
     const router = useRouter();
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuthSession();
     const targetUrl = user ? '/shops/create' : '/login';
 
     // カスタムフックでShopActionButtonのロジックを統一（メモ化で無限ループ防止）

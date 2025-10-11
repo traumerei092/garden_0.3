@@ -1,6 +1,6 @@
 'use client';
 
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import { SearchFilters, ShopSearchResponse, SearchOptions, AtmosphereIndicator } from '@/types/search';
 
 export async function searchShops(filters: SearchFilters): Promise<ShopSearchResponse> {
@@ -172,7 +172,7 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
     // API呼び出し  
     const url = `/shops/search/?${queryParams.toString()}`;
     
-    const response = await fetchWithAuth(url, {
+    const response = await fetchWithSession(url, {
       method: 'GET',
       cache: 'no-store'
     });
@@ -211,7 +211,7 @@ export async function fetchAtmosphereIndicators(): Promise<AtmosphereIndicator[]
   try {
     const url = `/atmosphere-indicators/`;
     
-    const response = await fetchWithAuth(url, {
+    const response = await fetchWithSession(url, {
       method: 'GET',
       cache: 'force-cache' // 雰囲気指標はキャッシュしても良い
     });
@@ -236,12 +236,12 @@ export async function fetchAtmosphereIndicators(): Promise<AtmosphereIndicator[]
 export async function fetchSearchOptions(): Promise<SearchOptions> {
   try {
     const [areas, shopTypes, shopLayouts, shopOptions, alcoholCategories] = await Promise.all([
-      fetchWithAuth('/areas/').then(r => r.json()),
-      fetchWithAuth('/shop-types/').then(r => r.json()),
-      fetchWithAuth('/shop-layouts/').then(r => r.json()),
-      fetchWithAuth('/shop-options/').then(r => r.json()),
+      fetchWithSession('/areas/').then(r => r.json()),
+      fetchWithSession('/shop-types/').then(r => r.json()),
+      fetchWithSession('/shop-layouts/').then(r => r.json()),
+      fetchWithSession('/shop-options/').then(r => r.json()),
       // alcohol-categories APIは実装されていない可能性があるため、エラーハンドリング付き
-      fetchWithAuth('/alcohol-categories/')
+      fetchWithSession('/alcohol-categories/')
         .then(r => r.json())
         .catch(() => [])
     ]);
@@ -263,5 +263,29 @@ export async function fetchSearchOptions(): Promise<SearchOptions> {
       shopOptions: [],
       alcoholCategories: []
     };
+  }
+}
+
+/**
+ * 店舗タグを取得する
+ */
+export async function fetchShopTags(): Promise<any[]> {
+  try {
+    const response = await fetchWithSession('/shop-tags/', {
+      method: 'GET',
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      console.error('Shop tags fetch error:', response.status);
+      throw new Error('店舗タグの取得に失敗しました');
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error('Shop tags error:', error);
+    return [];
   }
 }

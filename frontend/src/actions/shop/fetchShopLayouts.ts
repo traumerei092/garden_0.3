@@ -1,8 +1,8 @@
 import { ShopLayout } from '@/types/shops'
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export async function fetchShopLayouts(): Promise<ShopLayout[]> {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shop-layouts/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shop-layouts/`, {
     method: 'GET',
   });
 

@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/app/lib/fetchWithAuth';
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
 export interface ShopTagResponse {
   id: number;
@@ -22,7 +22,7 @@ export interface ShopTagResponse {
 export async function addImpressionTag(shopId: number, tagValue: string): Promise<ShopTagResponse> {
   const url = `${process.env.NEXT_PUBLIC_API_URL}/shop-tags/`;
 
-  const response = await fetchWithAuth(url, {
+  const response = await fetchWithSession(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

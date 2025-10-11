@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/app/lib/fetchWithAuth";
+import { fetchWithSession } from "@/app/lib/fetchWithSession";
 
 export interface RegularUsageScene {
   id: number;
@@ -18,7 +18,7 @@ export interface RegularUsageSceneCreateData {
 
 // 常連利用シーン取得
 export const fetchRegularUsageScene = async (shopId: number): Promise<RegularUsageScene | null> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regular-usage-scenes/`);
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regular-usage-scenes/`);
 
   if (res.status === 204) {
     // データが存在しない場合
@@ -46,7 +46,7 @@ export const submitRegularUsageScene = async (
 
   const method = existingData ? 'PUT' : 'POST';
 
-  const res = await fetchWithAuth(url, {
+  const res = await fetchWithSession(url, {
     method,
     body: JSON.stringify(data),
   });
@@ -60,7 +60,7 @@ export const submitRegularUsageScene = async (
 
 // 常連利用シーン削除
 export const deleteRegularUsageScene = async (shopId: number, usageSceneId: number): Promise<void> => {
-  const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regular-usage-scenes/${usageSceneId}/`, {
+  const res = await fetchWithSession(`${process.env.NEXT_PUBLIC_API_URL}/shops/${shopId}/regular-usage-scenes/${usageSceneId}/`, {
     method: 'DELETE',
   });
 
