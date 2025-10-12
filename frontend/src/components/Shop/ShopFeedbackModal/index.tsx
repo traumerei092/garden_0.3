@@ -10,12 +10,13 @@ import ShopImpressionTag from '@/components/Shop/ShopImpressionTag';
 import { Star } from 'lucide-react';
 import styles from './style.module.scss';
 import { Shop } from '@/types/shops';
-import { AtmosphereIndicator } from '@/types/search';
+import { AtmosphereIndicator } from '@/types/users';
 import { fetchAtmosphereIndicators } from '@/actions/profile/fetchAtmosphereData';
 import { toggleTagReaction } from '@/actions/shop/relation';
 import { submitShopFeedback, FeedbackData } from '@/actions/shop/feedback';
 import { fetchUserAtmosphereFeedback } from '@/actions/shop/atmosphere';
 import { addImpressionTag } from '@/actions/shop/impressionTag';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 interface ShopFeedbackModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
   shop,
   onDataUpdate
 }) => {
+  const { user, isLoggedIn } = useAuthSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
   const [atmosphereScores, setAtmosphereScores] = useState<{ [key: number]: number }>({});
@@ -41,12 +43,17 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
 
   // モーダルが開かれた時に雰囲気指標と既存データを取得
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isLoggedIn && user?.id) {
+      console.log('🔍 ShopFeedbackModal - Loading data with user:', user.id);
       loadAtmosphereIndicators();
       setExistingTags(shop.tags || []);
       loadUserFeedback();
+    } else if (isOpen && !isLoggedIn) {
+      console.error('🚨 ShopFeedbackModal - User not logged in!');
+    } else if (isOpen && !user?.id) {
+      console.error('🚨 ShopFeedbackModal - User ID missing!', { user, isLoggedIn });
     }
-  }, [isOpen, shop.tags]);
+  }, [isOpen, shop.tags, isLoggedIn, user?.id]);
 
   const loadUserFeedback = async () => {
     try {
@@ -83,14 +90,17 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
   const loadAtmosphereIndicators = async () => {
     try {
       setIsLoading(true);
+      console.log('🔍 ShopFeedbackModal - Loading atmosphere indicators...');
       const result = await fetchAtmosphereIndicators();
+      console.log('🔍 ShopFeedbackModal - Atmosphere indicators result:', result);
       if (result.success && result.data) {
         setAtmosphereIndicators(result.data);
+        console.log('✅ ShopFeedbackModal - Atmosphere indicators loaded successfully:', result.data.length, 'items');
       } else {
-        console.error('雰囲気指標の取得に失敗:', result.error);
+        console.error('❌ ShopFeedbackModal - Failed to load atmosphere indicators:', result.error);
       }
     } catch (error) {
-      console.error('雰囲気指標の取得に失敗:', error);
+      console.error('💥 ShopFeedbackModal - Atmosphere indicators error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +224,7 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
           </div>
           {isLoading ? (
             <div className={styles.loading}>読み込み中...</div>
-          ) : (
+          ) : atmosphereIndicators.length > 0 ? (
             <div className={styles.atmosphereList}>
               {atmosphereIndicators.map(indicator => (
                 <AtmosphereSlider
@@ -224,6 +234,11 @@ const ShopFeedbackModal: React.FC<ShopFeedbackModalProps> = ({
                   onChange={(score) => handleAtmosphereScoreChange(indicator.id, score)}
                 />
               ))}
+            </div>
+          ) : (
+            <div className={styles.noData}>
+              <p>雰囲気指標データの取得に失敗しました。</p>
+              <p>ページを再読み込みしてください。</p>
             </div>
           )}
         </div>

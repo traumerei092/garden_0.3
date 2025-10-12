@@ -7,27 +7,37 @@ export async function fetchAtmosphereIndicators(): Promise<{
   error?: string;
 }> {
   try {
+    console.log('🔍 fetchAtmosphereIndicators - Starting request to:', '/accounts/atmosphere-indicators/');
     const response = await fetchWithSession('/accounts/atmosphere-indicators/', {
       method: 'GET',
     });
 
+    console.log('🔍 fetchAtmosphereIndicators - Response status:', response.status, response.ok);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ fetchAtmosphereIndicators - API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
       return {
         success: false,
-        error: '雰囲気指標の取得に失敗しました',
+        error: `雰囲気指標の取得に失敗しました (${response.status}: ${response.statusText})`,
       };
     }
 
     const data = await response.json();
+    console.log('✅ fetchAtmosphereIndicators - Success:', data.length, 'indicators received');
     return {
       success: true,
       data,
     };
   } catch (error) {
-    console.error('雰囲気指標取得エラー:', error);
+    console.error('💥 fetchAtmosphereIndicators - Exception:', error);
     return {
       success: false,
-      error: '雰囲気指標の取得に失敗しました',
+      error: `雰囲気指標の取得に失敗しました: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }

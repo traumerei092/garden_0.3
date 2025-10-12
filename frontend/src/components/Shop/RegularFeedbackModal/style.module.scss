@@ -29,6 +29,31 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+.noData {
+  text-align: center;
+  padding: 40px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+
+  p {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+
+    &:first-child {
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+    }
+
+    &:last-child {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+    }
+  }
+}
+
 // 雰囲気フィードバックステップ
 .atmosphereStep {
   padding: 20px 0;

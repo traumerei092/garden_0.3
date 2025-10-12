@@ -13,6 +13,12 @@ export const useAuthSession = () => {
   const user: User | null = useMemo(() => {
     if (!session?.user) return null;
 
+    // session.user.idが存在しない場合はnullを返す
+    if (!session.user.id) {
+      console.error('🚨 session.user.id is missing!', { session, user: session.user });
+      return null;
+    }
+
     return {
       id: parseInt(session.user.id),
       uid: session.uid || '',

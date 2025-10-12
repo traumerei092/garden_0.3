@@ -20,6 +20,7 @@ import { toggleTagReaction } from '@/actions/shop/relation';
 import { submitShopFeedback, FeedbackData } from '@/actions/shop/feedback';
 import { fetchUserAtmosphereFeedback } from '@/actions/shop/atmosphere';
 import { addImpressionTag } from '@/actions/shop/impressionTag';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 interface RegularFeedbackModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
   shop,
   onDataUpdate
 }) => {
+  const { user, isLoggedIn } = useAuthSession();
   const [currentStep, setCurrentStep] = useState(0);
 
   // Step 1: 利用シーン関連
@@ -53,29 +55,39 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
 
   // モーダルが開かれた時に必要なデータを取得
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isLoggedIn && user?.id) {
+      console.log('🔍 RegularFeedbackModal - Loading data with user:', user.id);
       loadInitialData();
       setExistingTags(shop.tags || []);
       loadUserFeedback();
+    } else if (isOpen && !isLoggedIn) {
+      console.error('🚨 RegularFeedbackModal - User not logged in!');
+    } else if (isOpen && !user?.id) {
+      console.error('🚨 RegularFeedbackModal - User ID missing!', { user, isLoggedIn });
     }
-  }, [isOpen, shop.tags]);
+  }, [isOpen, shop.tags, isLoggedIn, user?.id]);
 
   const loadInitialData = async () => {
     setIsLoading(true);
     try {
+      console.log('🔍 RegularFeedbackModal - Loading initial data...');
       const [purposesData, indicatorsResponse] = await Promise.all([
         fetchVisitPurposes(),
         fetchAtmosphereIndicators()
       ]);
+      console.log('🔍 RegularFeedbackModal - Visit purposes loaded:', purposesData.length, 'items');
+      console.log('🔍 RegularFeedbackModal - Atmosphere indicators result:', indicatorsResponse);
+
       setVisitPurposes(purposesData);
 
       if (indicatorsResponse.success && indicatorsResponse.data) {
         setAtmosphereIndicators(indicatorsResponse.data);
+        console.log('✅ RegularFeedbackModal - Initial data loaded successfully');
       } else {
-        console.error('雰囲気指標の取得に失敗:', indicatorsResponse.error);
+        console.error('❌ RegularFeedbackModal - Failed to load atmosphere indicators:', indicatorsResponse.error);
       }
     } catch (error) {
-      console.error('初期データ取得エラー:', error);
+      console.error('💥 RegularFeedbackModal - Initial data loading error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -237,7 +249,7 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
           </div>
           {isLoading ? (
             <div className={styles.loading}>読み込み中...</div>
-          ) : (
+          ) : visitPurposes.length > 0 ? (
             <CustomCheckboxGroup
               name="visitPurposes"
               values={selectedVisitPurposes}
@@ -247,6 +259,11 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
                 value: purpose.id.toString()
               }))}
             />
+          ) : (
+            <div className={styles.noData}>
+              <p>利用目的データの取得に失敗しました。</p>
+              <p>ページを再読み込みしてください。</p>
+            </div>
           )}
         </div>
       )
@@ -261,7 +278,7 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
           </div>
           {isLoading ? (
             <div className={styles.loading}>読み込み中...</div>
-          ) : (
+          ) : atmosphereIndicators.length > 0 ? (
             <div className={styles.atmosphereList}>
               {atmosphereIndicators.map(indicator => (
                 <AtmosphereSlider
@@ -271,6 +288,11 @@ const RegularFeedbackModal: React.FC<RegularFeedbackModalProps> = ({
                   onChange={(score) => handleAtmosphereScoreChange(indicator.id, score)}
                 />
               ))}
+            </div>
+          ) : (
+            <div className={styles.noData}>
+              <p>雰囲気指標データの取得に失敗しました。</p>
+              <p>ページを再読み込みしてください。</p>
             </div>
           )}
         </div>

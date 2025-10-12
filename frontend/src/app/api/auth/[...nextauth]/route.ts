@@ -3,6 +3,44 @@ import type { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
+async function refreshAccessToken(token: any) {
+  try {
+    console.log('🔄 Attempting to refresh access token...')
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt/refresh/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh: token.refreshToken,
+      }),
+    })
+
+    const refreshedTokens = await response.json()
+
+    if (!response.ok) {
+      console.error('❌ Token refresh failed:', refreshedTokens)
+      throw refreshedTokens
+    }
+
+    console.log('✅ Token refreshed successfully')
+    return {
+      ...token,
+      accessToken: refreshedTokens.access,
+      accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15分
+      refreshToken: refreshedTokens.refresh ?? token.refreshToken, // refreshトークンが更新されない場合は既存のものを保持
+    }
+  } catch (error) {
+    console.error('💥 Token refresh error:', error)
+
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+    }
+  }
+}
+
 const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
   providers: [
@@ -135,14 +173,23 @@ const authOptions: NextAuthOptions = {
         token.accessToken = (user as any).accessToken
         token.refreshToken = (user as any).refreshToken
         token.uid = user.id
+        token.id = user.id // user.idを明示的に設定
         token.header_image = (user as any).header_image
         token.introduction = (user as any).introduction
         token.gender = (user as any).gender
         token.birthdate = (user as any).birthdate
         token.my_area = (user as any).my_area
+        token.accessTokenExpires = Date.now() + 15 * 60 * 1000 // 15分
       }
 
-      return token
+      // アクセストークンの有効期限チェック
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token
+      }
+
+      // トークンリフレッシュ
+      console.log('🔄 Access token expired, refreshing...')
+      return await refreshAccessToken(token)
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string
@@ -151,6 +198,7 @@ const authOptions: NextAuthOptions = {
 
       // ユーザープロパティをセッションに追加
       if (session.user) {
+        session.user.id = token.id as string // user.idを明示的に設定
         session.user.header_image = token.header_image as string
         session.user.introduction = token.introduction as string
         session.user.gender = token.gender as string

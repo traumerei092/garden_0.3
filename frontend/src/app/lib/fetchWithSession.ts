@@ -1,4 +1,4 @@
-import { getSession } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 
 export const fetchWithSession = async (
     input: RequestInfo | URL,
@@ -7,6 +7,7 @@ export const fetchWithSession = async (
   // Get session data
   const session = await getSession();
   const accessToken = session?.accessToken || null;
+
 
   // 相対パスの場合はベースURLを追加
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -22,6 +23,7 @@ export const fetchWithSession = async (
     ...(accessToken ? { Authorization: `JWT ${accessToken}` } : {}),
   };
 
+
   // FormDataでない場合のみContent-Typeを設定
   if (!isFormData) {
     headers['Content-Type'] = 'application/json';
@@ -35,9 +37,35 @@ export const fetchWithSession = async (
 
   const res = await fetch(url, mergedInit);
 
-  // NextAuth.jsが自動的にトークンリフレッシュを処理するため、
-  // 401エラー時の手動リフレッシュは不要
-  // 必要に応じて signIn() を呼び出してリダイレクトまたは再認証を促す
+  // 401エラーの場合、セッション更新を試行
+  if (res.status === 401 && accessToken) {
+    console.log('🔄 401 error detected, attempting to refresh session...');
+
+    // セッションを強制的に更新
+    const newSession = await getSession();
+
+    if (newSession?.accessToken && newSession.accessToken !== accessToken) {
+      console.log('✅ Session refreshed, retrying request...');
+
+      // 新しいトークンでリトライ
+      const retryHeaders: Record<string, string> = {
+        ...(init.headers as Record<string, string>),
+        Authorization: `JWT ${newSession.accessToken}`,
+      };
+
+      if (!isFormData) {
+        retryHeaders['Content-Type'] = 'application/json';
+      }
+
+      const retryInit: RequestInit = {
+        ...init,
+        headers: retryHeaders,
+        credentials: 'include',
+      };
+
+      return await fetch(url, retryInit);
+    }
+  }
 
   return res;
 };

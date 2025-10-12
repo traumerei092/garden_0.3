@@ -181,19 +181,29 @@ const RegularsCommunitySection: React.FC<RegularsCommunityProps> = ({
 
   // 共通点データの処理（新しいAPI対応）
   const renderPersonalConnection = () => {
+    console.log('🔍 renderPersonalConnection called');
+    console.log('🔍 user?.id:', user?.id);
+    console.log('🔍 communityStats:', communityStats);
+
     if (!user?.id) {
+      console.log('❌ No user.id, returning null');
       return null;
     }
 
     // 新しいAPI（communityStats）を優先使用
     if (communityStats?.commonalities) {
       const { commonalities } = communityStats;
+      console.log('🤝 Commonalities object:', commonalities);
+
       const hasAnyCommonalities = commonalities.age_gender || commonalities.atmosphere || commonalities.visit_purpose;
+      console.log('🤝 hasAnyCommonalities:', hasAnyCommonalities);
 
       if (!hasAnyCommonalities) {
+        console.log('❌ No commonalities found, returning null');
         return null;
       }
 
+      console.log('✅ Rendering commonalities');
       return (
         <div className={styles.regularsSummary}>
           <div className={styles.summaryTitle}>あなたとの共通度</div>

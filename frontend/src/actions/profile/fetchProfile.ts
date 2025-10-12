@@ -5,16 +5,16 @@ import { User } from "@/types/users";
 export const fetchUserProfile = async (): Promise<User> => {
     try {
         console.log('🚀 ユーザープロフィール取得開始');
-        
+
         const url = `${process.env.NEXT_PUBLIC_API_URL}/accounts/users/me/`;
         console.log('🔗 リクエストURL:', url);
-        
+
         const response = await fetchWithSession(url, {
             method: "GET",
         });
 
         console.log('📊 レスポンスステータス:', response.status);
-        
+
         if (!response.ok) {
             const errorBody = await response.text();
             console.error('❌ プロフィール取得エラー:', errorBody);
@@ -26,7 +26,7 @@ export const fetchUserProfile = async (): Promise<User> => {
         console.log('📈 興味データ:', userData.interests);
         console.log('🩸 血液型データ:', userData.blood_type);
         console.log('🧠 MBTIデータ:', userData.mbti);
-        
+
         return userData;
     } catch (error) {
         console.error("ユーザープロフィール取得エラー:", {
