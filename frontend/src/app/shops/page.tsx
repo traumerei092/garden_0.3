@@ -7,7 +7,7 @@ import Header from "@/components/Layout/Header";
 import ShopListHeader from "@/components/Shop/ShopListHeader";
 import ShopSearchModal from "@/components/Shop/ShopSearchModal";
 import { SearchFilters } from '@/types/search';
-import { getDefaultSortKey } from '@/actions/shop/sort';
+import { getDefaultSortKey, getContextAwareSortKey } from '@/actions/shop/sort';
 
 const Shops = () => {
     const [selectedTab, setSelectedTab] = useState<string>('list');
@@ -38,6 +38,11 @@ const Shops = () => {
             const sortParam = urlParams.get('sort');
             if (sortParam) {
                 setCurrentSort(sortParam);
+            } else {
+                // URLでソートが指定されていない場合、コンテキスト対応ソートを使用
+                const contextAwareSort = getContextAwareSortKey(urlParams);
+                setCurrentSort(contextAwareSort);
+                console.log('🎯 コンテキスト対応ソート適用:', contextAwareSort);
             }
 
             // URLパラメータが存在しない場合は空のオブジェクトを設定
@@ -173,6 +178,7 @@ const Shops = () => {
                 filterCount={filterCount}
                 onSearch={handleSearch}
                 onSortChange={handleSortChange}
+                currentSort={currentSort}
             />
             {searchFilters !== null && (
                 <ShopList

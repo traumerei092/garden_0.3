@@ -89,3 +89,39 @@ export const getSortLabel = (sortKey: string): string => {
 export const getDefaultSortKey = (): string => {
   return 'welcome_count'; // デフォルトは「ウェルカムが多い順」
 };
+
+/**
+ * コンテキスト対応デフォルトソートキーを取得
+ * 検索経路に応じて最適なソートを自動選択
+ */
+export const getContextAwareSortKey = (searchParams: URLSearchParams): string => {
+  // 現在地検索の場合は距離順を優先
+  if (searchParams.has('user_lat') && searchParams.has('user_lng')) {
+    return 'distance';
+  }
+
+  // 常連客関連の検索の場合
+  if (searchParams.has('regular_interests') ||
+      searchParams.has('regular_mbti_types') ||
+      searchParams.has('regular_blood_types')) {
+    return 'favorite_count';
+  }
+
+  // 雰囲気関連の検索の場合
+  if (searchParams.has('atmosphere_preferences')) {
+    return 'solitude_friendly'; // または community_friendly
+  }
+
+  // タグ関連の検索の場合
+  if (searchParams.has('impression_tags')) {
+    return 'tag_reaction_count';
+  }
+
+  // 口コミ重視の検索の場合
+  if (searchParams.has('min_rating') || searchParams.has('has_reviews')) {
+    return 'review_count';
+  }
+
+  // その他はデフォルト
+  return getDefaultSortKey();
+};

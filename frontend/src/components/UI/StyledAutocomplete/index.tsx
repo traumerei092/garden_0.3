@@ -13,6 +13,7 @@ export interface AutocompleteOption {
 interface StyledAutocompleteProps {
   options: AutocompleteOption[];
   defaultSelectedKey?: string;
+  selectedKey?: string;
   placeholder?: string;
   onSelectionChange?: (key: string | null) => void;
   className?: string;
@@ -24,6 +25,7 @@ interface StyledAutocompleteProps {
 const StyledAutocomplete: React.FC<StyledAutocompleteProps> = ({
   options,
   defaultSelectedKey,
+  selectedKey,
   placeholder,
   onSelectionChange,
   className = '',
@@ -42,7 +44,7 @@ const StyledAutocomplete: React.FC<StyledAutocompleteProps> = ({
         listboxWrapper: styles.autocompleteListboxWrapper,
         endContentWrapper: styles.autocompleteEndContentWrapper,
       }}
-      defaultSelectedKey={defaultSelectedKey}
+      selectedKey={selectedKey || defaultSelectedKey}
       placeholder={placeholder}
       aria-label={ariaLabel}
       onSelectionChange={(key) => {

@@ -3506,11 +3506,61 @@ class ShopSortAPIView(APIView):
             ).order_by('-welcome_count', '-created_at')
 
         elif sort_key == 'distance':
-            # 距離ソート（簡易実装：位置情報がある店舗を優先）
-            queryset = queryset.filter(
-                latitude__isnull=False,
-                longitude__isnull=False
-            ).order_by('latitude', 'longitude', 'created_at')
+            # 距離ソート（ハバーサイン公式を使用した正確な距離計算）
+            user_lat = request.GET.get('user_lat')
+            user_lng = request.GET.get('user_lng')
+
+            if user_lat and user_lng:
+                try:
+                    from math import radians, cos, sin, asin, sqrt
+                    from django.db.models import Case, When
+
+                    user_lat = float(user_lat)
+                    user_lng = float(user_lng)
+
+                    def haversine(lon1, lat1, lon2, lat2):
+                        """2つの地点間の大圏距離をハバーサイン公式で計算"""
+                        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+                        dlon = lon2 - lon1
+                        dlat = lat2 - lat1
+                        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+                        c = 2 * asin(sqrt(a))
+                        r = 6371  # 地球の半径（km）
+                        return c * r
+
+                    # 各店舗に距離を計算してソート
+                    shops_with_distance = []
+                    for shop in queryset:
+                        if shop.latitude and shop.longitude:
+                            distance = haversine(user_lng, user_lat, shop.longitude, shop.latitude)
+                            shops_with_distance.append((shop.id, distance))
+                        else:
+                            # 座標がない店舗は最後に配置
+                            shops_with_distance.append((shop.id, 9999))
+
+                    # 距離でソート
+                    shops_with_distance.sort(key=lambda x: x[1])
+                    shop_ids_ordered = [shop_id for shop_id, _ in shops_with_distance]
+
+                    # Django QuerySetをカスタムソート順に並び替え
+                    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(shop_ids_ordered)])
+                    queryset = queryset.filter(pk__in=shop_ids_ordered).order_by(preserved)
+
+                    print(f"新しい距離ソート適用: ユーザー位置({user_lat}, {user_lng}), 結果順={shop_ids_ordered[:5]}...")
+
+                except (ValueError, TypeError) as e:
+                    print(f"距離ソートエラー: {e}")
+                    # エラーの場合は位置情報がある店舗を優先
+                    queryset = queryset.filter(
+                        latitude__isnull=False,
+                        longitude__isnull=False
+                    ).order_by('created_at')
+            else:
+                # 位置情報がない場合は位置情報がある店舗を優先
+                queryset = queryset.filter(
+                    latitude__isnull=False,
+                    longitude__isnull=False
+                ).order_by('created_at')
 
         elif sort_key == 'favorite_count':
             queryset = queryset.annotate(

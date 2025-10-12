@@ -17,9 +17,10 @@ interface ShopListHeaderProps {
     filterCount?: number;
     onSearch?: () => void;
     onSortChange?: (sortKey: string) => void;
+    currentSort?: string; // 現在のソートキー
 }
 
-const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch, onSortChange }) => {
+const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChange, shopCount = 0, filterCount = 0, onSearch, onSortChange, currentSort }) => {
 
     const router = useRouter();
     const { user } = useAuthSession();
@@ -30,6 +31,9 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
         label: option.label,
         value: option.key
     }));
+
+    // 現在のソートキーを決定（propsからの値またはデフォルト）
+    const effectiveSortKey = currentSort || getDefaultSortKey();
     const targetUrl = user ? '/shops/create' : '/login';
     const handleCreateShop = () => {
             router.push(targetUrl); // ショップ詳細ページへ遷移
@@ -79,8 +83,8 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
                 <div className={styles.mobileAutocomplete}>
                     <StyledAutocomplete
                         options={sortOptions}
-                        defaultSelectedKey={getDefaultSortKey()}
-                        placeholder={sortOptions.find(opt => opt.key === getDefaultSortKey())?.label || 'ソート順を選択'}
+                        selectedKey={effectiveSortKey}
+                        placeholder={sortOptions.find(opt => opt.key === effectiveSortKey)?.label || 'ソート順を選択'}
                         aria-label="並び順を選択"
                         size="sm"
                         radius="sm"
@@ -95,8 +99,8 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
             <div className={styles.headerRight}>
                 <StyledAutocomplete
                     options={sortOptions}
-                    defaultSelectedKey={getDefaultSortKey()}
-                    placeholder={sortOptions.find(opt => opt.key === getDefaultSortKey())?.label || 'ソート順を選択'}
+                    selectedKey={effectiveSortKey}
+                    placeholder={sortOptions.find(opt => opt.key === effectiveSortKey)?.label || 'ソート順を選択'}
                     aria-label="並び順を選択"
                     size="sm"
                     radius="sm"
