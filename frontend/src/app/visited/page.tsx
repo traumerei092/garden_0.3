@@ -86,7 +86,7 @@ const VisitedPage: React.FC = () => {
         </button>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
-            <Star className={styles.titleIcon} />
+            <Star className={styles.titleIcon} strokeWidth={1}/>
             行った店舗
           </h1>
           <p className={styles.subtitle}>
@@ -98,7 +98,7 @@ const VisitedPage: React.FC = () => {
       <div className={styles.content}>
         {shops.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>🏪</div>
+            <div className={styles.emptyIcon}><Star size={48} strokeWidth={0.5}/></div>
             <h3 className={styles.emptyTitle}>まだ行った店舗がありません</h3>
             <p className={styles.emptyDescription}>
               気になる店舗を見つけて「行った」ボタンを押してみましょう

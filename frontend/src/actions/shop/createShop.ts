@@ -1,6 +1,7 @@
 import {ShopFormValues} from "@/types/shops";
+import { fetchWithSession } from '@/app/lib/fetchWithSession';
 
-export const createShop = async (formValues: ShopFormValues, token: string) => {
+export const createShop = async (formValues: ShopFormValues) => {
     const formData = new FormData();
     console.log("--- 送信前のフォームデータ ---");
     console.log("フォーム値:", formValues);
@@ -93,12 +94,8 @@ export const createShop = async (formValues: ShopFormValues, token: string) => {
     });
 
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/shop-create/`, {
+        const res = await fetchWithSession('/shop-create/', {
             method: 'POST',
-            headers: {
-                'Authorization': `JWT ${token}`
-            },
-            credentials: 'omit', // Cookieを送信しない
             body: formData
         });
 

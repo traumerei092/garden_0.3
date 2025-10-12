@@ -8,6 +8,7 @@ import ButtonGradient from "@/components/UI/ButtonGradient";
 import styles from './style.module.scss';
 import type { ShopFormValues } from "@/types/shops";
 import { createShop } from "@/actions/shop/createShop";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 type Props = {
     isOpen: boolean;
@@ -18,25 +19,22 @@ type Props = {
 };
 
 const ShopCreateModal = ({ isOpen,　onClose, formValues, setCurrentStep, onShopCreated }: Props) => {
+    const { session, isLoggedIn } = useAuthSession();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleCreateShop = async () => {
         setIsLoading(true);
         setError(null);
-        
-        const accessToken = typeof window !== 'undefined'
-            ? localStorage.getItem('access')
-            : null;
 
-        if (!accessToken) {
+        if (!isLoggedIn || !session?.accessToken) {
             setError("ログインが必要です");
             setIsLoading(false);
             return;
         }
 
         try {
-            const result = await createShop(formValues, accessToken);
+            const result = await createShop(formValues);
 
             if (result.success) {
                 if (onShopCreated && (result.data?.id || result.data?.shop_id)) {

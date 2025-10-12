@@ -87,7 +87,7 @@ const WishlistPage: React.FC = () => {
         </button>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
-            <Heart className={styles.titleIcon} />
+            <Heart className={styles.titleIcon} strokeWidth={1}/>
             行きたい店舗
           </h1>
           <p className={styles.subtitle}>
@@ -99,7 +99,7 @@ const WishlistPage: React.FC = () => {
       <div className={styles.content}>
         {shops.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>💝</div>
+            <div className={styles.emptyIcon}><Heart size={48} strokeWidth={0.5}/></div>
             <h3 className={styles.emptyTitle}>まだ行きたい店舗がありません</h3>
             <p className={styles.emptyDescription}>
               気になる店舗を見つけて「行きたい」ボタンを押してみましょう

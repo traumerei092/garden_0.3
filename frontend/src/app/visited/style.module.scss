@@ -128,8 +128,10 @@
   .emptyIcon {
     font-size: 4rem;
     margin-bottom: 24px;
-    opacity: 0.6;
-    filter: grayscale(1);
+    color: #ffc107;
+    filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
+    display: flex;
+    justify-content: center;
   }
 
   .emptyTitle {

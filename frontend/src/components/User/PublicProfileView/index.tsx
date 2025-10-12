@@ -21,7 +21,7 @@ interface PublicProfileViewProps {
 }
 
 const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) => {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('favorites');
   const { user } = useAuthSession();
   const [favoriteShops, setFavoriteShops] = useState<UserShop[]>([]);
   const [visitedShops, setVisitedShops] = useState<UserShop[]>([]);
@@ -236,10 +236,34 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
   };
 
   // プロフィール詳細コンテンツ
-  const renderProfileContent = () => (
-    <div className={styles.profileGrid}>
-      {/* パーソナリティ */}
-      {(userProfile.blood_type?.name || userProfile.mbti?.name) && (
+  const renderProfileContent = () => {
+    // プロフィール情報が存在するかチェック
+    const hasPersonality = userProfile.blood_type?.name || userProfile.mbti?.name;
+    const hasJob = userProfile.occupation || userProfile.industry || userProfile.position;
+    const hasInterests = userProfile.interests && userProfile.interests.length > 0;
+    const hasLifestyle = (userProfile.hobbies && userProfile.hobbies.length > 0) || userProfile.exercise_frequency?.name || userProfile.dietary_preference?.name;
+    const hasAlcohol = (userProfile.alcohol_categories?.length || userProfile.alcohol_brands?.length || userProfile.drink_styles?.length);
+    const hasAtmosphere = userProfile.atmosphere_preferences && userProfile.atmosphere_preferences.length > 0;
+    const hasVisitPurposes = userProfile.visit_purposes && userProfile.visit_purposes.length > 0;
+
+    const hasAnyProfileData = hasPersonality || hasJob || hasInterests || hasLifestyle || hasAlcohol || hasAtmosphere || hasVisitPurposes;
+
+    if (!hasAnyProfileData) {
+      return (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            <User size={48} strokeWidth={0.5} fill='rgba(0, 255, 255, 0.2)' className={styles.emptyIcon} />
+          </div>
+          <h3>プロフィール情報がありません</h3>
+          <p>まだプロフィール情報が登録されていません</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.profileGrid}>
+        {/* パーソナリティ */}
+        {hasPersonality && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>パーソナリティ</h3>
           <div className={styles.cardContent}>
@@ -260,7 +284,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* 職業情報 */}
-      {(userProfile.occupation || userProfile.industry || userProfile.position) && (
+      {hasJob && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>職業</h3>
           <div className={styles.cardContent}>
@@ -287,13 +311,13 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* 興味 */}
-      {userProfile.interests && userProfile.interests.length > 0 && (
+      {hasInterests && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>興味</h3>
           <div className={styles.cardContent}>
             <div className={styles.tagsContainer}>
               {userProfile.interests
-                .filter(interest => interest?.name)
+                ?.filter(interest => interest?.name)
                 .map((interest) => (
                   <ChipSelected
                     key={interest.id}
@@ -308,7 +332,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* ライフスタイル */}
-      {((userProfile.hobbies && userProfile.hobbies.length > 0) || userProfile.exercise_frequency?.name || userProfile.dietary_preference?.name) && (
+      {hasLifestyle && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>ライフスタイル</h3>
           <div className={styles.cardContent}>
@@ -346,8 +370,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* お酒の好み */}
-      {(userProfile.alcohol_categories || userProfile.alcohol_brands || userProfile.drink_styles) &&
-       (userProfile.alcohol_categories?.length || userProfile.alcohol_brands?.length || userProfile.drink_styles?.length) && (
+      {hasAlcohol && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>お酒の好み</h3>
           <div className={styles.cardContent}>
@@ -407,12 +430,12 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* 好みの店舗の雰囲気 */}
-      {userProfile.atmosphere_preferences && userProfile.atmosphere_preferences.length > 0 && (
+      {hasAtmosphere && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>好みの店舗の雰囲気</h3>
           <div className={styles.cardContent}>
             <div className={styles.atmosphereGrid}>
-              {userProfile.atmosphere_preferences.map((preference) => (
+              {userProfile.atmosphere_preferences?.map((preference) => (
                 preference.indicator?.name && (
                   <div key={preference.id} className={styles.atmosphereItem}>
                     <h5 className={styles.atmosphereName}>{preference.indicator.name}</h5>
@@ -453,13 +476,13 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       )}
 
       {/* 利用目的 */}
-      {userProfile.visit_purposes && userProfile.visit_purposes.length > 0 && (
+      {hasVisitPurposes && (
         <div className={styles.profileCard}>
           <h3 className={styles.cardTitle}>利用目的</h3>
           <div className={styles.cardContent}>
             <div className={styles.tagsContainer}>
               {userProfile.visit_purposes
-                .filter(purpose => purpose?.name)
+                ?.filter(purpose => purpose?.name)
                 .map((purpose) => (
                   <ChipSelected
                     key={purpose.id}
@@ -473,7 +496,8 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   // 行きつけ店舗コンテンツをレンダリング
   const renderFavoriteShopsContent = () => {
@@ -491,8 +515,8 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
           <div className={styles.emptyIcon}>
             <Crown size={48} strokeWidth={0.5} fill='rgba(0, 255, 255, 0.2)' className={styles.emptyIcon} />
           </div>
-          <h3>行きつけのお店がありません</h3>
-          <p>まだ行きつけに登録された店舗がありません</p>
+          <h3>サードプレイスがありません</h3>
+          <p>このユーザーにはまだサードプレイスに登録された店舗がありません</p>
         </div>
       );
     }
@@ -555,7 +579,7 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
       return (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>
-            <Store size={48}  strokeWidth={0.5} fill='rgba(0, 255, 255, 0.2)' className={styles.emptyIcon} />
+            <Star size={48}  strokeWidth={0.5} fill='rgba(0, 255, 255, 0.2)' className={styles.emptyIcon} />
           </div>
           <h3>行った店舗がありません</h3>
           <p>まだ行った店舗がありません</p>

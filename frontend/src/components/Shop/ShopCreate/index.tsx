@@ -749,16 +749,6 @@ const ShopCreate = () => {
                                 ご登録いただき、ありがとうございます。<br/>
                                 あなたの素敵なサードプレイスが、多くの人に発見されることを願っています。
                             </p>
-                            <div className={styles.completionStats}>
-                                <div className={styles.statItem}>
-                                    <span className={styles.statNumber}>📍</span>
-                                    <span className={styles.statLabel}>新しい場所が追加されました</span>
-                                </div>
-                                <div className={styles.statItem}>
-                                    <span className={styles.statNumber}>🎉</span>
-                                    <span className={styles.statLabel}>コミュニティの一員です</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}
