@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import styles from "./style.module.scss";
 import { useRouter } from 'next/navigation';
-import {Button, Checkbox, Link, Form, Divider} from "@nextui-org/react";
+import {Checkbox, Link, Form, Divider} from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import Logo from "@/components/UI/Logo";
 import InputDefault from "@/components/UI/InputDefault";
 import ButtonGradient from "@/components/UI/ButtonGradient";
+import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import {signupUser} from "@/actions/auth/signup";
 
 type FormData = {
@@ -43,6 +44,7 @@ const SignupForm = () => {
 
   const [message, setMessage] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
 
 
@@ -107,117 +109,145 @@ const SignupForm = () => {
           <h1 className={styles.title}>Welcome to GARDEN !!</h1>
         </div>
 
-        <Form className={styles.form} validationBehavior="native" onSubmit={handleSubmit}>
-          <InputDefault
-              isRequired
-              label="User Name"
-              name="name"
-              type="text"
-              value={form.name}
-              onChange={handleChange}
-              isInvalid={errors.name.length > 0}
-              errorMessage={<ul>{errors.name.map((err, i) => <li key={i}>{err}</li>)}</ul>}
-          />
-          <InputDefault
-              isRequired
-              label="Email Address"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              isInvalid={errors.name.length > 0}
-              errorMessage={<ul>{errors.name.map((err, i) => <li key={i}>{err}</li>)}</ul>}
-          />
-          <InputDefault
-              isRequired
-              label="Password"
-              name="password"
-              type={isVisible ? "text" : "password"}
-              value={form.password}
-              onChange={handleChange}
-              endContent={
-                <button type="button" onClick={toggleVisibility} className={styles.iconButton}>
-                  <Icon
-                      className={styles.icon}
-                      icon={isVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
-                  />
-                </button>
-              }
-              isInvalid={errors.name.length > 0}
-              errorMessage={<ul>{errors.name.map((err, i) => <li key={i}>{err}</li>)}</ul>}
-          />
-          <InputDefault
-              isRequired
-              label="Confirm Password"
-              name="re_password"
-              type={isVisible ? "text" : "password"}
-              value={form.re_password}
-              onChange={handleChange}
-              endContent={
-                <button type="button" onClick={toggleVisibility} className={styles.iconButton}>
-                  <Icon
-                      className={styles.icon}
-                      icon={isVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
-                  />
-                </button>
-              }
-              isInvalid={errors.name.length > 0}
-              errorMessage={<ul>{errors.name.map((err, i) => <li key={i}>{err}</li>)}</ul>}
-          />
+        {!showEmailForm ? (
+          // 初期表示：メールサインアップボタン + SNSボタン
+          <div className={styles.initialView}>
+            <ButtonGradient
+              anotherStyle={styles.submitButton}
+              onClick={() => setShowEmailForm(true)}
+            >
+              メールアドレスでサインアップ
+            </ButtonGradient>
 
-          <div className={styles.optionsRow}>
-            <Checkbox name="remember" size="sm">
-              I agree with the&nbsp;
-              <Link className="relative z-[1]" href="#" size="sm">
-                Terms
-              </Link>
-              &nbsp; and&nbsp;
-              <Link className="relative z-[1]" href="#" size="sm">
-                Privacy Policy
-              </Link>
-            </Checkbox>
+            <div className={styles.dividerRow}>
+              <Divider className={styles.divider}/>
+              <p className={styles.orText}>OR</p>
+              <Divider className={styles.divider}/>
+            </div>
+
+            <div className={styles.socialButtons}>
+              <ButtonGradientWrapper
+                anotherStyle={styles.socialButton}
+                onClick={() => console.log('Google signup')}
+              >
+                <Icon icon="flat-color-icons:google" width={24} />
+                Sign up with Google
+              </ButtonGradientWrapper>
+              <ButtonGradientWrapper
+                anotherStyle={styles.socialButton}
+                onClick={() => console.log('LINE signup')}
+              >
+                <Icon icon="ri:line" width={24} className={styles.icon} />
+                Sign up with LINE
+              </ButtonGradientWrapper>
+              <ButtonGradientWrapper
+                anotherStyle={styles.socialButton}
+                onClick={() => console.log('Instagram signup')}
+              >
+                <Icon icon="mdi:instagram" width={24} className={styles.icon} />
+                Sign up with Instagram
+              </ButtonGradientWrapper>
+            </div>
+
+            <p className={styles.signupPrompt}>
+              既にアカウントをお持ちの場合はこちら&nbsp;
+              <Link href="/login" size="sm">Log In</Link>
+            </p>
           </div>
+        ) : (
+          // メールフォーム表示
+          <div className={styles.emailView}>
+            <Form className={styles.form} validationBehavior="native" onSubmit={handleSubmit}>
+              <InputDefault
+                  isRequired
+                  label="User Name"
+                  name="name"
+                  type="text"
+                  value={form.name}
+                  onChange={handleChange}
+                  isInvalid={errors.name.length > 0}
+                  errorMessage={<ul>{errors.name.map((err, i) => <li key={i}>{err}</li>)}</ul>}
+              />
+              <InputDefault
+                  isRequired
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  isInvalid={errors.email.length > 0}
+                  errorMessage={<ul>{errors.email.map((err, i) => <li key={i}>{err}</li>)}</ul>}
+              />
+              <InputDefault
+                  isRequired
+                  label="Password"
+                  name="password"
+                  type={isVisible ? "text" : "password"}
+                  value={form.password}
+                  onChange={handleChange}
+                  endContent={
+                    <button type="button" onClick={toggleVisibility} className={styles.iconButton}>
+                      <Icon
+                          className={styles.icon}
+                          icon={isVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
+                      />
+                    </button>
+                  }
+                  isInvalid={errors.password.length > 0}
+                  errorMessage={<ul>{errors.password.map((err, i) => <li key={i}>{err}</li>)}</ul>}
+              />
+              <InputDefault
+                  isRequired
+                  label="Confirm Password"
+                  name="re_password"
+                  type={isVisible ? "text" : "password"}
+                  value={form.re_password}
+                  onChange={handleChange}
+                  endContent={
+                    <button type="button" onClick={toggleVisibility} className={styles.iconButton}>
+                      <Icon
+                          className={styles.icon}
+                          icon={isVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
+                      />
+                    </button>
+                  }
+                  isInvalid={errors.re_password.length > 0}
+                  errorMessage={<ul>{errors.re_password.map((err, i) => <li key={i}>{err}</li>)}</ul>}
+              />
 
-          <ButtonGradient anotherStyle={styles.submitButton} type="submit">
-            SEND MAIL
-          </ButtonGradient>
-          {message && <p className={styles.message}>{message}</p>}
-        </Form>
+              <div className={styles.optionsRow}>
+                <Checkbox name="remember" size="sm">
+                  I agree with the&nbsp;
+                  <Link className="relative z-[1]" href="#" size="sm">
+                    Terms
+                  </Link>
+                  &nbsp; and&nbsp;
+                  <Link className="relative z-[1]" href="#" size="sm">
+                    Privacy Policy
+                  </Link>
+                </Checkbox>
+              </div>
 
-        <div className={styles.dividerRow}>
-          <Divider className={styles.divider}/>
-          <p className={styles.orText}>OR</p>
-          <Divider className={styles.divider}/>
-        </div>
+              <ButtonGradient anotherStyle={styles.submitButton} type="submit">
+                SEND MAIL
+              </ButtonGradient>
+              {message && <p className={styles.message}>{message}</p>}
+            </Form>
 
-        <div className={styles.socialButtons}>
-          <Button
-              startContent={<Icon icon="flat-color-icons:google" width={24}/>}
-              variant="bordered"
-              className={styles.socialButton}
-          >
-            Sign up with Google
-          </Button>
-          <Button
-              startContent={<Icon icon="ri:line" width={24} className={styles.icon}/>}
-              variant="bordered"
-              className={styles.socialButton}
-          >
-            Sign up with LINE
-          </Button>
-          <Button
-              startContent={<Icon icon="mdi:instagram" width={24} className={styles.icon}/>}
-              variant="bordered"
-              className={styles.socialButton}
-          >
-            Sign up with Instagram
-          </Button>
-        </div>
+            <ButtonGradientWrapper
+              anotherStyle={styles.backButton}
+              onClick={() => setShowEmailForm(false)}
+            >
+              <Icon icon="material-symbols:arrow-back" width={18} />
+              Back
+            </ButtonGradientWrapper>
 
-        <p className={styles.signupPrompt}>
-          既にアカウントをお持ちの場合はこちら&nbsp;
-          <Link href="/login" size="sm">Log In</Link>
-        </p>
+            <p className={styles.signupPrompt}>
+              既にアカウントをお持ちの場合はこちら&nbsp;
+              <Link href="/login" size="sm">Log In</Link>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

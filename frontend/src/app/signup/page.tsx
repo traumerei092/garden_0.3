@@ -4,9 +4,13 @@ import SignupForm from "@/components/Auth/SignupForm";
 
 const Signup = () => {
     return (
-        <div className={styles.container}>
-            <SignupForm />
-        </div>
+        <>
+            <div className={styles.backgroundImage}/>
+            <div className={styles.overlay}/>
+            <div className={styles.container}>
+                <SignupForm />
+            </div>
+        </>
     );
 };
 
