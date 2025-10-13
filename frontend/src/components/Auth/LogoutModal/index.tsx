@@ -5,7 +5,8 @@ import {Modal, ModalBody, ModalContent, ModalFooter} from "@nextui-org/modal";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import { useRouter } from "next/navigation";
-import { logoutUser } from "@/actions/auth/logout";
+import { signOut } from "next-auth/react";
+import { showLogoutToast } from "@/utils/toasts";
 import styles from './style.module.scss';
 
 type Props = {
@@ -16,9 +17,36 @@ type Props = {
 const LogoutModal = ({ isOpen,　onClose }: Props) => {
     const router = useRouter();
 
-    const handleLogout = () => {
-        logoutUser(); // 状態を初期化
-        router.push('/login'); // ログインページへ遷移
+    const handleLogout = async () => {
+        try {
+            // モーダルを先に閉じる
+            onClose();
+
+            // NextAuthセッションをクリア
+            await signOut({
+                redirect: false, // 自動リダイレクトを無効化
+                callbackUrl: '/login' // ログアウト後のURL指定
+            });
+
+            // 古いトークンもクリア（互換性のため）
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+            }
+
+            // ログアウトトースト表示
+            showLogoutToast();
+
+            // 少し待ってからログインページに遷移（セッションクリアを確実にするため）
+            setTimeout(() => {
+                router.push('/login');
+            }, 100);
+        } catch (error) {
+            console.error('Logout error:', error);
+            onClose();
+            // エラーが発生してもログインページに遷移
+            router.push('/login');
+        }
     };
 
     return (
