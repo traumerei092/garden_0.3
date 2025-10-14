@@ -131,3 +131,9 @@
   font-size: 0.75rem;
   margin-top: 0.5rem;
 }
+
+.loginLink {
+  background: linear-gradient(135deg, rgba(0, 198, 255, 1) 0%, rgba(235, 14, 242, 1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

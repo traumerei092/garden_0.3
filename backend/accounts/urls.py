@@ -4,6 +4,8 @@ from .views import (
     UserDetailView,
     ProfileDataView,
     ChangePasswordView,
+    SendEmailChangeOTPView,
+    VerifyEmailChangeOTPView,
     UpdateInterestsView,
     UpdateSocialPreferencesView,
     UpdateAlcoholCategoriesView,
@@ -46,6 +48,10 @@ urlpatterns = [
     path("users/<str:uid>/", UserDetailView.as_view(), name="user-detail"),
     # パスワード変更
     path("change-password/", ChangePasswordView.as_view(), name="change-password"),
+    # メールアドレス変更OTP送信
+    path("send-email-change-otp/", SendEmailChangeOTPView.as_view(), name="send-email-change-otp"),
+    # メールアドレス変更OTP検証
+    path("verify-email-change-otp/", VerifyEmailChangeOTPView.as_view(), name="verify-email-change-otp"),
     # 興味更新
     path("update-interests/", UpdateInterestsView.as_view(), name="update-interests"),
     # 交友関係の好み更新

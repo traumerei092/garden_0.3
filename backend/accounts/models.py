@@ -408,3 +408,34 @@ class ShopViewHistory(models.Model):
     
     def __str__(self):
         return f"{self.user.name} - {self.shop.name} ({self.viewed_at})"
+
+
+# --- Email Change OTP Model ---
+
+class EmailChangeOTP(models.Model):
+    """
+    メールアドレス変更時のOTP（ワンタイムパスワード）を管理するモデル
+    """
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='email_change_otps')
+    new_email = models.EmailField("新しいメールアドレス")
+    otp_code = models.CharField("OTPコード", max_length=6)
+    created_at = models.DateTimeField("作成日時", auto_now_add=True)
+    is_verified = models.BooleanField("認証済み", default=False)
+    expires_at = models.DateTimeField("有効期限")
+
+    class Meta:
+        verbose_name = "メールアドレス変更OTP"
+        verbose_name_plural = "メールアドレス変更OTP"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.name} - {self.new_email} ({self.otp_code})"
+
+    def is_expired(self):
+        """OTPが期限切れかチェック"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def is_valid(self):
+        """OTPが有効かチェック（期限内かつ未認証）"""
+        return not self.is_expired() and not self.is_verified

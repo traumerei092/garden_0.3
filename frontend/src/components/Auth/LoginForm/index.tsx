@@ -116,8 +116,8 @@ const LoginForm = () => {
             </div>
 
             <p className={styles.signupPrompt}>
-              Need to create an account?&nbsp;
-              <Link href="/signup" size="sm">Sign Up</Link>
+              アカウントがない方はこちらからスタート！&nbsp;
+              <Link href="/signup" size="sm" className={styles.signupLink}>Sign Up</Link>
             </p>
           </div>
         ) : (
@@ -150,7 +150,6 @@ const LoginForm = () => {
               />
 
               <div className={styles.optionsRow}>
-                <Checkbox name="remember" size="sm">Remember me</Checkbox>
                 <Link href="#" size="sm" className={styles.forgot}>Forgot password?</Link>
               </div>
 
@@ -175,8 +174,8 @@ const LoginForm = () => {
             </ButtonGradientWrapper>
 
             <p className={styles.signupPrompt}>
-              Need to create an account?&nbsp;
-              <Link href="/signup" size="sm">Sign Up</Link>
+              アカウントがない方はこちらからスタート！&nbsp;
+              <Link href="/signup" size="sm" className={styles.signupLink}>Sign Up</Link>
             </p>
           </div>
         )}

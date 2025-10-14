@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>パスワード変更のお知らせ</title>
+    <title>メールアドレス変更のお知らせ</title>
     <style>
         body {
             font-family: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", Meiryo, "メイリオ", sans-serif;
@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .header {
-            background-color: #f59e0b;
+            background-color: #10b981;
             color: white;
             padding: 20px;
             text-align: center;
@@ -31,8 +31,8 @@
             border-radius: 0 0 8px 8px;
         }
         .success-box {
-            background-color: #fef3c7;
-            border-left: 4px solid #f59e0b;
+            background-color: #ecfdf5;
+            border-left: 4px solid #10b981;
             padding: 15px;
             margin: 20px 0;
         }
@@ -51,9 +51,15 @@
             font-weight: bold;
             width: 40%;
         }
+        .email {
+            font-family: monospace;
+            background-color: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
         .warning-box {
-            background-color: #fef2f2;
-            border-left: 4px solid #ef4444;
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
             padding: 15px;
             margin: 20px 0;
         }
@@ -74,22 +80,26 @@
 </head>
 <body>
     <div class="header">
-        <h1>パスワード変更のお知らせ</h1>
+        <h1>メールアドレス変更完了</h1>
     </div>
 
     <div class="content">
         <p>{{ user.name }}様</p>
 
         <div class="success-box">
-            <strong>✓ パスワードの変更が完了しました</strong>
+            <strong>✓ メールアドレスの変更が完了しました</strong>
         </div>
 
-        <p>アカウントのパスワードが正常に変更されました。変更内容は以下の通りです：</p>
+        <p>アカウントのメールアドレスが正常に変更されました。変更内容は以下の通りです：</p>
 
         <table class="info-table">
             <tr>
-                <th>メールアドレス</th>
-                <td>{{ user.email }}</td>
+                <th>変更前</th>
+                <td><span class="email">{{ old_email }}</span></td>
+            </tr>
+            <tr>
+                <th>変更後</th>
+                <td><span class="email">{{ new_email }}</span></td>
             </tr>
             <tr>
                 <th>変更日時</th>
@@ -101,10 +111,9 @@
             <strong>セキュリティに関する重要なお知らせ:</strong>
             <ul>
                 <li>もしこの変更にお心当たりがない場合は、アカウントが不正使用されている可能性があります</li>
-                <li>すぐにサポートまでご連絡ください</li>
-                <li>新しいパスワードは他人に教えないでください</li>
-                <li>定期的にパスワードを変更することをお勧めします</li>
-                <li>推測されやすいパスワードの使用は避けてください</li>
+                <li>すぐにパスワードを変更し、サポートまでご連絡ください</li>
+                <li>今後は新しいメールアドレス（{{ new_email }}）に通知が送信されます</li>
+                <li>このメールアドレス（{{ old_email }}）への通知は今回が最後となります</li>
             </ul>
         </div>
 

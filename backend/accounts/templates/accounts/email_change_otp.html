@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メールアドレス変更の確認コード</title>
+    <style>
+        body {
+            font-family: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", Meiryo, "メイリオ", sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #3b82f6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0 0 8px 8px;
+        }
+        .otp-container {
+            background-color: #f3f4f6;
+            border: 2px dashed #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3b82f6;
+            letter-spacing: 4px;
+            font-family: monospace;
+        }
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .warning-box {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>メールアドレス変更の確認</h1>
+    </div>
+
+    <div class="content">
+        <p>{{ user.name }}様</p>
+
+        <p>メールアドレス変更のリクエストを受け付けました。<br>
+        以下の6桁の確認コードを入力して、変更を完了してください。</p>
+
+        <div class="info-box">
+            <strong>変更先メールアドレス:</strong> {{ new_email }}
+        </div>
+
+        <div class="otp-container">
+            <div>確認コード</div>
+            <div class="otp-code">{{ otp_code }}</div>
+        </div>
+
+        <div class="warning-box">
+            <strong>重要事項:</strong>
+            <ul>
+                <li>この確認コードは{{ expires_minutes }}分間有効です</li>
+                <li>コードは一度のみ使用可能です</li>
+                <li>この確認コードは他人に教えないでください</li>
+                <li>もしこのリクエストに心当たりがない場合は、このメールを無視してください</li>
+            </ul>
+        </div>
+
+        <p>メールアドレスの変更が完了すると、元のメールアドレス({{ user.email }})にも通知メールをお送りします。</p>
+
+        <div class="footer">
+            <p>このメールは自動送信されています。返信はできません。<br>
+            ご不明な点がございましたら、サポートまでお問い合わせください。</p>
+        </div>
+    </div>
+</body>
+</html>

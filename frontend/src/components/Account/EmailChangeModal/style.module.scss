@@ -1,0 +1,256 @@
+.modalContent {
+  background: rgba(0, 0, 0, 0.95);
+  color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalBody {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.modalFooter {
+  padding: 20px;
+  border-top: 1px solid #333;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.backButton {
+  min-width: 100px;
+}
+
+.nextButton {
+  min-width: 120px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px 20px 0 20px;
+}
+
+.stepIndicator {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 198, 255, 0.15);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.9rem;
+  margin-left: auto;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.stepHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stepIcon {
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.stepTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.stepDescription {
+  font-size: 0.875rem;
+  color: #a0a0a0;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inputField {
+  width: 100%;
+}
+
+.eyeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a0a0a0;
+
+  &:hover {
+    color: #3b82f6;
+  }
+}
+
+.emailComparison {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 198, 255, 0.15);;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.currentEmail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: #a0a0a0;
+  font-weight: 500;
+}
+
+.email {
+  font-size: 0.875rem;
+  color: #ffffff;
+  font-family: monospace;
+}
+
+.arrow {
+  text-align: center;
+  color: #3b82f6;
+  font-size: 1.125rem;
+}
+
+.otpContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.otpInput {
+  gap: 0.5rem;
+
+  :global(.nextui-input) {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.otpInputField {
+  background: rgba(0, 198, 255, 0.15);
+
+  //入力フォーカス時のスタイル
+  &:focus {
+    background: rgba(0, 198, 255, 0.2);
+  }
+}
+
+.errorMessage {
+  color: #ef4444;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.otpInfo {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #a0a0a0;
+  background: #2a2a2a;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.completedStep {
+  text-align: center;
+  padding: 2rem;
+}
+
+.successIcon {
+  width: 4rem;
+  height: 4rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 auto 1.5rem;
+  animation: checkmark-animation 0.5s ease-in-out;
+}
+
+@keyframes checkmark-animation {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.notificationInfo {
+  font-size: 0.875rem;
+  color: #a0a0a0;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 198, 255, 0.15);
+  border-radius: 0.5rem;
+}
+
+.nextButton {
+  background: #3b82f6;
+  color: white;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .stepContent {
+    gap: 1rem;
+  }
+
+  .stepHeader {
+    margin-bottom: 0.5rem;
+  }
+
+  .otpContainer {
+    padding: 0.5rem 0;
+  }
+
+  .completedStep {
+    padding: 1.5rem;
+  }
+
+  .successIcon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+}

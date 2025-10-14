@@ -151,7 +151,7 @@ const SignupForm = () => {
 
             <p className={styles.signupPrompt}>
               既にアカウントをお持ちの場合はこちら&nbsp;
-              <Link href="/login" size="sm">Log In</Link>
+              <Link href="/login" size="sm" className={styles.loginLink}>Log In</Link>
             </p>
           </div>
         ) : (
@@ -244,7 +244,7 @@ const SignupForm = () => {
 
             <p className={styles.signupPrompt}>
               既にアカウントをお持ちの場合はこちら&nbsp;
-              <Link href="/login" size="sm">Log In</Link>
+              <Link href="/login" size="sm" className={styles.loginLink}>Log In</Link>
             </p>
           </div>
         )}

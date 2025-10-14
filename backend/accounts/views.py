@@ -1,4 +1,12 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.html import strip_tags
+from django.conf import settings
+import random
+import string
+from datetime import timedelta
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -43,6 +51,7 @@ from .models import (
     BudgetRange,
     VisitPurpose,
     ProfileVisibilitySettings,
+    EmailChangeOTP,
 )
 from shops.models import AtmosphereIndicator
 
@@ -122,10 +131,195 @@ class ChangePasswordView(APIView):
         user.set_password(new_password)
         user.save()
 
+        # パスワード変更通知メールを送信
+        try:
+            context = {
+                'user': user
+            }
+
+            html_message = render_to_string('accounts/reset_password.html', context)
+            plain_message = strip_tags(html_message)
+
+            send_mail(
+                subject='パスワード変更のお知らせ',
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,  # パスワード変更は成功したので、メール送信失敗でもエラーにしない
+            )
+        except Exception:
+            pass  # 通知メール送信失敗は無視
+
         return Response(
             {'message': 'パスワードを変更しました'},
             status=status.HTTP_200_OK
         )
+
+
+def generate_otp():
+    """6桁のOTPコードを生成"""
+    return ''.join(random.choices(string.digits, k=6))
+
+
+# メールアドレス変更OTP送信
+class SendEmailChangeOTPView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_email = request.data.get('new_email')
+
+        if not current_password or not new_email:
+            return Response(
+                {'error': '現在のパスワードと新しいメールアドレスを入力してください'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 現在のパスワードを確認
+        if not user.check_password(current_password):
+            return Response(
+                {'error': '現在のパスワードが正しくありません'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 新しいメールアドレスが現在のものと同じかチェック
+        if user.email == new_email:
+            return Response(
+                {'error': '現在のメールアドレスと同じメールアドレスは使用できません'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 新しいメールアドレスが既に使用されているかチェック
+        if User.objects.filter(email=new_email).exists():
+            return Response(
+                {'error': 'このメールアドレスは既に使用されています'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 既存のOTPを削除
+        EmailChangeOTP.objects.filter(user=user).delete()
+
+        # 新しいOTPを生成
+        otp_code = generate_otp()
+        expires_at = timezone.now() + timedelta(minutes=10)  # 10分間有効
+
+        otp = EmailChangeOTP.objects.create(
+            user=user,
+            new_email=new_email,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+
+        # OTPをメールで送信
+        try:
+            context = {
+                'user': user,
+                'otp_code': otp_code,
+                'new_email': new_email,
+                'expires_minutes': 10
+            }
+
+            html_message = render_to_string('accounts/email_change_otp.html', context)
+            plain_message = strip_tags(html_message)
+
+            send_mail(
+                subject='メールアドレス変更の確認コード',
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[new_email],
+                fail_silently=False,
+            )
+
+            return Response(
+                {'message': 'OTPコードを新しいメールアドレスに送信しました'},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            # OTPレコードを削除
+            otp.delete()
+            return Response(
+                {'error': 'メール送信に失敗しました'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# メールアドレス変更OTP検証
+class VerifyEmailChangeOTPView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        new_email = request.data.get('new_email')
+        otp = request.data.get('otp')
+
+        if not new_email or not otp:
+            return Response(
+                {'error': 'メールアドレスとOTPコードを入力してください'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # OTPを取得
+            otp_record = EmailChangeOTP.objects.get(
+                user=user,
+                new_email=new_email,
+                otp_code=otp,
+                is_verified=False
+            )
+
+            # OTPが期限切れかチェック
+            if otp_record.is_expired():
+                otp_record.delete()
+                return Response(
+                    {'error': 'OTPコードの有効期限が切れています'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # メールアドレスを更新
+            old_email = user.email
+            user.email = new_email
+            user.save()
+
+            # OTPを認証済みに変更
+            otp_record.is_verified = True
+            otp_record.save()
+
+            # 古いメールアドレスに変更通知を送信
+            try:
+                context = {
+                    'user': user,
+                    'old_email': old_email,
+                    'new_email': new_email
+                }
+
+                html_message = render_to_string('accounts/email_change_notification.html', context)
+                plain_message = strip_tags(html_message)
+
+                send_mail(
+                    subject='メールアドレス変更のお知らせ',
+                    message=plain_message,
+                    html_message=html_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[old_email],
+                    fail_silently=True,  # 古いメールアドレスへの送信は失敗してもエラーにしない
+                )
+            except Exception:
+                pass  # 通知メール送信失敗は無視
+
+            return Response(
+                {'message': 'メールアドレスを変更しました'},
+                status=status.HTTP_200_OK
+            )
+
+        except EmailChangeOTP.DoesNotExist:
+            return Response(
+                {'error': 'OTPコードが正しくありません'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 # 興味更新

@@ -7,6 +7,7 @@ import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import ProfileCompletion from '@/components/UI/ProfileCompletion';
 import styles from './style.module.scss';
 import PasswordChangeModal from '@/components/Account/PasswordChangeModal';
+import EmailChangeModal from '@/components/Account/EmailChangeModal';
 import ImageEditModal from '@/components/Account/ImageEditModal';
 import BasicInfoEditModal from '@/components/Account/BasicInfoEditModal';
 import IntroductionEditModal from '@/components/Account/IntroductionEditModal';
@@ -31,6 +32,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
   // モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isIntroductionModalOpen, setIsIntroductionModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isHeaderModalOpen, setIsHeaderModalOpen] = useState(false);
@@ -346,7 +348,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
             <Button
               size="sm"
               variant="light"
-              onPress={() => setIsPasswordModalOpen(true)}
+              onPress={() => setIsEmailModalOpen(true)}
               className={styles.changePasswordButton}
             >
               変更
@@ -523,6 +525,12 @@ const BasicInfo: React.FC<BasicInfoProps> = ({ userData, profileOptions, userAtm
       <PasswordChangeModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
+      />
+
+      <EmailChangeModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        currentEmail={user?.email || ''}
       />
 
       {/* プロフィール画像編集モーダル */}

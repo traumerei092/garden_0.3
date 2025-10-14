@@ -144,7 +144,7 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({
     <CustomModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="興味を編集"
+      title="パスワードを変更"
       footer={footer}
       size="lg"
     >
