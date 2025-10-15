@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide } from 'lucide-react';
+import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide, MapPinned } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
 import { Shop, ShopStats } from "@/types/shops";
@@ -33,6 +33,7 @@ import LinkDefault from '@/components/UI/LinkDefault';
 import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import ShopEditModal from '@/components/Shop/ShopEditModal';
 import ShopHistoryModal from '@/components/Shop/ShopHistoryModal';
+import ShopMapModal from '@/components/Shop/ShopMapModal';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 
 
@@ -53,6 +54,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
   const [welcomeRefreshTrigger, setWelcomeRefreshTrigger] = useState(0);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [regularFeedbackModalOpen, setRegularFeedbackModalOpen] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const { user, isLoggedIn } = useAuthSession();
 
   // 店舗情報を取得
@@ -340,7 +342,17 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           <span className={styles.backButtonText}>一覧に戻る</span>
         </LinkDefault>
         <div className={styles.headerInfo}>
-          <h1 className={styles.headerShopName}>{shop.name}</h1>
+          <div className={styles.shopTitleContainer}>
+            <h1 className={styles.headerShopName}>{shop.name}</h1>
+            <Button
+              onPress={() => setShowMapModal(true)}
+              className={styles.mapButton}
+              variant="light"
+              size="sm"
+            >
+              <MapPinned size={14} strokeWidth={1} />
+            </Button>
+          </div>
         </div>
         <div className={styles.actionButtons}>
           {relationStats?.counts.map((relationType) => (
@@ -619,6 +631,15 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
           onClose={() => setRegularFeedbackModalOpen(false)}
           shop={shop}
           onDataUpdate={handleRegularFeedbackComplete}
+        />
+      )}
+
+      {/* 地図モーダル */}
+      {shop && (
+        <ShopMapModal
+          isOpen={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          shop={shop}
         />
       )}
     </div>

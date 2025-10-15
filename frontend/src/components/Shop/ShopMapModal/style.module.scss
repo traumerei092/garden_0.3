@@ -1,0 +1,212 @@
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  min-height: 500px;
+  background: rgb(10, 11, 28);
+  color: rgb(255, 255, 255);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.shopHeader {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(0, 198, 255, 0.1), rgba(235, 14, 242, 0.1));
+}
+
+.shopInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shopName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(255, 255, 255);
+  margin: 0;
+  background: linear-gradient(135deg, rgb(0, 198, 255), rgb(235, 14, 242));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.addressContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 198, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 198, 255, 0.2);
+}
+
+.addressIcon {
+  color: rgba(0, 198, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.address {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+}
+
+.copyButton {
+  padding: 4px 8px !important;
+  min-width: auto !important;
+  height: auto !important;
+  color: rgba(0, 198, 255, 0.8);
+}
+
+.mapContainer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: rgba(10, 11, 28, 0.8);
+}
+
+.loadingIcon {
+  width: 48px;
+  height: 48px;
+  color: rgb(0, 198, 255);
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: rgba(10, 11, 28, 0.8);
+}
+
+.errorIcon {
+  width: 48px;
+  height: 48px;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.errorText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.actionButton {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+  justify-content: center;
+  transition: all 0.3s ease;
+  max-width: 240px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 198, 255, 0.3);
+  }
+
+  span {
+    white-space: nowrap;
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .modalContent {
+    height: 80vh;
+    min-height: 400px;
+  }
+
+  .shopHeader {
+    padding: 16px;
+  }
+
+  .shopName {
+    font-size: 1.3rem;
+  }
+
+  .addressContainer {
+    padding: 6px 10px;
+  }
+
+  .address {
+    font-size: 0.8rem;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .actionButton {
+    padding: 10px 16px !important;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    height: 85vh;
+    min-height: 350px;
+  }
+
+  .shopHeader {
+    padding: 12px;
+  }
+
+  .shopName {
+    font-size: 1.2rem;
+  }
+
+  .addressContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .actionButtons {
+    padding: 12px;
+  }
+}
