@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import AtmosphereSlider from '@/components/UI/AtmosphereSlider';
@@ -111,7 +111,7 @@ const AtmosphereEditModal: React.FC<AtmosphereEditModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="雰囲気の好み">
+    <CustomModal isOpen={isOpen} onClose={onClose} title="雰囲気の好み">
       <div className={styles.content}>
         <div className={styles.modalHeader}>
           <div className={styles.visibilitySection}>
@@ -161,7 +161,7 @@ const AtmosphereEditModal: React.FC<AtmosphereEditModalProps> = ({
         cancelText="キャンセル"
         saveText="保存"
       />
-    </Modal>
+    </CustomModal>
   );
 };
 

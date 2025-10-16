@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Spinner } from "@nextui-org/react";
+import { Button, Spinner } from "@nextui-org/react";
+import CustomModal from "@/components/UI/Modal";
 import { PictureUpload } from "@/components/UI/PictureUpload";
 import styles from "./style.module.scss";
 
@@ -88,45 +89,43 @@ export const ShopImageModal = ({ isOpen, onClose, onSubmit, shopId }: ShopImageM
     };
 
     return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="sm" className={styles.modal}>
-        <ModalContent className={styles.modalContent}>
-            {(onClose) => (
+        <CustomModal
+            isOpen={isOpen}
+            onClose={handleClose}
+            title="店舗画像の追加"
+            size="sm"
+            footer={
                 <>
-                    <ModalHeader>店舗画像の追加</ModalHeader>
-                    <ModalBody>
-                        {error && (
-                            <div className={styles.errorText}>
-                                {error}
-                            </div>
-                        )}
-                        <PictureUpload
-                            file={file}
-                            caption={caption}
-                            index={0}
-                            onFileChange={(_, newFile) => setFile(newFile)}
-                            onCaptionChange={(_, newCaption) => setCaption(newCaption)}
-                            hideIconSelect={false}
-                            isRequired={false}
-                            isSelected={isIconSelected}
-                            onIconSelect={() => setIsIconSelected(!isIconSelected)}
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button color="danger" variant="light" onPress={onClose}>
-                            キャンセル
-                        </Button>
-                        <Button 
-                            color="primary" 
-                            onPress={handleSubmit} 
-                            isDisabled={!file || isLoading}
-                            isLoading={isLoading}
-                        >
-                            {isLoading ? "アップロード中..." : "追加"}
-                        </Button>
-                    </ModalFooter>
+                    <Button color="danger" variant="light" onPress={handleClose}>
+                        キャンセル
+                    </Button>
+                    <Button
+                        color="primary"
+                        onPress={handleSubmit}
+                        isDisabled={!file || isLoading}
+                        isLoading={isLoading}
+                    >
+                        {isLoading ? "アップロード中..." : "追加"}
+                    </Button>
                 </>
+            }
+        >
+            {error && (
+                <div className={styles.errorText}>
+                    {error}
+                </div>
             )}
-        </ModalContent>
-    </Modal>
+            <PictureUpload
+                file={file}
+                caption={caption}
+                index={0}
+                onFileChange={(_, newFile) => setFile(newFile)}
+                onCaptionChange={(_, newCaption) => setCaption(newCaption)}
+                hideIconSelect={false}
+                isRequired={false}
+                isSelected={isIconSelected}
+                onIconSelect={() => setIsIconSelected(!isIconSelected)}
+            />
+        </CustomModal>
     );
 };

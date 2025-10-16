@@ -14,7 +14,7 @@ import {
   ShopDrink 
 } from '@/types/shops'
 import { createShopDrink, fetchDrinkMasterData } from '@/actions/shop/drinks'
-import Modal from '@/components/UI/Modal'
+import CustomModal from '@/components/UI/Modal'
 import ModalButtons from '@/components/UI/ModalButtons'
 import styles from './style.module.scss'
 
@@ -398,7 +398,7 @@ const DrinkRegisterModal: React.FC<DrinkRegisterModalProps> = ({
   )
 
   return (
-    <Modal
+    <CustomModal
       isOpen={isOpen}
       onClose={handleClose}
       title="ドリンク登録"
@@ -406,7 +406,7 @@ const DrinkRegisterModal: React.FC<DrinkRegisterModalProps> = ({
       footer={modalFooter}
     >
       {modalContent}
-    </Modal>
+    </CustomModal>
   )
 }
 

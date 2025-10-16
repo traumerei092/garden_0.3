@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from '@nextui-org/react';
-import { X } from 'lucide-react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@nextui-org/react';
 import styles from './style.module.scss';
 
 interface CustomModalProps {

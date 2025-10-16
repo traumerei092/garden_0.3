@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, Button } from '@nextui-org/react';
-import { X } from 'lucide-react';
+import CustomModal from '@/components/UI/Modal';
 import useSWR from 'swr';
 import { fetchProfilePreview } from '@/actions/user/fetchPublicProfile';
 import { PublicUserProfile } from '@/types/users';
@@ -32,73 +31,51 @@ const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
   };
 
   return (
-    <Modal
+    <CustomModal
       isOpen={isOpen}
       onClose={handleClose}
+      title="プレビュー - 他のユーザーから見たプロフィール"
       size="full"
-      classNames={{
-        base: styles.modalBase,
-        backdrop: styles.modalBackdrop,
-        header: styles.modalHeader,
-        body: styles.modalBody,
-        footer: styles.modalFooter,
-      }}
-      hideCloseButton
       scrollBehavior="inside"
     >
-      <ModalContent className={styles.modalContent}>
-        <ModalHeader className={styles.header}>
-          <div className={styles.headerContent}>
-            <h2 className={styles.title}>プレビュー - 他のユーザーから見たプロフィール</h2>
-            <p className={styles.subtitle}>
-              このプロフィールは、他のユーザーがあなたのプロフィールを見た時の表示です
-            </p>
+      <div className={styles.headerContent}>
+        <p className={styles.subtitle}>
+          このプロフィールは、他のユーザーがあなたのプロフィールを見た時の表示です
+        </p>
+      </div>
+
+      {isLoading && (
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}>
+            <div className={styles.spinner} />
           </div>
-          <Button
-            isIconOnly
-            variant="light"
-            onPress={handleClose}
-            className={styles.closeButton}
-          >
-            <X size={24} />
-          </Button>
-        </ModalHeader>
+          <p className={styles.loadingText}>プレビューを読み込み中...</p>
+        </div>
+      )}
 
-        <ModalBody className={styles.body}>
-          {isLoading && (
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner}>
-                <div className={styles.spinner} />
-              </div>
-              <p className={styles.loadingText}>プレビューを読み込み中...</p>
-            </div>
-          )}
+      {error && (
+        <div className={styles.errorContainer}>
+          <div className={styles.errorContent}>
+            <h3 className={styles.errorTitle}>プレビューの読み込みに失敗しました</h3>
+            <p className={styles.errorMessage}>
+              しばらくしてから再度お試しください。
+            </p>
+            {process.env.NODE_ENV === 'development' && (
+              <details className={styles.errorDetails}>
+                <summary>エラー詳細</summary>
+                <pre>{error.message}</pre>
+              </details>
+            )}
+          </div>
+        </div>
+      )}
 
-          {error && (
-            <div className={styles.errorContainer}>
-              <div className={styles.errorContent}>
-                <h3 className={styles.errorTitle}>プレビューの読み込みに失敗しました</h3>
-                <p className={styles.errorMessage}>
-                  しばらくしてから再度お試しください。
-                </p>
-                {process.env.NODE_ENV === 'development' && (
-                  <details className={styles.errorDetails}>
-                    <summary>エラー詳細</summary>
-                    <pre>{error.message}</pre>
-                  </details>
-                )}
-              </div>
-            </div>
-          )}
-
-          {previewData && (
-            <div className={styles.previewContent}>
-              <PublicProfileView userProfile={previewData} />
-            </div>
-          )}
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+      {previewData && (
+        <div className={styles.previewContent}>
+          <PublicProfileView userProfile={previewData} />
+        </div>
+      )}
+    </CustomModal>
   );
 };
 

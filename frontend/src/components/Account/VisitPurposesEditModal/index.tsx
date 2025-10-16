@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
@@ -70,7 +70,7 @@ const VisitPurposesEditModal: React.FC<VisitPurposesEditModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} title="利用目的を編集">
+    <CustomModal isOpen={isOpen} onClose={handleCancel} title="利用目的を編集">
       <div className={styles.modalContent}>
         <div className={styles.visibilitySection}>
           <div className={styles.visibilityLabel}>利用目的の公開設定</div>
@@ -111,7 +111,7 @@ const VisitPurposesEditModal: React.FC<VisitPurposesEditModalProps> = ({
         saveText="保存"
         cancelText="キャンセル"
       />
-    </Modal>
+    </CustomModal>
   );
 };
 

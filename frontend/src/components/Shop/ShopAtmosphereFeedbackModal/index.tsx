@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import AtmosphereInput, { AtmosphereScores } from '@/components/UI/AtmosphereInput';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 import ModalButtons from '@/components/UI/ModalButtons';
@@ -111,7 +111,7 @@ const ShopAtmosphereFeedbackModal: React.FC<ShopAtmosphereFeedbackModalProps> = 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="雰囲気フィードバック">
+    <CustomModal isOpen={isOpen} onClose={handleClose} title="雰囲気フィードバック">
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
@@ -152,7 +152,7 @@ const ShopAtmosphereFeedbackModal: React.FC<ShopAtmosphereFeedbackModalProps> = 
           isDisabled={loading || !hasChanges()}
         />
       </div>
-    </Modal>
+    </CustomModal>
   );
 };
 

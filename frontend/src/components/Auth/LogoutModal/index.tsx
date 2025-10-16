@@ -1,13 +1,12 @@
 "use client";
 
 import React from "react";
-import {Modal, ModalBody, ModalContent, ModalFooter} from "@nextui-org/modal";
+import CustomModal from "@/components/UI/Modal";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { showLogoutToast } from "@/utils/toasts";
-import styles from './style.module.scss';
 
 type Props = {
     isOpen: boolean;
@@ -50,23 +49,19 @@ const LogoutModal = ({ isOpen,　onClose }: Props) => {
     };
 
     return (
-        <>
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalContent className={styles.modalContent}>
-                    {() => (
-                        <>
-                            <ModalBody>
-                                <p>ログアウトしますか？</p>
-                            </ModalBody>
-                            <ModalFooter>
-                                <ButtonGradientWrapper anotherStyle={""} onClick={onClose}>CLOSE</ButtonGradientWrapper>
-                                <ButtonGradient anotherStyle={""} onClick={handleLogout}>LOG OUT</ButtonGradient>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </>
+        <CustomModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="ログアウト確認"
+            footer={
+                <>
+                    <ButtonGradientWrapper anotherStyle={""} onClick={onClose}>CLOSE</ButtonGradientWrapper>
+                    <ButtonGradient anotherStyle={""} onClick={handleLogout}>LOG OUT</ButtonGradient>
+                </>
+            }
+        >
+            <p>ログアウトしますか？</p>
+        </CustomModal>
     );
 };
 

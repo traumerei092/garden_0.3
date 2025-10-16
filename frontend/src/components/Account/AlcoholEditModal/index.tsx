@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './style.module.scss';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import ModalButtons from '@/components/UI/ModalButtons';
 import CustomCheckboxGroup from '@/components/UI/CheckboxGroup';
 import SwitchVisibility from '@/components/UI/SwitchVisibility';
@@ -93,7 +93,7 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} title="お酒の好みを編集">
+    <CustomModal isOpen={isOpen} onClose={handleCancel} title="お酒の好みを編集">
       <div className={styles.modalHeader}>
         <div className={styles.visibilitySection}>
           <div className={styles.visibilityLabel}>お酒の好みの公開設定</div>
@@ -193,7 +193,7 @@ const AlcoholEditModal: React.FC<AlcoholEditModalProps> = ({
         saveText="保存"
         cancelText="キャンセル"
       />
-    </Modal>
+    </CustomModal>
   );
 };
 

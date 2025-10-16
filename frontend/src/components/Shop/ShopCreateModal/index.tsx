@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {Modal, ModalBody, ModalContent, ModalFooter} from "@nextui-org/modal";
 import {Spinner} from "@nextui-org/react";
+import CustomModal from "@/components/UI/Modal";
 import ButtonGradientWrapper from "@/components/UI/ButtonGradientWrapper";
 import ButtonGradient from "@/components/UI/ButtonGradient";
 import styles from './style.module.scss';
@@ -54,38 +54,34 @@ const ShopCreateModal = ({ isOpen,　onClose, formValues, setCurrentStep, onShop
     };
 
     return (
-        <>
-            <Modal isOpen={isOpen} onClose={!isLoading ? onClose : undefined}>
-                <ModalContent className={styles.modalContent}>
-                    {() => (
-                        <>
-                            <ModalBody>
-                                <p>この内容で登録しますか？</p>
-                                {error && (
-                                    <div className={styles.errorMessage}>
-                                        {error}
-                                    </div>
-                                )}
-                            </ModalBody>
-                            <ModalFooter>
-                                <ButtonGradientWrapper 
-                                    anotherStyle={""} 
-                                    onClick={isLoading ? undefined : onClose}
-                                >
-                                    CLOSE
-                                </ButtonGradientWrapper>
-                                <ButtonGradient 
-                                    anotherStyle={""} 
-                                    onClick={isLoading ? undefined : handleCreateShop}
-                                >
-                                    {isLoading ? <Spinner size="sm" color="white" /> : "CREATE"}
-                                </ButtonGradient>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </>
+        <CustomModal
+            isOpen={isOpen}
+            onClose={!isLoading ? onClose : () => {}}
+            title="店舗登録確認"
+            footer={
+                <>
+                    <ButtonGradientWrapper
+                        anotherStyle={""}
+                        onClick={isLoading ? undefined : onClose}
+                    >
+                        CLOSE
+                    </ButtonGradientWrapper>
+                    <ButtonGradient
+                        anotherStyle={""}
+                        onClick={isLoading ? undefined : handleCreateShop}
+                    >
+                        {isLoading ? <Spinner size="sm" color="white" /> : "CREATE"}
+                    </ButtonGradient>
+                </>
+            }
+        >
+            <p>この内容で登録しますか？</p>
+            {error && (
+                <div className={styles.errorMessage}>
+                    {error}
+                </div>
+            )}
+        </CustomModal>
     );
 };
 

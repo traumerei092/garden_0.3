@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Chip } from '@nextui-org/react';
-import Modal from '@/components/UI/Modal';
+import CustomModal from '@/components/UI/Modal';
 import AtmosphereInput, { AtmosphereScores } from '@/components/UI/AtmosphereInput';
 import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
@@ -186,7 +186,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
 
   if (!isLoggedIn) {
     return (
-      <Modal isOpen={isOpen} onClose={handleClose} title="ログインが必要です">
+      <CustomModal isOpen={isOpen} onClose={handleClose} title="ログインが必要です">
         <div className={styles.modalContainer}>
           <div className={styles.modalHeader}>
             <h2 className={styles.modalTitle}>ログインが必要です</h2>
@@ -207,12 +207,12 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
             </button>
           </div>
         </div>
-      </Modal>
+      </CustomModal>
     );
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={`${shopName} に訪問`}>
+    <CustomModal isOpen={isOpen} onClose={handleClose} title={`${shopName} に訪問`}>
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
@@ -376,7 +376,7 @@ const ShopVisitedModal: React.FC<ShopVisitedModalProps> = ({
           </div>
         </div>
       </div>
-    </Modal>
+    </CustomModal>
   );
 };
 

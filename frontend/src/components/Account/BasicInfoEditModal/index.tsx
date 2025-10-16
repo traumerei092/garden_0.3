@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Input, Select, SelectItem, DatePicker, Button } from '@nextui-org/react';
+import { Input, Select, SelectItem, DatePicker, Button, Link } from '@nextui-org/react';
 import { CalendarDate } from '@internationalized/date';
 import { showProfileUpdateToast, showErrorToast } from '@/utils/toasts';
 import { updateBasicInfo } from '@/actions/profile/updateBasicInfo';
@@ -287,23 +287,26 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
       
       {/* マイエリアセクション */}
       <div className={styles.myAreaSection}>
-        <h3 className={styles.sectionHeader}>マイエリア</h3>
+        <div className={styles.sectionHeaderRow}>
+          <h3 className={styles.sectionHeader}>マイエリア</h3>
+          <SwitchVisibility
+            isSelected={visibilitySettings?.my_area ?? true}
+            onValueChange={(value) => updateVisibilitySetting('my_area', value)}
+          />
+        </div>
         <div className={styles.areaContainer}>
           <div className={styles.areaContent}>
             <div className={styles.areaSectionHeader}>
               <p className={styles.areaSectionDescription}>
                 よく行くエリアを設定してください。最大10箇所まで選択できます。
               </p>
-              <Button
-                size="md"
-                variant="bordered"
-                startContent={<Edit3 size={16} />}
-                onPress={() => setIsAreaSelectorOpen(true)}
-                isLoading={isLoadingAreas}
+              <Link
                 className={styles.editAreasButton}
+                onPress={() => setIsAreaSelectorOpen(true)}
               >
-                {selectedAreas.length > 0 ? 'エリアを編集' : 'エリアを選択'}
-              </Button>
+                <Edit3 size={14} strokeWidth={1} />
+                <span>{selectedAreas.length > 0 ? 'エリアを編集' : 'エリアを選択'}</span>
+              </Link>
             </div>
             
             {selectedAreas.length > 0 ? (
@@ -327,10 +330,7 @@ const BasicInfoEditModal: React.FC<BasicInfoEditModalProps> = ({
             )}
           </div>
           <div className={styles.visibilityControl}>
-            <SwitchVisibility
-              isSelected={visibilitySettings?.my_area ?? true}
-              onValueChange={(value) => updateVisibilitySetting('my_area', value)}
-            />
+            
           </div>
         </div>
       </div>
