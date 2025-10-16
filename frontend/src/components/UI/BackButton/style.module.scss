@@ -1,0 +1,50 @@
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+    color: #e2e8f0;
+    text-decoration: none;
+  }
+
+  .backButtonText {
+    font-size: 0.8rem;
+    color: inherit;
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 768px) {
+  .backButton {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+
+    .backButtonText {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .backButton {
+    padding: 6px 10px;
+    gap: 6px;
+
+    .backButtonText {
+      font-size: 0.65rem;
+    }
+  }
+}

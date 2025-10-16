@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Calendar } from 'lucide-react';
+import { Heart, Calendar } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
@@ -11,10 +10,10 @@ import { Shop } from '@/types/shops';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useShopActions } from '@/hooks/useShopActions';
 import Header from '@/components/Layout/Header';
+import BackButton from '@/components/UI/BackButton';
 import styles from './style.module.scss';
 
 const WishlistPage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuthSession();
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,9 +50,6 @@ const WishlistPage: React.FC = () => {
     loadWishlistShops();
   }, []);
 
-  const handleBackClick = () => {
-    router.back();
-  };
 
 
   if (loading) {
@@ -81,10 +77,7 @@ const WishlistPage: React.FC = () => {
     <div className={styles.wishlistPage}>
       <Header />
       <div className={styles.header}>
-        <button onClick={handleBackClick} className={styles.backButton}>
-          <ArrowLeft size={20} />
-          戻る
-        </button>
+        <BackButton />
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
             <Heart className={styles.titleIcon} strokeWidth={1}/>
@@ -104,8 +97,8 @@ const WishlistPage: React.FC = () => {
             <p className={styles.emptyDescription}>
               気になる店舗を見つけて「行きたい」ボタンを押してみましょう
             </p>
-            <button 
-              onClick={() => router.push('/shops')} 
+            <button
+              onClick={() => window.location.href = '/shops'}
               className={styles.exploreButton}
             >
               店舗を探す

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, Star } from 'lucide-react';
+import { Calendar, Star } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
@@ -11,10 +10,10 @@ import { Shop } from '@/types/shops';
 import { useShopActions } from '@/hooks/useShopActions';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import Header from '@/components/Layout/Header';
+import BackButton from '@/components/UI/BackButton';
 import styles from './style.module.scss';
 
 const VisitedPage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuthSession();
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +49,6 @@ const VisitedPage: React.FC = () => {
     loadVisitedShops();
   }, []);
 
-  const handleBackClick = () => {
-    router.back();
-  };
 
 
   if (loading) {
@@ -80,10 +76,7 @@ const VisitedPage: React.FC = () => {
     <div className={styles.visitedPage}>
       <Header />
       <div className={styles.header}>
-        <button onClick={handleBackClick} className={styles.backButton}>
-          <ArrowLeft size={20} />
-          戻る
-        </button>
+        <BackButton />
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
             <Star className={styles.titleIcon} strokeWidth={1}/>
@@ -103,8 +96,8 @@ const VisitedPage: React.FC = () => {
             <p className={styles.emptyDescription}>
               気になる店舗を見つけて「行った」ボタンを押してみましょう
             </p>
-            <button 
-              onClick={() => router.push('/shops')} 
+            <button
+              onClick={() => window.location.href = '/shops'}
               className={styles.exploreButton}
             >
               店舗を探す

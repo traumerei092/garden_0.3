@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { ChevronLeft, Plus, MapPin, Info, MessageCircle, Wine, Divide, MapPinned } from 'lucide-react';
+import { Plus, MapPin, Info, MessageCircle, Wine, Divide, MapPinned } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
 import { Shop, ShopStats } from "@/types/shops";
@@ -29,7 +29,7 @@ import CustomTabs from '@/components/UI/CustomTabs';
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import styles from './style.module.scss';
-import LinkDefault from '@/components/UI/LinkDefault';
+import BackButton from '@/components/UI/BackButton';
 import { fetchWithSession } from '@/app/lib/fetchWithSession';
 import ShopEditModal from '@/components/Shop/ShopEditModal';
 import ShopHistoryModal from '@/components/Shop/ShopHistoryModal';
@@ -337,10 +337,13 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       <Header />
 
       <div className={styles.detailHeader}>
-        <LinkDefault href="/shops" styleName={styles.backButton}>
-          <ChevronLeft size={18} />
-          <span className={styles.backButtonText}>一覧に戻る</span>
-        </LinkDefault>
+        <BackButton
+          variant="link"
+          href="/shops"
+          text="一覧に戻る"
+          iconType="chevron"
+          className={styles.backButton}
+        />
         <div className={styles.headerInfo}>
           <div className={styles.shopTitleContainer}>
             <h1 className={styles.headerShopName}>{shop.name}</h1>

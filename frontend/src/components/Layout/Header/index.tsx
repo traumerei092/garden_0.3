@@ -52,7 +52,7 @@ const Header = () => {
                 {user ? (
                     <>
                         <NavbarItem className={styles.navbarItem}>
-                            <LinkDefault href={"/favorite"} styleName={"link"}>行きつけのお店</LinkDefault>
+                            <LinkDefault href={"/favorite"} styleName={"link"}>サードプレイス</LinkDefault>
                         </NavbarItem>
                         <NavbarItem className={styles.navbarItem}>
                             <LinkDefault href={"/visited"} styleName={"link"}>行ったお店</LinkDefault>

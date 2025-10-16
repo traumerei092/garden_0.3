@@ -30,6 +30,7 @@
 
 - **モーダル**: 必ず `CustomModal` を使用する（NextUI Modal は禁止）
 - **ボタン**: `ButtonGradientWrapper` を使用する
+- **戻るボタン**: 必ず `BackButton` コンポーネントを使用する（詳細は下記参照）
 
 ## API 連携の必須パターン
 
@@ -104,6 +105,59 @@
 ✅ `import { addImpressionTag } from '@/actions/shop/impressionTag'`
 ✅ API 結果を ShopTag 型に変換してリストに追加
 ✅ 既存の動作するコンポーネントの処理を参考にする
+
+## BackButton コンポーネントの統一ルール
+
+### 戻るボタンの標準化
+
+前の画面に戻る機能は **必ず** `BackButton` コンポーネントを使用する。独自の戻るボタンやLinkコンポーネントの代用は禁止。
+
+### BackButton の使用パターン
+
+#### 1. ブラウザの履歴に戻る（デフォルト）
+
+```tsx
+import BackButton from '@/components/UI/BackButton';
+
+// 基本使用法：router.back() で前の画面に戻る
+<BackButton />
+
+// カスタムテキスト
+<BackButton text="前に戻る" />
+```
+
+#### 2. 特定のページにリンク
+
+```tsx
+// 特定のURLに戻る場合
+<BackButton
+  variant="link"
+  href="/shops"
+  text="一覧に戻る"
+  iconType="chevron"
+/>
+```
+
+### プロパティ一覧
+
+- `variant`: `'back'` (デフォルト) | `'link'` - 動作の種類
+- `href`: リンク先URL（variant="link"の場合に必須）
+- `text`: ボタンテキスト（デフォルト: "戻る"）
+- `className`: 追加のCSSクラス
+- `iconType`: `'arrow'` (デフォルト) | `'chevron'` - アイコンの種類
+
+### 既存の置き換え例
+
+```tsx
+❌ 禁止パターン:
+<button onClick={() => router.back()}>戻る</button>
+<LinkDefault href="/shops">一覧に戻る</LinkDefault>
+<Link href="/shops"><ArrowLeft />戻る</Link>
+
+✅ 正しい使用法:
+<BackButton />
+<BackButton variant="link" href="/shops" text="一覧に戻る" iconType="chevron" />
+```
 
 ### モーダルのインターフェース統一
 

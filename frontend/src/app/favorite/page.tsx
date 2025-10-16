@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Crown, Calendar } from 'lucide-react';
+import { Crown, Calendar } from 'lucide-react';
 import ShopGridCard from '@/components/Shop/ShopGridCard';
 import ShopFeedbackModal from '@/components/Shop/ShopFeedbackModal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
@@ -11,10 +10,10 @@ import { Shop } from '@/types/shops';
 import { useShopActions } from '@/hooks/useShopActions';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import Header from '@/components/Layout/Header';
+import BackButton from '@/components/UI/BackButton';
 import styles from './style.module.scss';
 
 const FavoritePage: React.FC = () => {
-  const router = useRouter();
   const { user } = useAuthSession();
   const [shops, setShops] = useState<UserShop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +40,7 @@ const FavoritePage: React.FC = () => {
         setShops(favoriteShops);
       } catch (err) {
         console.error('Error loading favorite shops:', err);
-        setError('行きつけ店舗の読み込みに失敗しました');
+        setError('サードプレイスの読み込みに失敗しました');
       } finally {
         setLoading(false);
       }
@@ -50,9 +49,6 @@ const FavoritePage: React.FC = () => {
     loadFavoriteShops();
   }, []);
 
-  const handleBackClick = () => {
-    router.back();
-  };
 
 
   if (loading) {
@@ -80,17 +76,14 @@ const FavoritePage: React.FC = () => {
     <div className={styles.favoritePage}>
       <Header />
       <div className={styles.header}>
-        <button onClick={handleBackClick} className={styles.backButton}>
-          <ArrowLeft size={20} />
-          戻る
-        </button>
+        <BackButton />
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
             <Crown className={styles.titleIcon} strokeWidth={1}/>
-            行きつけの店舗
+            サードプレイス
           </h1>
           <p className={styles.subtitle}>
-            あなたの行きつけ{shops.length}件の店舗
+            あなたのサードプレイス：{shops.length}件
           </p>
         </div>
       </div>
@@ -103,8 +96,8 @@ const FavoritePage: React.FC = () => {
             <p className={styles.emptyDescription}>
               気に入った店舗を見つけて「行きつけ」ボタンを押してみましょう
             </p>
-            <button 
-              onClick={() => router.push('/shops')} 
+            <button
+              onClick={() => window.location.href = '/shops'}
               className={styles.exploreButton}
             >
               店舗を探す
