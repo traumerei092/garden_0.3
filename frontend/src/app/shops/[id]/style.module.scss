@@ -107,8 +107,9 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  color: rgba(0, 255, 255, 0.8);
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
   width: 28px !important;
   min-width: 28px !important;
   height: 28px !important;
@@ -116,9 +117,9 @@
   padding: 4px !important;
 
   &:hover {
-    background: rgba(0, 255, 255, 0.1);
-    color: rgba(0, 255, 255, 1);
-    border-color: rgba(0, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #e2e8f0;
     transform: translateY(-1px);
   }
 

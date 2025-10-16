@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Shop } from '@/types/shops';
-import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins, Edit, FileClock } from 'lucide-react';
+import { Clock, Phone, MapPin, Users, Train, CreditCard, Store, LayoutDashboard, OptionIcon, Coins, Edit, FileClock, MapPinned } from 'lucide-react';
 import ChipCondition from '@/components/UI/ChipCondition';
-import { ScrollShadow, Link } from '@nextui-org/react';
+import { ScrollShadow, Link, Button } from '@nextui-org/react';
+import ShopMapModal from '@/components/Shop/ShopMapModal';
 import styles from './style.module.scss';
 import { useShopModalStore } from '@/store/useShopModalStore';
 
@@ -14,6 +15,7 @@ interface ShopBasicInfoProps {
 
 const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
   const { openEditModal, openHistoryModal } = useShopModalStore();
+  const [showMapModal, setShowMapModal] = useState(false);
   // ChipConditionを表示するための関数
   const renderChips = (items: any[], category: 'type' | 'layout' | 'option') => {
     if (!items || items.length === 0) return null;
@@ -180,9 +182,19 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
             <h4>住所</h4>
           </div>
           <div className={styles.infoContent}>
-            <div>
-              {shop.zip_code && `〒${shop.zip_code}`}<br />
-              {shop.prefecture} {shop.city} {shop.area} {shop.street} {shop.building}
+            <div className={styles.addressContainer}>
+              <div>
+                {shop.zip_code && `〒${shop.zip_code}`}<br />
+                {shop.prefecture} {shop.city} {shop.street} {shop.building}
+              </div>
+              <Button
+                onPress={() => setShowMapModal(true)}
+                className={styles.mapButton}
+                variant="light"
+                size="sm"
+              >
+                <MapPinned size={14} strokeWidth={1} />
+              </Button>
             </div>
           </div>
         </div>
@@ -297,6 +309,13 @@ const ShopBasicInfo: React.FC<ShopBasicInfoProps> = ({ shop }) => {
           )}
         </div>
       </div>
+
+      {/* 地図モーダル */}
+      <ShopMapModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        shop={shop}
+      />
     </div>
   );
 };
