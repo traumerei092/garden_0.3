@@ -153,7 +153,7 @@ export interface KeywordSearchOptions {
 export interface ShopSuggestion {
   id: number;
   name: string;
-  address?: string;
+  area?: string;
   shop_type?: string;
 }
 

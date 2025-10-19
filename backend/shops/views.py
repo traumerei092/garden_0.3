@@ -2570,7 +2570,34 @@ class ShopSearchAPIView(APIView):
     こだわり条件での店舗検索API
     """
     permission_classes = [AllowAny]
-    
+
+    def apply_keyword_filter(self, request, queryset):
+        """
+        キーワード検索フィルター
+        検索対象: 店舗名、住所、タグ（ShopTag.value）
+        """
+        keyword = request.GET.get('keyword')
+        if not keyword:
+            return queryset
+
+        from django.db.models import Q
+
+        print(f"=== キーワード検索実行: '{keyword}' ===")
+
+        # 基本検索条件（店舗名、住所）
+        keyword_conditions = Q(name__icontains=keyword) | Q(address__icontains=keyword)
+
+        # 印象タグ検索（ShopTag.value フィールドで検索）
+        # related_name='tags' なので tags__value でアクセス
+        keyword_conditions |= Q(tags__value__icontains=keyword)
+
+        # distinct()で重複を除去（タグで同じ店舗が複数回ヒットする可能性があるため）
+        queryset = queryset.filter(keyword_conditions).distinct()
+
+        print(f"キーワード検索結果: {queryset.count()}件")
+
+        return queryset
+
     def get(self, request):
         """
         検索条件に基づいて店舗を検索
@@ -2591,7 +2618,10 @@ class ShopSearchAPIView(APIView):
             'shop_types', 'shop_layouts', 'shop_options', 'images',
             'business_hours', 'tags', 'atmosphere_aggregate'
         )
-        
+
+        # キーワード検索（最優先）
+        queryset = self.apply_keyword_filter(request, queryset)
+
         # 検索条件を適用
         queryset = self.apply_regulars_filters(request, queryset)
 

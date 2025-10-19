@@ -14,6 +14,7 @@ type Props = {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   isInvalid?: boolean;
   errorMessage?: ReactNode;
   className?: string;
@@ -35,6 +36,7 @@ const KeywordInput = ({
   onChange,
   onFocus,
   onBlur,
+  onKeyPress,
   isInvalid,
   errorMessage,
   className,
@@ -52,6 +54,7 @@ const KeywordInput = ({
       onChange={onChange}
       onFocus={onFocus}
       onBlur={onBlur}
+      onKeyPress={onKeyPress}
       variant="bordered"
       radius="none"
       isRequired={isRequired}

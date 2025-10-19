@@ -25,11 +25,14 @@ export const searchShopSuggestions = async (keyword: string): Promise<ShopSugges
     const data = await response.json();
 
     // レスポンスから店舗リストを抽出してShopSuggestion形式に変換
-    return (data.results || []).map((shop: any) => ({
+    // APIレスポンスは { shops: [...], count: ... } の形式
+    const shops = data.shops || data.results || [];
+
+    return shops.map((shop: any) => ({
       id: shop.id,
       name: shop.name,
-      address: shop.address,
-      shop_type: shop.shop_type?.name,
+      area: shop.area,  // 既に文字列で返ってくる
+      shop_type: shop.shop_types?.[0],  // shop_typesは配列なので最初の要素を取得
     }));
   } catch (error) {
     console.error('Failed to search shop suggestions:', error);

@@ -100,6 +100,8 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const [isInputFocused, setIsInputFocused] = useState<boolean>(openMode?.keywordMode || false);
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
   const [shopSuggestions, setShopSuggestions] = useState<ShopSuggestion[]>([]);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState<boolean>(false);
+  const [suggestionsCount, setSuggestionsCount] = useState<number>(0);
 
   // openModeが変更されたときに入力フォーカス状態を更新
   useEffect(() => {
@@ -506,12 +508,31 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
     keywordTimeoutRef.current = setTimeout(async () => {
       if (value.trim()) {
-        const suggestions = await searchShopSuggestions(value);
-        setShopSuggestions(suggestions);
+        setIsSuggestionsLoading(true);
+        try {
+          const suggestions = await searchShopSuggestions(value);
+          setShopSuggestions(suggestions);
+          setSuggestionsCount(suggestions.length);
+        } catch (error) {
+          console.error('候補検索エラー:', error);
+          setShopSuggestions([]);
+          setSuggestionsCount(0);
+        } finally {
+          setIsSuggestionsLoading(false);
+        }
       } else {
         setShopSuggestions([]);
+        setSuggestionsCount(0);
+        setIsSuggestionsLoading(false);
       }
     }, 300);
+  };
+
+  // エンターキー押下時の処理
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && keywordInput.trim()) {
+      handleKeywordSearch(keywordInput);
+    }
   };
 
   const handleKeywordFocus = () => {
@@ -534,9 +555,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   };
 
   const handleSuggestionClick = (shop: ShopSuggestion) => {
-    // 店舗名をキーワードとして検索
-    setKeywordInput(shop.name);
-    handleKeywordSearch(shop.name);
+    // 店舗詳細ページに直接遷移
+    setIsInputFocused(false);
+    onClose();
+    // Next.jsのrouter.pushを使用して遷移
+    window.location.href = `/shops/${shop.id}`;
   };
 
   const handleKeywordSearch = (keyword: string) => {
@@ -2004,7 +2027,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
           <Popover placement="top" showArrow>
             <PopoverTrigger>
               <span className={styles.shopCountText} style={{ cursor: 'pointer' }}>
-                <strong>{displayCount || shopCount}件</strong>
+                <strong>{isInputFocused && keywordInput ? suggestionsCount : (displayCount || shopCount)}件</strong>
               </span>
             </PopoverTrigger>
             <PopoverContent
@@ -2060,7 +2083,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
           <Popover placement="top" showArrow>
             <PopoverTrigger>
               <span className={styles.shopCountText} style={{ cursor: 'pointer' }}>
-                <strong>{displayCount || shopCount}件</strong>
+                <strong>{isInputFocused && keywordInput ? suggestionsCount : (displayCount || shopCount)}件</strong>
               </span>
             </PopoverTrigger>
             <PopoverContent 
@@ -2125,9 +2148,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
         onChange={handleKeywordChange}
         onFocus={handleKeywordFocus}
         onBlur={handleKeywordBlur}
+        onKeyPress={handleKeyPress}
         placeholder="店舗名で検索"
         autoFocus={openMode?.keywordMode}
-        endContent={<Search size={20} strokeWidth={1} />}
         classNames={{
           inputWrapper: styles.keywordInputWrapper,
           input: styles.keywordInputField
@@ -2186,7 +2209,12 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     if (isInputFocused && keywordInput !== '') {
       return (
         <div className={styles.suggestionsSection}>
-          {shopSuggestions.length > 0 ? (
+          {isSuggestionsLoading ? (
+            <div className={styles.emptyState}>
+              <div className={styles.loadingSpinner}></div>
+              <p className={styles.emptyText}>検索中...</p>
+            </div>
+          ) : shopSuggestions.length > 0 ? (
             <div className={styles.suggestionsList}>
               {shopSuggestions.map((shop) => (
                 <div
@@ -2200,8 +2228,8 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
                       <span className={styles.suggestionType}>{shop.shop_type}</span>
                     )}
                   </div>
-                  {shop.address && (
-                    <span className={styles.suggestionAddress}>{shop.address}</span>
+                  {shop.area && (
+                    <span className={styles.suggestionAddress}>{shop.area}</span>
                   )}
                 </div>
               ))}

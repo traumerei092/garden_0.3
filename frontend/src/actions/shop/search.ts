@@ -83,6 +83,11 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
       });
     }
 
+    // キーワード検索
+    if (filters.keyword) {
+      queryParams.append('keyword', filters.keyword);
+    }
+
     // 雰囲気フィルター（新しい3択システム）
     if (filters.atmosphere_simple) {
       console.log('🌟 atmosphere_simpleパラメータを追加:', filters.atmosphere_simple);
