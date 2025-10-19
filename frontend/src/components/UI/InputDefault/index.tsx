@@ -7,19 +7,22 @@ import classNames from "classnames";
 
 type Props = {
   label?: string;
-  type: string;
+  type?: string;
   name?: string;
-  value: string;
+  value?: string;
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
   min?: number;
   isRequired?: boolean;
   endContent?: ReactNode;
   anotherStyle?: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClick?: () => void;
   isInvalid?: boolean;
   errorMessage?: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
+  readOnly?: boolean;
   classNames?: {
     inputWrapper?: string;
     input?: string;
@@ -28,9 +31,9 @@ type Props = {
 
 const InputDefault = ({
                           label,
-                          type,
+                          type = 'text',
                           name,
-                          value,
+                          value = '',
                           placeholder,
                           size = 'md',
                           min,
@@ -38,9 +41,12 @@ const InputDefault = ({
                           endContent,
                           anotherStyle,
                           onChange,
+                          onClick,
                           isInvalid,
                           errorMessage,
                           className,
+                          style,
+                          readOnly,
                           classNames: customClassNames,
                       }: Props) => {
     return (
@@ -53,12 +59,15 @@ const InputDefault = ({
             size={size}
             min={min}
             onChange={onChange}
+            onClick={onClick}
             variant="bordered"
             radius="none"
             isRequired={isRequired}
             endContent={endContent}
             isInvalid={isInvalid}
             errorMessage={errorMessage}
+            readOnly={readOnly}
+            style={style}
             className={className || classNames(styles.input, anotherStyle)}
             classNames={{
                 inputWrapper: customClassNames?.inputWrapper || styles.customInputWrapper,

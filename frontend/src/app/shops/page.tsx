@@ -98,8 +98,9 @@ const Shops = () => {
         }
     }, []);
 
-    // 検索条件の数を計算
-    const filterCount = searchFilters ? Object.keys(searchFilters).length : 0;
+    // 検索条件の数を計算（sortパラメータは除外）
+    const filterCount = searchFilters ?
+        Object.keys(searchFilters).filter(key => key !== 'sort').length : 0;
 
     // モバイルの場合は強制的にgridモードにする
     const effectiveViewMode = isMobile ? 'grid' : selectedTab;

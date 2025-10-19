@@ -330,14 +330,28 @@
 
 // プロフィール設定セクション
 .profileSection {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(175, 28, 28, 0.1);
 }
 
 .profileToggle {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.myAreaSection {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(175, 28, 28, 0.1);
   margin-bottom: 1.5rem;
   display: flex;
   gap: 1rem;
@@ -1213,4 +1227,205 @@
   z-index: 20;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.7rem;
+}
+
+// ==========================================
+// キーワード検索用スタイル（Netflix級デザイン）
+// ==========================================
+
+// ヘッダー: 検索窓を画面いっぱいに大きく見せる
+.keywordSearchHeader {
+  padding: 0 1rem 1rem;
+  background: transparent;
+  width: 100%;
+}
+
+.keywordInputWrapper {
+  height: 56px !important;
+  min-height: 56px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(0, 255, 255, 0.5) !important;
+  }
+
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgb(0, 255, 255) !important;
+    box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1) !important;
+  }
+}
+
+.keywordInputField {
+  font-size: 1rem !important;
+  color: rgb(255, 255, 255) !important;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+// セクションヘッダー（共通）
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 1.5rem 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+// 検索履歴セクション
+.historySection {
+  padding-top: 1rem;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 1rem;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.historyContent {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex: 1;
+}
+
+.historyIcon {
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.historyKeyword {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.historyRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+// 候補店舗セクション
+.suggestionsSection {
+  padding: 1rem 0;
+}
+
+.suggestionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 1rem;
+}
+
+.suggestionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.125rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.suggestionMain {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.suggestionName {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.suggestionType {
+  padding: 0.25rem 0.625rem;
+  background: rgba(0, 255, 255, 0.15);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 4px;
+  color: rgb(0, 255, 255);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.suggestionAddress {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+// 空状態
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  gap: 1rem;
+}
+
+.emptyIcon {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.emptyText {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  text-align: center;
 }

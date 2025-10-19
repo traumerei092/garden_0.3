@@ -17,6 +17,7 @@ export default function Home() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = React.useState(false);
     const [isSearching, setIsSearching] = React.useState(false);
+    const [isKeywordMode, setIsKeywordMode] = React.useState(false);
 
     const handleLocationClick = async () => {
         try {
@@ -58,12 +59,21 @@ export default function Home() {
         }
     };
 
+    // こだわり条件で探す（通常モード）
     const handleSearchClick = () => {
+        setIsKeywordMode(false);
+        setIsSearchModalOpen(true);
+    };
+
+    // キーワードで探す（キーワードモード）
+    const handleKeywordSearchClick = () => {
+        setIsKeywordMode(true);
         setIsSearchModalOpen(true);
     };
 
     const handleSearchModalClose = () => {
         setIsSearchModalOpen(false);
+        setIsKeywordMode(false);
     };
 
     const handleSearch = async (filters: SearchFilters) => {
@@ -142,6 +152,9 @@ export default function Home() {
                                     }}
                                     variant="bordered"
                                     size="lg"
+                                    readOnly
+                                    onClick={handleKeywordSearchClick}
+                                    style={{ cursor: 'pointer' }}
                                 />
                             </CardBody>
                         </Card>
@@ -155,6 +168,7 @@ export default function Home() {
                 onClose={handleSearchModalClose}
                 onSearch={handleSearch}
                 isLoading={isSearching}
+                openMode={{ keywordMode: isKeywordMode }}
             />
         </main>
     );

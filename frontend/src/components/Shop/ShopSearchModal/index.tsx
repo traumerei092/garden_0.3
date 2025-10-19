@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Link, Chip, Divider, ScrollShadow, Popover, PopoverTrigger, PopoverContent, Listbox, ListboxItem } from '@nextui-org/react';
 import CustomModal from '@/components/UI/Modal';
 import CustomTabs, { TabItem } from '@/components/UI/CustomTabs';
@@ -33,9 +33,14 @@ import {
   AtmosphereIndicator,
   AtmospherePreference,
   UserProfile,
-  SearchCategory
+  SearchCategory,
+  ShopSuggestion,
+  SearchHistory
 } from '@/types/search';
 import { ProfileOptions } from '@/types/users';
+import KeywordInput from '@/components/UI/KeywordInput';
+import { searchShopSuggestions, getSearchHistory, removeSearchHistory, saveSearchHistory } from '@/actions/shop/keywordSearch';
+import { Search, Clock, X } from 'lucide-react';
 
 
 const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
@@ -43,7 +48,8 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   onClose,
   onSearch,
   initialFilters = {},
-  isLoading = false
+  isLoading = false,
+  openMode
 }) => {
   const [filters, setFilters] = useState<SearchFilters>({});
   const [atmosphereIndicators, setAtmosphereIndicators] = useState<AtmosphereIndicator[]>([]);
@@ -88,9 +94,26 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
   const [debugShops, setDebugShops] = useState<Array<{ id: number; name: string }>>([]);
   const [countAnimated, setCountAnimated] = useState<boolean>(false);
   const [displayCount, setDisplayCount] = useState<number>(0);
-  
+
+  // キーワード検索関連のstate
+  const [keywordInput, setKeywordInput] = useState<string>('');
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(openMode?.keywordMode || false);
+  const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
+  const [shopSuggestions, setShopSuggestions] = useState<ShopSuggestion[]>([]);
+
+  // openModeが変更されたときに入力フォーカス状態を更新
+  useEffect(() => {
+    if (openMode?.keywordMode) {
+      setIsInputFocused(true);
+      // 検索履歴を読み込み
+      const history = getSearchHistory();
+      setSearchHistory(history);
+    }
+  }, [openMode?.keywordMode]);
+
   // デバウンス用のタイムアウト管理
   const fetchCountTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const keywordTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // カウンターアップアニメーション関数
   const animateCountUp = (start: number, end: number) => {
@@ -194,63 +217,64 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     }
   }, [isOpen, user]);
 
-  // initialFiltersが変更された時のみフィルターを設定
-  useEffect(() => {
-    console.log('=== initialFilters受け取り ===');
-    console.log('isOpen:', isOpen);
-    console.log('initialFilters:', initialFilters);
-    console.log('initialFilters type:', typeof initialFilters);
-    console.log('initialFilters keys:', initialFilters ? Object.keys(initialFilters) : 'null');
+  // initialFilters の安定化
+  const stableInitialFilters = useMemo(() => {
+    return initialFilters && Object.keys(initialFilters).length > 0 ? initialFilters : {};
+  }, [JSON.stringify(initialFilters)]);
 
-    if (isOpen && initialFilters !== undefined) {
+  // 状態同期関数
+  const syncUIState = useCallback((filters: SearchFilters) => {
+    console.log('状態同期開始:', filters);
+
+    // ドリンクの状態を同期
+    if (filters.drink_names) {
+      setSelectedDrinks(Array.isArray(filters.drink_names) ? filters.drink_names : [filters.drink_names]);
+    } else {
+      setSelectedDrinks([]);
+    }
+
+    // 印象タグの状態を同期
+    if (filters.impression_tags) {
+      const tags = typeof filters.impression_tags === 'string'
+        ? filters.impression_tags.split(',').filter(t => t.trim())
+        : [];
+      setSelectedTags(tags);
+    } else {
+      setSelectedTags([]);
+    }
+
+    // エリア選択の状態を同期
+    if (filters.area_ids && filters.area_ids.length > 0) {
+      console.log('エリアの復元は後で処理します');
+    } else {
+      setSelectedAreas([]);
+      setPrimaryArea(null);
+    }
+
+    // マイエリア検索の状態を同期
+    setUseMyAreaOnly(Boolean(filters.use_my_area_only));
+  }, []);
+
+  // initialFiltersが変更された時に設定を同期
+  useEffect(() => {
+    console.log('=== initialFilters useEffect実行 ===');
+    console.log('isOpen:', isOpen);
+    console.log('stableInitialFilters:', stableInitialFilters);
+
+    if (isOpen && Object.keys(stableInitialFilters).length > 0) {
       try {
         console.log('initialFiltersを設定中...');
-        setFilters(initialFilters);
-
-        // UI状態の同期
-        // ドリンクの状態を同期
-        if (initialFilters.drink_names) {
-          setSelectedDrinks(Array.isArray(initialFilters.drink_names) ? initialFilters.drink_names : [initialFilters.drink_names]);
-        } else {
-          setSelectedDrinks([]);
-        }
-
-        // 印象タグの状態を同期
-        if (initialFilters.impression_tags) {
-          const tags = typeof initialFilters.impression_tags === 'string'
-            ? initialFilters.impression_tags.split(',').filter(t => t.trim())
-            : [];
-          setSelectedTags(tags);
-        } else {
-          setSelectedTags([]);
-        }
-
-        // エリア選択の状態を同期（詳細は後でprofileOptionsが読み込まれてから処理）
-        console.log('initialFilters.area_ids:', initialFilters.area_ids);
-        if (initialFilters.area_ids && initialFilters.area_ids.length > 0) {
-          // エリア情報が必要だが、まだエリアデータがロードされていない可能性があるため
-          // とりあえず空の配列でリセットし、後でprofileOptionsが読み込まれた際に処理する
-          console.log('エリアの復元は後で処理します');
-        } else {
-          setSelectedAreas([]);
-          setPrimaryArea(null);
-        }
-
-        // マイエリア検索の状態を同期
-        if (initialFilters.use_my_area_only) {
-          setUseMyAreaOnly(true);
-        } else {
-          setUseMyAreaOnly(false);
-        }
+        setFilters(stableInitialFilters);
+        syncUIState(stableInitialFilters);
 
         // initialFiltersが設定された時に店舗数を更新
-        fetchShopCount(initialFilters);
+        fetchShopCount(stableInitialFilters);
         console.log('initialFilters設定完了');
       } catch (error) {
         console.error('initialFilters設定エラー:', error);
       }
     }
-  }, [isOpen, JSON.stringify(initialFilters)]);
+  }, [isOpen, stableInitialFilters, syncUIState]);
 
   // profileOptionsが取得できたらアルコール関連データを設定し、初期フィルターを再同期
   useEffect(() => {
@@ -465,9 +489,77 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     }
 
     setFilters(newFilters);
-    
+
     // 条件削除後に店舗数を更新
     fetchShopCount(newFilters);
+  };
+
+  // キーワード検索関連のハンドラー
+  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setKeywordInput(value);
+
+    // デバウンス処理で店舗候補検索
+    if (keywordTimeoutRef.current) {
+      clearTimeout(keywordTimeoutRef.current);
+    }
+
+    keywordTimeoutRef.current = setTimeout(async () => {
+      if (value.trim()) {
+        const suggestions = await searchShopSuggestions(value);
+        setShopSuggestions(suggestions);
+      } else {
+        setShopSuggestions([]);
+      }
+    }, 300);
+  };
+
+  const handleKeywordFocus = () => {
+    setIsInputFocused(true);
+    // 検索履歴を読み込み
+    const history = getSearchHistory();
+    setSearchHistory(history);
+  };
+
+  const handleKeywordBlur = () => {
+    // 少し遅延させてからフォーカス状態を解除（候補クリック時の処理のため）
+    setTimeout(() => {
+      setIsInputFocused(false);
+    }, 200);
+  };
+
+  const handleHistoryItemClick = (keyword: string) => {
+    setKeywordInput(keyword);
+    handleKeywordSearch(keyword);
+  };
+
+  const handleSuggestionClick = (shop: ShopSuggestion) => {
+    // 店舗名をキーワードとして検索
+    setKeywordInput(shop.name);
+    handleKeywordSearch(shop.name);
+  };
+
+  const handleKeywordSearch = (keyword: string) => {
+    if (!keyword.trim()) return;
+
+    // 検索履歴に保存
+    saveSearchHistory(keyword.trim());
+
+    // フィルターにキーワードを設定して検索実行
+    const searchFilters: SearchFilters = {
+      ...filters,
+      keyword: keyword.trim(),
+    };
+
+    setIsInputFocused(false);
+    onSearch(searchFilters);
+    onClose();
+  };
+
+  const handleRemoveHistoryItem = (id: string) => {
+    removeSearchHistory(id);
+    const updatedHistory = getSearchHistory();
+    setSearchHistory(updatedHistory);
   };
 
   // プロフィールデータ自動入力
@@ -755,8 +847,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       console.log('=== updateFilters API呼び出し ===');
       console.log('key:', key, 'value:', value);
       console.log('newFilters:', newFilters);
+      console.log('🎯 fetchShopCountを呼び出します');
       fetchShopCount(newFilters);
-    }, 500);
+    }, 100);
   };
 
   // 店舗件数を取得する関数
@@ -849,23 +942,34 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
 
   const handleAtmosphereChange = (indicatorId: number, preference: AtmospherePreference | null) => {
     console.log('🔥🔥🔥 handleAtmosphereChange呼ばれた:', indicatorId, preference);
+    alert('DEBUG: handleAtmosphereChange called: ' + indicatorId + ', ' + preference);
 
     // 新しい3択雰囲気フィルターを使用
     const atmosphere_simple = { ...(filters.atmosphere_simple || {}) };
 
     if (preference === null) {
-      // 選択解除の場合は削除
       delete atmosphere_simple[indicatorId.toString()];
     } else {
-      // 選択の場合は設定
       atmosphere_simple[indicatorId.toString()] = preference;
     }
 
-    console.log('更新後の雰囲気フィルター:', atmosphere_simple);
-
     // 空のオブジェクトの場合はundefinedに設定
     const finalFilter = Object.keys(atmosphere_simple).length > 0 ? atmosphere_simple : undefined;
-    updateFilters('atmosphere_simple', finalFilter);
+
+    console.log('🚀 雰囲気フィルター更新:', finalFilter);
+
+    // 直接 setFilters を呼び出して fetchShopCount も即座に実行
+    setFilters(prev => {
+      const newFilters = { ...prev, atmosphere_simple: finalFilter };
+      console.log('🔥 新しいフィルターでAPI呼び出し:', newFilters);
+
+      // 直接 fetchShopCount を呼び出し
+      setTimeout(() => {
+        fetchShopCount(newFilters);
+      }, 100);
+
+      return newFilters;
+    });
   };
 
   // タグ入力時の候補表示
@@ -1903,9 +2007,9 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
                 <strong>{displayCount || shopCount}件</strong>
               </span>
             </PopoverTrigger>
-            <PopoverContent 
+            <PopoverContent
               className="p-0 max-w-xs"
-              style={{ 
+              style={{
                 backgroundColor: 'rgba(0, 0, 0, 0.9)', 
                 border: '1px solid rgba(0, 255, 255, 0.3)',
                 borderRadius: '8px'
@@ -2012,17 +2116,109 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     </div>
   );
 
-  return (
-    <CustomModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="こだわり条件で探す"
-      size="full"
-      footer={modalFooter}
-      scrollBehavior="inside"
-    >
-      <div className={styles.searchContent}>
+  // キーワード検索用のカスタムヘッダー
+  // キーワード検索ヘッダー（常に表示）
+  const keywordHeader = (
+    <div className={styles.keywordSearchHeader}>
+      <KeywordInput
+        value={keywordInput}
+        onChange={handleKeywordChange}
+        onFocus={handleKeywordFocus}
+        onBlur={handleKeywordBlur}
+        placeholder="店舗名で検索"
+        autoFocus={openMode?.keywordMode}
+        endContent={<Search size={20} strokeWidth={1} />}
+        classNames={{
+          inputWrapper: styles.keywordInputWrapper,
+          input: styles.keywordInputField
+        }}
+      />
+    </div>
+  );
 
+  // コンテンツの条件分岐レンダリング
+  const renderContent = () => {
+    // ②検索窓がアクティブ兼何も入力されてない時 → 履歴表示
+    if (isInputFocused && keywordInput === '') {
+      return (
+        <div className={styles.historySection}>
+          {searchHistory.length > 0 ? (
+            <>
+              <div className={styles.sectionHeader}>
+                <Clock size={18} strokeWidth={1} />
+                <span>検索履歴</span>
+              </div>
+              <div className={styles.historyList}>
+                {searchHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className={styles.historyItem}
+                    onClick={() => handleHistoryItemClick(item.keyword)}
+                  >
+                    <div className={styles.historyContent}>
+                      <Search size={18} strokeWidth={1} className={styles.historyIcon} />
+                      <span className={styles.historyKeyword}>{item.keyword}</span>
+                    </div>
+                    <button
+                      className={styles.historyRemove}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveHistoryItem(item.id);
+                      }}
+                    >
+                      <X size={18} strokeWidth={1} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className={styles.emptyState}>
+              <Clock size={48} strokeWidth={1} className={styles.emptyIcon} />
+              <p className={styles.emptyText}>検索履歴がありません</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ③検索窓がアクティブ兼何か入力されていたら → 候補店舗表示
+    if (isInputFocused && keywordInput !== '') {
+      return (
+        <div className={styles.suggestionsSection}>
+          {shopSuggestions.length > 0 ? (
+            <div className={styles.suggestionsList}>
+              {shopSuggestions.map((shop) => (
+                <div
+                  key={shop.id}
+                  className={styles.suggestionItem}
+                  onClick={() => handleSuggestionClick(shop)}
+                >
+                  <div className={styles.suggestionMain}>
+                    <span className={styles.suggestionName}>{shop.name}</span>
+                    {shop.shop_type && (
+                      <span className={styles.suggestionType}>{shop.shop_type}</span>
+                    )}
+                  </div>
+                  {shop.address && (
+                    <span className={styles.suggestionAddress}>{shop.address}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <Search size={48} strokeWidth={1} className={styles.emptyIcon} />
+              <p className={styles.emptyText}>該当する店舗が見つかりません</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 通常のこだわり検索コンテンツ
+    return (
+      <>
         {/* プロフィール自動入力 - ログイン時のみ表示 */}
         {user && (
           <div className={styles.profileSection}>
@@ -2039,138 +2235,120 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
                 <span className={styles.toggleDesc}>同じ傾向の常連さんがいる店舗を探せます。</span>
               </div>
             </div>
+          </div>
+        )}
+        {/* マイエリア検索スイッチ - マイエリアが設定されている場合のみ表示 */}
+        {(() => {
+          // my_areasまたはprimary_areaが存在する場合にスイッチを表示
+          return (userProfile?.my_areas && Array.isArray(userProfile.my_areas) && userProfile.my_areas.length > 0) || userProfile?.primary_area;
+        })() && (
+          <div className={styles.myAreaSection}>
+            <SwitchVisibility
+              isSelected={useMyAreaOnly}
+              onValueChange={handleUseMyAreaToggle}
+              showIcon={false}
+            />
+            <div className={styles.toggleContent}>
+              <span className={styles.toggleText}>
+                マイエリアで検索する
+              </span>
+              <div className={styles.myAreaSelection}>
+                {(() => {
+                  // ユーザーのエリア情報からエリアリストを作成（型安全）
+                  const availableAreas: Area[] = [];
 
-            {/* マイエリア検索スイッチ - マイエリアが設定されている場合のみ表示 */}
-            {(() => {
-              console.log('=== マイエリアスイッチ表示判定 ===');
-              console.log('userProfile:', userProfile);
-              console.log('userProfile?.my_areas:', userProfile?.my_areas);
-              console.log('userProfile?.primary_area:', userProfile?.primary_area);
-              console.log('条件評価結果 (my_areas):', !!(userProfile?.my_areas && userProfile.my_areas.length > 0));
-              console.log('条件評価結果 (primary_area):', !!userProfile?.primary_area);
-              // my_areasまたはprimary_areaが存在する場合にスイッチを表示
-              return (userProfile?.my_areas && Array.isArray(userProfile.my_areas) && userProfile.my_areas.length > 0) || userProfile?.primary_area;
-            })() && (
-              <div className={styles.profileToggle}>
-                <SwitchVisibility
-                  isSelected={useMyAreaOnly}
-                  onValueChange={handleUseMyAreaToggle}
-                  showIcon={false}
-                />
-                <div className={styles.toggleContent}>
-                  <span className={styles.toggleText}>
-                    マイエリアで検索する
-                  </span>
-                  <div className={styles.myAreaSelection}>
-                    {(() => {
-                      console.log('=== MyAreaセクション レンダリング時の状態 ===');
-                      console.log('profileOptions:', profileOptions);
-                      console.log('profileOptions?.areas:', profileOptions?.areas);
-                      console.log('profileOptions?.areasは配列か:', Array.isArray(profileOptions?.areas));
-                      console.log('selectedMyArea:', selectedMyArea);
-                      return null;
-                    })()}
-                    {/* エリア選択用のAutoComplete */}
-                    {(() => {
-                      // ユーザーのエリア情報からエリアリストを作成（型安全）
-                      const availableAreas: Area[] = [];
+                  // 型ガード関数
+                  const isValidArea = (area: unknown): area is Area => {
+                    return area !== null &&
+                           area !== undefined &&
+                           typeof area === 'object' &&
+                           'id' in area &&
+                           'name' in area &&
+                           typeof (area as any).id === 'number' &&
+                           typeof (area as any).name === 'string';
+                  };
 
-                      // 型ガード関数
-                      const isValidArea = (area: unknown): area is Area => {
-                        return area !== null &&
-                               area !== undefined &&
-                               typeof area === 'object' &&
-                               'id' in area &&
-                               'name' in area &&
-                               typeof (area as any).id === 'number' &&
-                               typeof (area as any).name === 'string';
-                      };
+                  // プライマリエリアがあれば追加（型チェック付き）
+                  if (isValidArea(userProfile?.primary_area)) {
+                    availableAreas.push(userProfile.primary_area);
+                  }
 
-                      // プライマリエリアがあれば追加（型チェック付き）
-                      if (isValidArea(userProfile?.primary_area)) {
-                        availableAreas.push(userProfile.primary_area);
+                  // マイエリアがあれば追加（重複を避ける、型チェック付き）
+                  if (userProfile?.my_areas && Array.isArray(userProfile.my_areas)) {
+                    userProfile.my_areas.forEach((area: unknown) => {
+                      if (isValidArea(area)) {
+                        if (!availableAreas.find(existing => existing.id === area.id)) {
+                          availableAreas.push(area);
+                        }
                       }
+                    });
+                  }
 
-                      // マイエリアがあれば追加（重複を避ける、型チェック付き）
-                      if (userProfile?.my_areas && Array.isArray(userProfile.my_areas)) {
-                        userProfile.my_areas.forEach((area: unknown) => {
-                          if (isValidArea(area)) {
-                            if (!availableAreas.find(existing => existing.id === area.id)) {
-                              availableAreas.push(area);
-                            }
-                          }
-                        });
+                  // profileOptionsからのエリアデータも追加（重複を避ける、型チェック付き）
+                  if (profileOptions?.areas && Array.isArray(profileOptions.areas)) {
+                    profileOptions.areas.forEach((area: unknown) => {
+                      if (isValidArea(area)) {
+                        if (!availableAreas.find(existing => existing.id === area.id)) {
+                          availableAreas.push(area);
+                        }
                       }
+                    });
+                  }
 
-                      // profileOptionsからのエリアデータも追加（重複を避ける、型チェック付き）
-                      if (profileOptions?.areas && Array.isArray(profileOptions.areas)) {
-                        profileOptions.areas.forEach((area: unknown) => {
-                          if (isValidArea(area)) {
-                            if (!availableAreas.find(existing => existing.id === area.id)) {
-                              availableAreas.push(area);
-                            }
-                          }
-                        });
-                      }
-
-                      console.log('最終的なavailableAreas:', availableAreas);
-
-                      if (availableAreas.length > 0) {
-                        return (
-                          <Popover placement="bottom" >
-                            <PopoverTrigger>
-                              <Link
-                                size="sm"
-                                className={styles.myAreaTrigger}
-                                showAnchorIcon
-                                anchorIcon={<ChevronDown strokeWidth={1} size={16} />}
-                              >
-                                {selectedMyArea?.name || 'エリアを選択'}
-                              </Link>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="p-0 min-w-[200px]"
-                              style={{ 
-                                backgroundColor: 'rgba(0, 0, 0, 0.9)', 
-                                border: '1px solid rgba(0, 255, 255, 0.3)',
-                                borderRadius: '8px'
-                              }}
-                            >
-                              <Listbox
-                                selectionMode="single"
-                                selectedKeys={selectedMyArea ? [selectedMyArea.id.toString()] : []}
-                                onSelectionChange={(keys) => {
-                                  const selectedKey = Array.from(keys)[0];
-                                  if (selectedKey) {
-                                    const area = availableAreas.find((a: Area) => a.id.toString() === selectedKey);
-                                    handleMyAreaChange(area || null);
-                                  } else {
-                                    handleMyAreaChange(null);
-                                  }
-                                }}
-                                className={styles.areaListbox}
-                              >
-                                {availableAreas.map((area: Area) => (
-                                  <ListboxItem key={area.id.toString()}>
-                                    {area.name}
-                                  </ListboxItem>
-                                ))}
-                              </Listbox>
-                            </PopoverContent>
-                          </Popover>
-                        );
-                      } else {
-                        return (
-                          <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                            利用可能なエリアがありません
-                          </div>
-                        );
-                      }
-                    })()}
-                  </div>
-                </div>
+                  if (availableAreas.length > 0) {
+                    return (
+                      <Popover placement="bottom" >
+                        <PopoverTrigger>
+                          <Link
+                            size="sm"
+                            className={styles.myAreaTrigger}
+                            showAnchorIcon
+                            anchorIcon={<ChevronDown strokeWidth={1} size={16} />}
+                          >
+                            {selectedMyArea?.name || 'エリアを選択'}
+                          </Link>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="p-0 min-w-[200px]"
+                          style={{
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            border: '1px solid rgba(0, 255, 255, 0.3)',
+                            borderRadius: '8px'
+                          }}
+                        >
+                          <Listbox
+                            selectionMode="single"
+                            selectedKeys={selectedMyArea ? [selectedMyArea.id.toString()] : []}
+                            onSelectionChange={(keys) => {
+                              const selectedKey = Array.from(keys)[0];
+                              if (selectedKey) {
+                                const area = availableAreas.find((a: Area) => a.id.toString() === selectedKey);
+                                handleMyAreaChange(area || null);
+                              } else {
+                                handleMyAreaChange(null);
+                              }
+                            }}
+                            className={styles.areaListbox}
+                          >
+                            {availableAreas.map((area: Area) => (
+                              <ListboxItem key={area.id.toString()}>
+                                {area.name}
+                              </ListboxItem>
+                            ))}
+                          </Listbox>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  } else {
+                    return (
+                      <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                        利用可能なエリアがありません
+                      </div>
+                    );
+                  }
+                })()}
               </div>
-            )}
+            </div>
           </div>
         )}
 
@@ -2199,7 +2377,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
                     return renderRegularsSearch();
                 }
               };
-              
+
               return {
                 key: category.key,
                 title: (
@@ -2222,6 +2400,21 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
             fullWidth={true}
           />
         </div>
+      </>
+    );
+  };
+
+  return (
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      customHeader={keywordHeader}
+      size="full"
+      footer={modalFooter}
+      scrollBehavior="inside"
+    >
+      <div className={styles.searchContent}>
+        {renderContent()}
       </div>
     </CustomModal>
   );

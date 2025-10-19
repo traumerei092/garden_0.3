@@ -58,11 +58,11 @@ const ShopListHeader: React.FC<ShopListHeaderProps> = ({ selectedTab, onTabChang
         <div className={styles.container}>
             <div className={styles.headerLeft}>
                 <Badge color="danger" content={filterCount || undefined} shape="circle" className={styles.pcBadge}>
-                    <Button 
-                        className={styles.pcSortButton} 
-                        variant="flat" 
-                        color="primary" 
-                        radius="sm" 
+                    <Button
+                        className={styles.pcSortButton}
+                        variant="flat"
+                        color="primary"
+                        radius="sm"
                         size="sm"
                         onPress={onSearch}
                     >

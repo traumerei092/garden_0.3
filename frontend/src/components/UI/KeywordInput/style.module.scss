@@ -1,0 +1,25 @@
+.input {
+  color: rgb(255, 255, 255);
+}
+
+.customInputWrapper {
+  border: solid 1.5px rgba(255, 255, 255, 0.5);
+  border-radius: 0.6rem;
+
+  &[data-focus="true"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(0, 255, 255, 0.8) !important;
+  }
+}
+
+.customLabel {
+  color: rgba(255, 255, 255, 1);
+  font-size: 0.85em;
+}
+
+.customInput {
+  width: 100%;
+  color: rgb(255, 255, 255);
+  background: transparent;
+  border: none;
+}

@@ -26,7 +26,7 @@ const AtmosphereRadio: React.FC<AtmosphereRadioProps> = ({
     },
     {
       key: 'neutral',
-      label: 'どちらでもOK',
+      label: 'どちらも楽しめる',
       description: 'フレキシブル'
     },
     {
@@ -94,7 +94,7 @@ const AtmosphereRadio: React.FC<AtmosphereRadioProps> = ({
         <h4 className={styles.title}>{indicator.name}</h4>
         {value && (
           <span className={styles.currentValue} style={getCurrentValueStyle()}>
-            {choices.find(choice => choice.key === value)?.label || 'どちらでもOK'}
+            {choices.find(choice => choice.key === value)?.label || 'どちらも楽しめる'}
           </span>
         )}
       </div>

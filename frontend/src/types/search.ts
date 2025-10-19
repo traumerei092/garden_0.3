@@ -1,6 +1,9 @@
 // 店舗検索機能の型定義
 
 export interface SearchFilters {
+  // キーワード検索
+  keyword?: string;
+
   // 常連さんで探す
   welcome_min?: number;
   regular_count_min?: number;
@@ -48,10 +51,10 @@ export interface SearchFilters {
   alcohol_brands?: number[];
   drink_name?: string;
   drink_names?: string[];
-  drink_likes_min?: number;
 
   // ソート
-  sort_by?: 'distance' | 'name' | 'created_at';
+  sort?: string;
+  drink_likes_min?: number;
 }
 
 export interface ShopSearchResponse {
@@ -142,6 +145,25 @@ export interface SearchCategoryTab {
   icon?: React.ComponentType<{ size?: number }>;
 }
 
+// キーワード検索関連
+export interface KeywordSearchOptions {
+  keywordMode?: boolean;
+}
+
+export interface ShopSuggestion {
+  id: number;
+  name: string;
+  address?: string;
+  shop_type?: string;
+}
+
+export interface SearchHistory {
+  id: string;
+  keyword: string;
+  timestamp: number;
+  resultCount?: number;
+}
+
 // 検索モーダルのProps
 export interface ShopSearchModalProps {
   isOpen: boolean;
@@ -149,4 +171,5 @@ export interface ShopSearchModalProps {
   onSearch: (filters: SearchFilters) => void;
   initialFilters?: SearchFilters;
   isLoading?: boolean;
+  openMode?: KeywordSearchOptions;
 }

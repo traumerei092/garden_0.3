@@ -2597,6 +2597,8 @@ class ShopSearchAPIView(APIView):
 
         # 雰囲気フィルタリング（atmosphere_simple）を優先的に処理
         atmosphere_simple = request.GET.get('atmosphere_simple')
+        print(f"!!! DEBUG: atmosphere_simple value = '{atmosphere_simple}'")
+        print(f"!!! DEBUG: atmosphere_simple type = {type(atmosphere_simple)}")
         if atmosphere_simple:
             print(f"=== 雰囲気簡易フィルター処理開始 ===")
             print(f"atmosphere_simple parameter: {atmosphere_simple}")
@@ -2612,12 +2614,13 @@ class ShopSearchAPIView(APIView):
                         print(f"処理中: indicator_id={indicator_id}, preference={preference}")
 
                         # preference に基づいて範囲を決定
-                        if preference == 'quiet':  # 一人の時間を重視
-                            min_val, max_val = -2.0, -0.5
-                        elif preference == 'social':  # コミュニティを重視
-                            min_val, max_val = 0.5, 2.0
-                        elif preference == 'neutral':  # どちらでもOK
-                            min_val, max_val = -0.5, 0.5
+                        # 正確な数学的不等式に基づく範囲設定
+                        if preference == 'quiet':  # 一人の時間を重視: -2≦x<-0.5
+                            min_val, max_val = -2.0, -0.500001  # -0.5を除外
+                        elif preference == 'social':  # コミュニティを重視: 0.5<x≦2
+                            min_val, max_val = 0.500001, 2.0  # 0.5を除外
+                        elif preference == 'neutral':  # フレキシブル: -0.5≦x≦0.5
+                            min_val, max_val = -0.5, 0.5  # 両端を含む
                         else:
                             continue
 
@@ -2761,12 +2764,13 @@ class ShopSearchAPIView(APIView):
         if dominant_age_group:
             try:
                 from collections import Counter
-                
+
                 favorite_relation = RelationType.objects.get(name='favorite')
-                
+
                 # 各店舗で最も多い年代を計算
                 shops_with_dominant_age = []
-                
+                print(f"[DEBUG] Filtering by dominant_age_group: {dominant_age_group}")
+
                 for shop in queryset:
                     # その店舗の常連の年代を取得
                     regulars = UserShopRelation.objects.filter(
@@ -2774,29 +2778,35 @@ class ShopSearchAPIView(APIView):
                         relation_type=favorite_relation,
                         user__birthdate__isnull=False
                     ).select_related('user')
-                    
+
                     age_groups = []
                     for relation in regulars:
                         age_group = self.calculate_age_group(relation.user.birthdate)
                         if age_group:
                             age_groups.append(age_group)
-                    
+
                     if age_groups:
                         # 最頻出の年代を取得
                         age_counter = Counter(age_groups)
                         most_common_age = age_counter.most_common(1)[0][0]
-                        
+
                         # 指定された年代が最多の場合のみ追加
                         if most_common_age == dominant_age_group:
                             shops_with_dominant_age.append(shop.id)
-                
+
+                print(f"[DEBUG] Found {len(shops_with_dominant_age)} shops with dominant age {dominant_age_group}")
                 queryset = queryset.filter(id__in=shops_with_dominant_age)
-                
+
             except RelationType.DoesNotExist:
+                print("[ERROR] RelationType 'favorite' not found")
+                pass
+            except Exception as e:
+                print(f"[ERROR] Dominant age group filtering failed: {e}")
+                # フィルタリングに失敗した場合は、元のクエリセットを維持
                 pass
         
         # 通常の年齢層フィルター（OR条件）
-        elif regular_age_groups or regular_genders:
+        if regular_age_groups or regular_genders:
             # favoriteのrelation_typeを取得
             try:
                 favorite_relation = RelationType.objects.get(name='favorite')
@@ -3325,11 +3335,54 @@ class ShopSearchAPIView(APIView):
     def apply_sorting(self, request, queryset):
         """ソート処理"""
         from math import radians, cos, sin, asin, sqrt
-        from django.db.models import Case, When
+        from django.db.models import Case, When, Count
 
-        sort_by = request.GET.get('sort_by')
+        # 新しいソートパラメータも対応
+        sort_key = request.GET.get('sort') or request.GET.get('sort_by')
         user_lat = request.GET.get('user_lat')
         user_lng = request.GET.get('user_lng')
+
+        # ソートAPIと同じロジックを適用
+        if sort_key:
+            if sort_key == 'welcome_count':
+                queryset = queryset.annotate(
+                    welcome_count=Count('welcome_actions')
+                ).order_by('-welcome_count', '-created_at')
+            elif sort_key == 'distance' and user_lat and user_lng:
+                # 既存の距離ソート処理を使用
+                sort_by = 'distance'
+            elif sort_key == 'favorite_count':
+                try:
+                    favorite_relation = RelationType.objects.get(name='favorite')
+                    queryset = queryset.annotate(
+                        favorite_count=Count('user_relations__user',
+                                           filter=models.Q(user_relations__relation_type=favorite_relation))
+                    ).order_by('-favorite_count', '-created_at')
+                except RelationType.DoesNotExist:
+                    pass
+            elif sort_key == 'visited_count':
+                try:
+                    visited_relation = RelationType.objects.get(name='visited')
+                    queryset = queryset.annotate(
+                        visited_count=Count('user_relations__user',
+                                          filter=models.Q(user_relations__relation_type=visited_relation))
+                    ).order_by('-visited_count', '-created_at')
+                except RelationType.DoesNotExist:
+                    pass
+            elif sort_key == 'interested_count':
+                try:
+                    interested_relation = RelationType.objects.get(name='interested')
+                    queryset = queryset.annotate(
+                        interested_count=Count('user_relations__user',
+                                             filter=models.Q(user_relations__relation_type=interested_relation))
+                    ).order_by('-interested_count', '-created_at')
+                except RelationType.DoesNotExist:
+                    pass
+            else:
+                # デフォルトソート
+                queryset = queryset.order_by('-created_at')
+
+        sort_by = sort_key if sort_key == 'distance' else None
 
         if sort_by == 'distance' and user_lat and user_lng:
             try:

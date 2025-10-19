@@ -19,6 +19,11 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
       });
     }
 
+    // 最も多い年代（単一選択）
+    if (filters.dominant_age_group) {
+      queryParams.append('dominant_age_group', filters.dominant_age_group);
+    }
+
     if (filters.regular_genders?.length) {
       filters.regular_genders.forEach(gender => {
         queryParams.append('regular_genders', gender);
@@ -78,7 +83,15 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
       });
     }
 
-    // 雰囲気フィルター
+    // 雰囲気フィルター（新しい3択システム）
+    if (filters.atmosphere_simple) {
+      console.log('🌟 atmosphere_simpleパラメータを追加:', filters.atmosphere_simple);
+      const jsonString = JSON.stringify(filters.atmosphere_simple);
+      console.log('🌟 JSONエンコード後:', jsonString);
+      queryParams.append('atmosphere_simple', jsonString);
+    }
+
+    // 雰囲気フィルター（従来のレンジシステム - 互換性のため保持）
     if (filters.atmosphere_filters) {
       Object.entries(filters.atmosphere_filters).forEach(([indicatorId, range]) => {
         queryParams.append(`atmosphere_${indicatorId}_min`, range.min.toString());
@@ -156,8 +169,20 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
       });
     }
 
+    if (filters.alcohol_brands?.length) {
+      filters.alcohol_brands.forEach(brandId => {
+        queryParams.append('alcohol_brands', brandId.toString());
+      });
+    }
+
     if (filters.drink_name) {
       queryParams.append('drink_name', filters.drink_name);
+    }
+
+    if (filters.drink_names?.length) {
+      filters.drink_names.forEach(drinkName => {
+        queryParams.append('drink_names', drinkName);
+      });
     }
 
     // 座席数
@@ -169,9 +194,16 @@ export async function searchShops(filters: SearchFilters): Promise<ShopSearchRes
       queryParams.append('seat_count_max', filters.seat_count_max.toString());
     }
 
-    // API呼び出し  
+    // ソートパラメータ（オプション）
+    if (filters.sort) {
+      queryParams.append('sort', filters.sort);
+    }
+
+    // API呼び出し
     const url = `/shops/search/?${queryParams.toString()}`;
-    
+    console.log('🔥 API URL:', url);
+    console.log('🔥 Full API URL with base:', `http://localhost:8000/api${url}`);
+
     const response = await fetchWithSession(url, {
       method: 'GET',
       cache: 'no-store'

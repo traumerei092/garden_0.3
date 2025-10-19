@@ -7,7 +7,8 @@ import styles from './style.module.scss';
 interface CustomModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
+  customHeader?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
@@ -18,14 +19,15 @@ const CustomModal: React.FC<CustomModalProps> = ({
   isOpen,
   onClose,
   title,
+  customHeader,
   children,
   footer,
   size = 'xl',
   scrollBehavior = 'inside'
 }) => {
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <Modal
+      isOpen={isOpen}
       onClose={onClose}
       size={size}
       scrollBehavior={scrollBehavior}
@@ -40,13 +42,17 @@ const CustomModal: React.FC<CustomModalProps> = ({
     >
       <ModalContent>
         <ModalHeader className={styles.header}>
-          <h2 className={styles.title}>{title}</h2>
+          {customHeader ? (
+            customHeader
+          ) : (
+            <h2 className={styles.title}>{title}</h2>
+          )}
         </ModalHeader>
-        
+
         <ModalBody className={styles.body}>
           {children}
         </ModalBody>
-        
+
         {footer && (
           <ModalFooter className={styles.footer}>
             {footer}

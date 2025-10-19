@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Shop } from "@/types/shops";
 import { fetchShops } from "@/actions/shop/fetchShop";
-import { fetchSortedShops, getDefaultSortKey } from "@/actions/shop/sort";
+import { getDefaultSortKey } from "@/actions/shop/sort";
+import { searchShops } from "@/actions/shop/search";
 import { getCurrentPosition, calculateDistance, formatDistance } from '@/utils/location';
 import { SearchFilters } from '@/types/search';
 import { useShopActions } from '@/hooks/useShopActions';
@@ -56,20 +57,26 @@ const ShopList: React.FC<ShopListProps> = ({ viewMode = 'list', searchFilters, s
         try {
             console.log('fetchShopsWithFilters called with filters:', filters, 'sortKey:', currentSortKey);
 
-            // 常にソートAPIを使用（より安定した動作のため）
+            // 検索APIを使用（統一された動作のため）
             const sortKey = currentSortKey || getDefaultSortKey();
-            console.log('=== Using Sort API ===');
+            console.log('=== Using Search API with Sort ===');
             console.log('Final sort key:', sortKey);
 
-            const response = await fetchSortedShops(sortKey, (filters as Record<string, string | number | boolean | string[]>) || {});
+            // フィルターにソート条件を追加
+            const filtersWithSort = {
+                ...(filters || {}),
+                sort: sortKey
+            };
+
+            const response = await searchShops(filtersWithSort);
 
             // 親コンポーネントに件数を通知
             if (onShopCountChange) {
-                onShopCountChange(response.count || response.results.length);
+                onShopCountChange(response.count || (response.shops ? response.shops.length : 0));
             }
 
-            console.log('ソート済み店舗データ:', response.results);
-            return response.results;
+            console.log('検索結果店舗データ:', response.shops);
+            return response.shops as Shop[] || [];
         } catch (error) {
             console.error('店舗データ取得エラー:', error);
             return [];
