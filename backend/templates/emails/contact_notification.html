@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgb(10,11,28);
+            color: rgb(255,255,255);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, rgb(0,198,255) 0%, rgb(235,14,242) 100%);
+            color: rgb(255,255,255);
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .content {
+            padding: 30px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 0 0 8px 8px;
+        }
+        .field {
+            margin-bottom: 20px;
+        }
+        .label {
+            font-weight: bold;
+            color: rgb(0,255,255);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .value {
+            color: rgb(255,255,255);
+            padding-left: 10px;
+            line-height: 1.6;
+        }
+        .description {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-left: 3px solid rgb(0,255,255);
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .admin-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgb(0,255,255);
+            color: rgb(10,11,28);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .admin-link:hover {
+            background: rgb(0,220,220);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>新しい{{ submission.get_contact_type_display }}が届きました</h2>
+        </div>
+        <div class="content">
+            <div class="field">
+                <span class="label">種別:</span>
+                <span class="value">{{ submission.get_contact_type_display }}</span>
+            </div>
+
+            <div class="field">
+                <span class="label">カテゴリ:</span>
+                <span class="value">{{ submission.get_category_display }}</span>
+            </div>
+
+            <div class="field">
+                <span class="label">件名:</span>
+                <span class="value">{{ submission.subject }}</span>
+            </div>
+
+            <div class="field">
+                <span class="label">送信者:</span>
+                <span class="value">
+                    {% if user %}
+                        {{ user.name }} ({{ user.email }})
+                    {% else %}
+                        未ログインユーザー ({{ submission.contact_email }})
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="field">
+                <span class="label">詳細:</span>
+                <div class="description">
+                    {{ submission.description|linebreaks }}
+                </div>
+            </div>
+
+            {% if submission.shop %}
+            <div class="field">
+                <span class="label">関連店舗:</span>
+                <span class="value">{{ submission.shop.name }}</span>
+            </div>
+            {% endif %}
+
+            {% if submission.review %}
+            <div class="field">
+                <span class="label">関連口コミID:</span>
+                <span class="value">{{ submission.review.id }}</span>
+            </div>
+            {% endif %}
+
+            {% if submission.tag %}
+            <div class="field">
+                <span class="label">関連タグ:</span>
+                <span class="value">{{ submission.tag.value }}</span>
+            </div>
+            {% endif %}
+
+            {% if submission.image %}
+            <div class="field">
+                <span class="label">関連画像ID:</span>
+                <span class="value">{{ submission.image.id }}</span>
+            </div>
+            {% endif %}
+
+            {% if submission.reported_user %}
+            <div class="field">
+                <span class="label">報告対象ユーザー:</span>
+                <span class="value">{{ submission.reported_user.name }}</span>
+            </div>
+            {% endif %}
+
+            <div class="field">
+                <span class="label">受付日時:</span>
+                <span class="value">{{ submission.created_at|date:"Y年m月d日 H:i" }}</span>
+            </div>
+
+            <a href="{{ admin_url }}" class="admin-link">管理画面で確認する</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -10,7 +10,7 @@ from .models import (
     UserShopRelation, RelationType, PaymentMethod,
     AtmosphereIndicator, ShopAtmosphereRating, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
     ShopDrink, ShopDrinkReaction, Area, WelcomeAction, RegularUsageScene,
-    ShopRegularStatistics, ShopEditHistory, HistoryEvaluation
+    ShopRegularStatistics, ShopEditHistory, HistoryEvaluation, ContactSubmission
 )
 
 # AreaモデルのカスタムフォームでGeoJSON編集機能を追加
@@ -558,3 +558,56 @@ admin.site.register(ShopTagReaction)
 admin.site.register(UserShopRelation)
 admin.site.register(RelationType)
 admin.site.register(PaymentMethod)
+
+
+##############################################
+# 問い合わせ・報告・要望の管理画面
+##############################################
+@admin.register(ContactSubmission)
+class ContactSubmissionAdmin(admin.ModelAdmin):
+    """問い合わせ・報告・要望の管理画面"""
+    list_display = ('id', 'contact_type', 'category', 'subject', 'user_display', 'status', 'created_at')
+    list_filter = ('contact_type', 'category', 'status', 'created_at')
+    search_fields = ('subject', 'description', 'user__name', 'user__email', 'contact_email')
+    readonly_fields = ('user', 'created_at', 'updated_at', 'related_info_display')
+
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('user', 'contact_type', 'category', 'subject', 'description', 'contact_email')
+        }),
+        ('関連情報', {
+            'fields': ('related_info_display', 'shop', 'review', 'tag', 'image', 'reported_user', 'screenshot'),
+            'classes': ('collapse',)
+        }),
+        ('対応状況', {
+            'fields': ('status', 'admin_note', 'resolved_at')
+        }),
+        ('メタデータ', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def user_display(self, obj):
+        """送信者表示"""
+        if obj.user:
+            return f'{obj.user.name} ({obj.user.email})'
+        return f'未ログイン ({obj.contact_email})'
+    user_display.short_description = '送信者'
+
+    def related_info_display(self, obj):
+        """関連情報の整形表示"""
+        info = []
+        if obj.shop:
+            info.append(f'<strong>店舗:</strong> {obj.shop.name}')
+        if obj.review:
+            info.append(f'<strong>口コミID:</strong> {obj.review.id}')
+        if obj.tag:
+            info.append(f'<strong>タグ:</strong> {obj.tag.value}')
+        if obj.image:
+            info.append(f'<strong>画像ID:</strong> {obj.image.id}')
+        if obj.reported_user:
+            info.append(f'<strong>報告対象ユーザー:</strong> {obj.reported_user.name}')
+
+        return mark_safe('<br>'.join(info)) if info else '関連情報なし'
+    related_info_display.short_description = '関連情報'

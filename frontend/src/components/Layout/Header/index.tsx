@@ -66,6 +66,9 @@ const Header = () => {
                         <NavbarItem className={styles.navbarItem}>
                             <LinkDefault href={"/"} styleName={"link"}>Browsing</LinkDefault>
                         </NavbarItem>
+                        <NavbarItem className={styles.navbarItem}>
+                            <LinkDefault href={"/contact"} styleName={"link"}>お問い合わせ</LinkDefault>
+                        </NavbarItem>
                     </>
                 ) : (
                     <>
@@ -77,6 +80,9 @@ const Header = () => {
                         </NavbarItem>
                         <NavbarItem>
                             <LinkDefault href={"/"} styleName={"link"}>New Shop</LinkDefault>
+                        </NavbarItem>
+                        <NavbarItem>
+                            <LinkDefault href={"/contact"} styleName={"link"}>お問い合わせ</LinkDefault>
                         </NavbarItem>
                     </>
                 )}

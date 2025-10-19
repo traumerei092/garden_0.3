@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgb(10,11,28);
+            color: rgb(255,255,255);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, rgb(0,198,255) 0%, rgb(235,14,242) 100%);
+            color: rgb(255,255,255);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .content {
+            padding: 30px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 0 0 8px 8px;
+            line-height: 1.8;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .highlight {
+            color: rgb(0,255,255);
+            font-weight: bold;
+        }
+        .info-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-left: 3px solid rgb(0,255,255);
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .footer-note {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            margin-top: 30px;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>お問い合わせを受け付けました</h2>
+        </div>
+        <div class="content">
+            <p>この度はお問い合わせいただき、誠にありがとうございます。</p>
+
+            <p>以下の内容で受け付けいたしました。</p>
+
+            <div class="info-box">
+                <p style="margin: 0;">
+                    <span class="highlight">種別:</span> {{ submission.get_contact_type_display }}<br>
+                    <span class="highlight">カテゴリ:</span> {{ submission.get_category_display }}<br>
+                    <span class="highlight">件名:</span> {{ submission.subject }}<br>
+                    <span class="highlight">受付日時:</span> {{ submission.created_at|date:"Y年m月d日 H:i" }}
+                </p>
+            </div>
+
+            <p>内容を確認の上、順次対応させていただきます。</p>
+
+            <p>今後とも当サービスをよろしくお願いいたします。</p>
+
+            <div class="footer-note">
+                <p style="margin: 0;">
+                    ※このメールは自動送信されています。<br>
+                    ご返信いただいても対応できませんので、ご了承ください。
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

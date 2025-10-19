@@ -743,3 +743,152 @@ class ShopRegularStatistics(models.Model):
         return "データ不足"
 
 
+##############################################
+# 問い合わせ・報告・要望機能
+##############################################
+class ContactSubmission(models.Model):
+    """問い合わせ・報告・要望の統一モデル"""
+
+    CONTACT_TYPE_CHOICES = [
+        ('report', '報告'),
+        ('inquiry', '問い合わせ'),
+        ('request', '要望'),
+    ]
+
+    CATEGORY_CHOICES = [
+        # 報告カテゴリ
+        ('shop_closed', '店舗閉店・休店・移転'),
+        ('inappropriate_image', '不適切な店舗画像'),
+        ('inappropriate_review', '不適切な口コミ'),
+        ('inappropriate_tag', '不適切な印象タグ'),
+        ('malicious_user', '悪質ユーザー'),
+
+        # 問い合わせカテゴリ
+        ('how_to_use', '使い方'),
+        ('account_privacy', 'アカウント・プライバシー'),
+        ('technical_issue', '技術的問題・バグ'),
+        ('other_inquiry', 'その他の問い合わせ'),
+
+        # 要望カテゴリ
+        ('new_feature', '新機能要望'),
+        ('improvement', '既存機能改善'),
+        ('design_ux', 'デザイン・UI/UX'),
+        ('other_request', 'その他の要望'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', '未対応'),
+        ('in_progress', '対応中'),
+        ('resolved', '解決済み'),
+        ('closed', 'クローズ'),
+    ]
+
+    # 基本情報
+    user = models.ForeignKey(
+        'accounts.UserAccount',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='送信者'
+    )
+    contact_type = models.CharField(
+        max_length=20,
+        choices=CONTACT_TYPE_CHOICES,
+        verbose_name='問い合わせ種別'
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        verbose_name='カテゴリ'
+    )
+    subject = models.CharField(
+        max_length=200,
+        verbose_name='件名'
+    )
+    description = models.TextField(
+        verbose_name='詳細説明'
+    )
+
+    # 関連オブジェクト（報告対象の自動参照）
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='関連店舗'
+    )
+    review = models.ForeignKey(
+        ShopReview,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='関連口コミ'
+    )
+    tag = models.ForeignKey(
+        ShopTag,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='関連タグ'
+    )
+    image = models.ForeignKey(
+        ShopImage,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='関連画像'
+    )
+    reported_user = models.ForeignKey(
+        'accounts.UserAccount',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reports_against',
+        verbose_name='報告対象ユーザー'
+    )
+
+    # スクリーンショット（問題の証拠）
+    screenshot = models.ImageField(
+        upload_to='contact_screenshots/',
+        null=True,
+        blank=True,
+        verbose_name='スクリーンショット'
+    )
+
+    # 連絡先（未ログインユーザー対応）
+    contact_email = models.EmailField(
+        null=True,
+        blank=True,
+        verbose_name='連絡先メールアドレス'
+    )
+
+    # ステータス管理
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name='対応状況'
+    )
+    admin_note = models.TextField(
+        blank=True,
+        verbose_name='管理者メモ'
+    )
+
+    # メタデータ
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新日時')
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='解決日時')
+
+    class Meta:
+        verbose_name = '問い合わせ'
+        verbose_name_plural = '問い合わせ'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['contact_type', 'status']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"[{self.get_contact_type_display()}] {self.subject}"
+
+

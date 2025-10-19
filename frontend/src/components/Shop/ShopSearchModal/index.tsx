@@ -401,6 +401,10 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     setUseProfileData(false);
     setSelectedTags([]);
     setSelectedAreas([]);
+    // キーワード検索もクリア
+    setKeywordInput('');
+    setShopSuggestions([]);
+    setSuggestionsCount(0);
     setPrimaryArea(null);
     setSelectedDrinks([]);
 
@@ -547,6 +551,12 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
     setTimeout(() => {
       setIsInputFocused(false);
     }, 200);
+  };
+
+  const handleKeywordClear = () => {
+    setKeywordInput('');
+    setShopSuggestions([]);
+    setSuggestionsCount(0);
   };
 
   const handleHistoryItemClick = (keyword: string) => {
@@ -2146,6 +2156,7 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
       <KeywordInput
         value={keywordInput}
         onChange={handleKeywordChange}
+        onClear={handleKeywordClear}
         onFocus={handleKeywordFocus}
         onBlur={handleKeywordBlur}
         onKeyPress={handleKeyPress}
@@ -2380,7 +2391,11 @@ const ShopSearchModal: React.FC<ShopSearchModalProps> = ({
           </div>
         )}
 
-        <Divider className={styles.divider} />
+        {/* ログイン時のみ表示 */}
+        {user && (
+          <Divider className={styles.divider} />
+        )}
+        
 
         {/* 検索カテゴリタブ */}
         <div className={styles.searchTabs}>

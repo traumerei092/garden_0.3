@@ -8,7 +8,8 @@ from .views import (
     ReviewLikeAPIView, UserShopRelationViewSet, RelationTypeViewSet,
     AreaViewSet, RegularsSnapshotAPIView, RegularsDetailedAnalysisAPIView,
     CommonalitiesAPIView, ShopWelcomeAPIView, ShopSearchAPIView,
-    AtmosphereIndicatorViewSet, RegularUsageSceneViewSet, ShopSortAPIView
+    AtmosphereIndicatorViewSet, RegularUsageSceneViewSet, ShopSortAPIView,
+    ContactSubmissionViewSet
 )
 from .views_drink import ShopDrinkViewSet
 
@@ -27,6 +28,7 @@ router.register(r'user-shop-relations', UserShopRelationViewSet, basename='user-
 router.register(r'shop-drinks', ShopDrinkViewSet, basename='shop-drink')
 router.register(r'areas', AreaViewSet, basename='area')
 router.register(r'atmosphere-indicators', AtmosphereIndicatorViewSet)
+router.register(r'contact-submissions', ContactSubmissionViewSet, basename='contact-submission')
 
 urlpatterns = [
     # 店舗検索API（より具体的なパターンを先に配置）

@@ -1,0 +1,447 @@
+.contactPage {
+  min-height: 100vh;
+  background: rgb(10, 11, 28);
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2rem;
+  color: rgb(255, 255, 255);
+  margin: 2rem 0;
+  text-align: center;
+}
+
+// ステップインジケーター
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 3rem 0;
+  padding: 0 2rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.3s ease;
+
+  &.active {
+    color: rgb(0, 255, 255);
+
+    .stepNumber {
+      background: rgb(0, 255, 255);
+      color: rgb(10, 11, 28);
+    }
+  }
+
+  span {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.stepLine {
+  flex: 1;
+  height: 2px;
+  background: rgba(0, 255, 255, 0.2);
+  margin: 0 1rem;
+  max-width: 100px;
+}
+
+// エラー表示
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(235, 14, 42, 0.1);
+  border: 1px solid rgba(235, 14, 42, 0.5);
+  border-radius: 8px;
+  color: rgb(235, 14, 42);
+  margin-bottom: 2rem;
+}
+
+// カテゴリ選択（Step 1）
+.categorySelection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.categoryCard {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgb(0, 255, 255);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 255, 255, 0.2);
+  }
+
+  .categoryIcon {
+    color: rgb(0, 255, 255);
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: rgb(255, 255, 255);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+}
+
+// 詳細入力フォーム（Step 2）
+.detailForm {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.stepTitle {
+  color: rgb(0, 255, 255);
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.targetInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: rgb(255, 255, 255);
+
+  svg {
+    color: rgb(0, 255, 255);
+    flex-shrink: 0;
+  }
+}
+
+.formField {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  color: rgb(255, 255, 255);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: rgb(235, 14, 242);
+  margin-left: 0.25rem;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgb(0, 255, 255);
+    box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// スクリーンショットアップロード
+.screenshotUpload {
+  margin-bottom: 1.5rem;
+}
+
+.uploadLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px dashed rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgb(0, 255, 255);
+    background: rgba(0, 255, 255, 0.1);
+  }
+
+  svg {
+    color: rgb(0, 255, 255);
+  }
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+// フォームアクション
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.backButton {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// 確認画面（Step 3）
+.confirmation {
+  margin: 2rem 0;
+}
+
+.confirmationSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.summaryCards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summaryCard {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.1);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15) 0%, rgba(235, 14, 242, 0.15) 100%);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  color: rgb(0, 255, 255);
+  font-weight: 600;
+  font-size: 1rem;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.cardContent {
+  padding: 1.5rem;
+}
+
+.summaryItem {
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.summaryLabel {
+  display: block;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.summaryValue {
+  display: block;
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  line-height: 1.6;
+  padding-left: 1rem;
+  border-left: 3px solid rgb(0, 255, 255);
+}
+
+.summaryDescription {
+  color: rgb(255, 255, 255);
+  font-size: 1rem;
+  line-height: 1.8;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  border-left: 3px solid rgb(0, 255, 255);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.filePreview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  color: rgb(255, 255, 255);
+  font-size: 0.9rem;
+
+  svg {
+    color: rgb(0, 255, 255);
+    flex-shrink: 0;
+  }
+}
+
+// 完了画面（Step 4）
+.complete {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.completeIcon {
+  color: rgb(0, 255, 255);
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.completeTitle {
+  background: rgba(0, 255, 255, 0.8);
+  color: rgb(0, 0, 0);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 10px;
+  max-width: 150px;
+}
+
+.completeMessage {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.homeButton {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+// レスポンシブ
+@media (max-width: 768px) {
+  .categorySelection {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    padding: 0 1rem;
+  }
+
+  .stepLine {
+    max-width: 50px;
+    margin: 0 0.5rem;
+  }
+
+  .step span {
+    font-size: 0.8rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .detailForm,
+  .confirmation {
+    padding: 1.5rem;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}

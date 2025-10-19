@@ -5,7 +5,7 @@ from .models import (
     ShopEditHistory, HistoryEvaluation, ShopReview, ShopReviewLike,
     ShopDrink, ShopDrinkReaction, Area,
     AtmosphereIndicator, ShopAtmosphereFeedback, ShopAtmosphereAggregate,
-    RegularUsageScene
+    RegularUsageScene, ContactSubmission
 )
 from accounts.models import VisitPurpose, AlcoholCategory, AlcoholBrand, DrinkStyle
 from django.contrib.auth import get_user_model
@@ -762,3 +762,75 @@ class RegularUsageSceneCreateUpdateSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+##############################################
+# 問い合わせ・報告・要望Serializer
+##############################################
+class ContactSubmissionSerializer(serializers.ModelSerializer):
+    """問い合わせ・報告・要望のシリアライザ"""
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.SerializerMethodField()
+    shop_name = serializers.SerializerMethodField()
+    review_id = serializers.SerializerMethodField()
+    tag_value = serializers.SerializerMethodField()
+    image_id = serializers.SerializerMethodField()
+    reported_user_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContactSubmission
+        fields = [
+            'id', 'user', 'user_name', 'user_email',
+            'contact_type', 'category', 'subject', 'description',
+            'shop', 'shop_name',
+            'review', 'review_id',
+            'tag', 'tag_value',
+            'image', 'image_id',
+            'reported_user', 'reported_user_name',
+            'screenshot', 'contact_email', 'status', 'admin_note',
+            'created_at', 'updated_at', 'resolved_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+    def get_user_name(self, obj):
+        return obj.user.name if obj.user else None
+
+    def get_user_email(self, obj):
+        if obj.user:
+            return obj.user.email
+        return obj.contact_email
+
+    def get_shop_name(self, obj):
+        return obj.shop.name if obj.shop else None
+
+    def get_review_id(self, obj):
+        return obj.review.id if obj.review else None
+
+    def get_tag_value(self, obj):
+        return obj.tag.value if obj.tag else None
+
+    def get_image_id(self, obj):
+        return obj.image.id if obj.image else None
+
+    def get_reported_user_name(self, obj):
+        return obj.reported_user.name if obj.reported_user else None
+
+
+class ContactSubmissionCreateSerializer(serializers.ModelSerializer):
+    """問い合わせ作成用シリアライザ"""
+
+    class Meta:
+        model = ContactSubmission
+        fields = [
+            'contact_type', 'category', 'subject', 'description',
+            'shop', 'review', 'tag', 'image', 'reported_user',
+            'screenshot', 'contact_email'
+        ]
+
+    def create(self, validated_data):
+        # リクエストからユーザー情報を取得
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['user'] = request.user
+
+        return super().create(validated_data)

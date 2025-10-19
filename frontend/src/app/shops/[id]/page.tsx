@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner } from '@nextui-org/react'
-import { Plus, MapPin, Info, MessageCircle, Wine, Divide, MapPinned } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Spinner, Popover, PopoverTrigger, PopoverContent } from '@nextui-org/react'
+import { Plus, MapPin, Info, MessageCircle, Wine, Divide, MapPinned, Flag } from 'lucide-react';
 import { fetchShopById } from "@/actions/shop/fetchShop";
 import { toggleShopRelation, fetchShopStats, toggleTagReaction } from '@/actions/shop/relation';
 import { Shop, ShopStats } from "@/types/shops";
@@ -38,6 +39,7 @@ import ButtonGradientWrapper from '@/components/UI/ButtonGradientWrapper';
 
 
 const ShopDetailPage = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
   const [shop, setShop] = useState<Shop | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -332,6 +334,12 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
       }
   };
 
+  // 報告ページへ遷移
+  const handleReport = (category: string) => {
+    const shopName = encodeURIComponent(shop?.name || '');
+    router.push(`/contact?type=report&category=${category}&shopId=${params.id}&shopName=${shopName}`);
+  };
+
   return (
     <div className={styles.container}>
       <Header />
@@ -347,14 +355,6 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         <div className={styles.headerInfo}>
           <div className={styles.shopTitleContainer}>
             <h1 className={styles.headerShopName}>{shop.name}</h1>
-            <Button
-              onPress={() => setShowMapModal(true)}
-              className={styles.mapButton}
-              variant="light"
-              size="sm"
-            >
-              <MapPinned size={14} strokeWidth={1} />
-            </Button>
           </div>
         </div>
         <div className={styles.actionButtons}>
@@ -374,15 +374,55 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
 
       {/*エリア情報*/}
       <div className={styles.headerLocationInfo}>
-        {distance !== null && (
-          <div className={styles.headerDistance}>
-            <MapPin size={14} />
-            現在地から {formatDistance(distance)}
+        <Popover placement="bottom-start">
+          <PopoverTrigger>
+            <Button
+              className={styles.reportButton}
+              variant="light"
+              size="sm"
+            >
+              <Flag size={14} strokeWidth={1} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className={styles.reportPopover}>
+            <div className={styles.reportMenu}>
+              <div className={styles.reportMenuTitle}>この店舗を報告</div>
+              <button
+                className={styles.reportMenuItem}
+                onClick={() => handleReport('shop_closed')}
+              >
+                店舗閉店・休店・移転
+              </button>
+              <button
+                className={styles.reportMenuItem}
+                onClick={() => handleReport('inappropriate_image')}
+              >
+                不適切な店舗画像
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className={styles.locationDetails}>
+          {distance !== null && (
+            <div className={styles.headerDistance}>
+              <MapPin size={14} />
+              現在地から {formatDistance(distance)}
+            </div>
+          )}
+          <div className={styles.headerAddress}>
+            {shop.area || `${shop.prefecture} ${shop.city}`}
           </div>
-        )}
-        <div className={styles.headerAddress}>
-          {shop.area || `${shop.prefecture} ${shop.city}`}
         </div>
+
+        <Button
+          onPress={() => setShowMapModal(true)}
+          className={styles.mapButton}
+          variant="light"
+          size="sm"
+        >
+          <MapPinned size={14} strokeWidth={1} />
+        </Button>
       </div>
 
       {/* スマホサイズでのみ表示されるアクションボタン */}

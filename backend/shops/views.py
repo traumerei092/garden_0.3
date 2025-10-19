@@ -3733,3 +3733,100 @@ class ShopSortAPIView(APIView):
                 pass
 
         return queryset
+
+
+##############################################
+# 問い合わせ・報告・要望ViewSet
+##############################################
+from .models import ContactSubmission
+from .serializers import ContactSubmissionSerializer, ContactSubmissionCreateSerializer
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+
+
+class ContactSubmissionViewSet(viewsets.ModelViewSet):
+    """問い合わせ・報告・要望のViewSet"""
+    queryset = ContactSubmission.objects.all()
+    serializer_class = ContactSubmissionSerializer
+    permission_classes = [AllowAny]  # 未ログインユーザーも問い合わせ可能
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ContactSubmissionCreateSerializer
+        return ContactSubmissionSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        submission = serializer.save()
+
+        # 管理者にメール送信
+        self.send_admin_notification(submission)
+
+        # ユーザーに自動返信メール送信
+        self.send_auto_reply(submission)
+
+        # レスポンス用のシリアライザで返す
+        response_serializer = ContactSubmissionSerializer(submission)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def send_admin_notification(self, submission):
+        """管理者にメール通知"""
+        try:
+            # 管理画面URLを構築
+            admin_url = f'{settings.SITE_URL}/admin/shops/contactsubmission/{submission.id}/change/' if hasattr(settings, 'SITE_URL') else ''
+
+            subject = f'[{submission.get_contact_type_display()}] {submission.subject}'
+            message = render_to_string('emails/contact_notification.html', {
+                'submission': submission,
+                'user': submission.user,
+                'admin_url': admin_url
+            })
+
+            # メール送信
+            admin_email = getattr(settings, 'ADMIN_EMAIL', 'admin@example.com')
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com')
+
+            send_mail(
+                subject=subject,
+                message='',  # プレーンテキスト版（空でOK）
+                from_email=from_email,
+                recipient_list=[admin_email],
+                html_message=message,
+                fail_silently=True,  # メール送信失敗してもAPIエラーにしない
+            )
+
+            print(f'✅ 管理者通知メール送信成功: {subject}')
+        except Exception as e:
+            print(f'❌ 管理者通知メール送信失敗: {str(e)}')
+
+    def send_auto_reply(self, submission):
+        """ユーザーへの自動返信メール"""
+        try:
+            # ユーザーのメールアドレスを取得
+            user_email = submission.user.email if submission.user else submission.contact_email
+
+            if not user_email:
+                print('⚠️ 送信先メールアドレスなし - 自動返信スキップ')
+                return
+
+            subject = f'お問い合わせを受け付けました - {submission.subject}'
+            message = render_to_string('emails/contact_auto_reply.html', {
+                'submission': submission,
+            })
+
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@example.com')
+
+            send_mail(
+                subject=subject,
+                message='',  # プレーンテキスト版（空でOK）
+                from_email=from_email,
+                recipient_list=[user_email],
+                html_message=message,
+                fail_silently=True,  # メール送信失敗してもAPIエラーにしない
+            )
+
+            print(f'✅ 自動返信メール送信成功: {user_email}')
+        except Exception as e:
+            print(f'❌ 自動返信メール送信失敗: {str(e)}')

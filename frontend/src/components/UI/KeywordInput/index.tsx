@@ -12,6 +12,7 @@ type Props = {
   endContent?: ReactNode;
   anotherStyle?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear?: () => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -34,6 +35,7 @@ const KeywordInput = ({
   endContent,
   anotherStyle,
   onChange,
+  onClear,
   onFocus,
   onBlur,
   onKeyPress,
@@ -52,6 +54,7 @@ const KeywordInput = ({
       placeholder={placeholder}
       size={size}
       onChange={onChange}
+      onClear={onClear}
       onFocus={onFocus}
       onBlur={onBlur}
       onKeyPress={onKeyPress}

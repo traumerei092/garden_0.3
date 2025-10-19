@@ -7,13 +7,14 @@ import classNames from "classnames";
 type Props = {
   children: React.ReactNode;
   onClick?: () => void;
-  anotherStyle: string;
+  anotherStyle?: string;
   type?: 'button' | 'submit' | 'reset';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
+  isDisabled?: boolean;
 };
 
-const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="md", isLoading = false }: Props) => {
+const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="md", isLoading = false, isDisabled = false }: Props) => {
   console.log("🧩 onPress in ButtonGradient:", onClick);
     return (
       <div className={classNames(styles.gradientWrapper, anotherStyle)}>
@@ -23,6 +24,7 @@ const ButtonGradient = ({ children, onClick, anotherStyle, type="button", size="
           type={type}
           size={size}
           isLoading={isLoading}
+          isDisabled={isDisabled}
         >
           {children}
         </Button>
