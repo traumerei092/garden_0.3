@@ -22,6 +22,7 @@ from .views import (
     ProfileVisibilitySettingsView,
     PreviewUserProfileView,
     MyAreasManagementView,
+    ActivateAndAutoLoginView,
 )
 from .dashboard_views import (
     DashboardSummaryView,
@@ -80,7 +81,9 @@ urlpatterns = [
     path("profile-preview/", PreviewUserProfileView.as_view(), name="profile-preview"),
     # マイエリア管理
     path("my-areas/", MyAreasManagementView.as_view(), name="my-areas-management"),
-    
+    # アカウント認証 + 自動ログイン
+    path("activate-and-login/", ActivateAndAutoLoginView.as_view(), name="activate-and-auto-login"),
+
     # ダッシュボード関連
     path("profile/dashboard/summary/", DashboardSummaryView.as_view(), name="dashboard-summary"),
     path("profile/dashboard/view-history/", ViewHistoryView.as_view(), name="dashboard-view-history"),

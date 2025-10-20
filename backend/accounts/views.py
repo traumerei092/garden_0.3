@@ -878,6 +878,89 @@ class MyAreasManagementView(APIView):
             print(f"MyAreasManagementView error: {str(e)}")
             print(f"MyAreasManagementView traceback: {traceback.format_exc()}")
             return Response(
-                {'error': 'マイエリア情報の更新に失敗しました'}, 
+                {'error': 'マイエリア情報の更新に失敗しました'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# アカウント認証 + 自動ログインAPI
+class ActivateAndAutoLoginView(APIView):
+    """
+    メール認証トークンを検証し、アカウントをアクティブ化
+    同時にJWTトークンを発行して自動ログインを実現
+    /api/auth/activate-and-login/
+    """
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        from djoser.utils import decode_uid
+        from rest_framework_simplejwt.tokens import RefreshToken
+        from django.contrib.auth.tokens import default_token_generator
+
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+
+        print(f"🔐 ActivateAndAutoLoginView called - uid: {uid}")
+
+        if not uid or not token:
+            return Response(
+                {'error': 'uidとtokenが必要です'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # uidからユーザーID取得
+            user_id = decode_uid(uid)
+            print(f"✅ Decoded user_id: {user_id}")
+
+            user = User.objects.get(pk=user_id)
+            print(f"✅ User found: {user.email}")
+
+            # トークン検証（Djoserのactivation tokenチェック）
+            if not default_token_generator.check_token(user, token):
+                print(f"❌ Invalid token for user: {user.email}")
+                return Response(
+                    {'error': '無効なトークンです'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            print(f"✅ Token verified for user: {user.email}")
+
+            # ユーザーをアクティブ化
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+                print(f"✅ User activated: {user.email}")
+            else:
+                print(f"ℹ️ User already active: {user.email}")
+
+            # JWTトークン生成
+            refresh = RefreshToken.for_user(user)
+            print(f"✅ JWT tokens generated for user: {user.email}")
+
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'uid': user.uid,
+                    'email': user.email,
+                    'name': user.name,
+                    'avatar': user.avatar.url if user.avatar else None,
+                }
+            }, status=status.HTTP_200_OK)
+
+        except (User.DoesNotExist, ValueError, TypeError) as e:
+            print(f"❌ Error in ActivateAndAutoLoginView: {str(e)}")
+            return Response(
+                {'error': 'ユーザーが見つかりません'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print(f"💥 Unexpected error in ActivateAndAutoLoginView: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': 'アカウント認証に失敗しました'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
