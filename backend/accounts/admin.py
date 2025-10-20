@@ -19,6 +19,9 @@ from .models import (
     BudgetRange,
     VisitPurpose,
     ProfileVisibilitySettings,
+    Occupation,
+    Industry,
+    Position,
 )
 
 User = get_user_model()
@@ -159,6 +162,33 @@ admin.site.register(ExerciseFrequency)
 admin.site.register(DietaryPreference)
 admin.site.register(BudgetRange)
 admin.site.register(VisitPurpose)
+
+# 職業関連のモデルを管理画面に登録
+@admin.register(Occupation)
+class OccupationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name']
+    ordering = ['order', 'name']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Industry)
+class IndustryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name']
+    ordering = ['order', 'name']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Position)
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name']
+    ordering = ['order', 'name']
+    readonly_fields = ['created_at', 'updated_at']
 
 # プロフィール公開設定の管理画面設定
 @admin.register(ProfileVisibilitySettings)

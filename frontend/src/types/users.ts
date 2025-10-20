@@ -28,9 +28,9 @@ export interface User {
   birthdate: string | null;
   my_area: string | null;
   work_info: string | null;
-  occupation: string | null;
-  industry: string | null;
-  position: string | null;
+  occupation: Occupation | null;
+  industry: Industry | null;
+  position: Position | null;
   exercise_frequency: ExerciseFrequency | null;
   dietary_preference: DietaryPreference | null;
   budget_range: BudgetRange | null;
@@ -54,6 +54,21 @@ export interface User {
 export interface BaseTag {
   id: number;
   name: string;
+}
+
+export interface Occupation extends BaseTag {
+  description?: string;
+  order: number;
+}
+
+export interface Industry extends BaseTag {
+  description?: string;
+  order: number;
+}
+
+export interface Position extends BaseTag {
+  description?: string;
+  order: number;
 }
 
 export interface InterestCategory extends BaseTag {}
@@ -149,6 +164,9 @@ export interface UpdateProfileFieldRequest {
 export interface ProfileOptions {
   blood_types: Array<{ id: number; name: string }>;
   mbti_types: Array<{ id: number; name: string }>;
+  occupations: Array<{ id: number; name: string; description?: string; order: number }>;
+  industries: Array<{ id: number; name: string; description?: string; order: number }>;
+  positions: Array<{ id: number; name: string; description?: string; order: number }>;
   alcohols: Array<{ id: number; name: string }>;
   alcohol_categories: Array<{ id: number; name: string }>;
   alcohol_brands: Array<{
@@ -221,9 +239,9 @@ export interface PublicUserProfile {
   interests?: Interest[];
   blood_type?: BloodType | null;
   mbti?: MBTI | null;
-  occupation?: string | null;
-  industry?: string | null;
-  position?: string | null;
+  occupation?: Occupation | null;
+  industry?: Industry | null;
+  position?: Position | null;
   alcohol_categories?: AlcoholCategory[];
   alcohol_brands?: AlcoholBrand[];
   drink_styles?: DrinkStyle[];

@@ -597,10 +597,13 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
             </div>
           </div>
           <div className={styles.workValue}>
-            <EditableField
-              value={userData.occupation || ''}
-              onSave={(value) => handleProfileUpdate('occupation', value)}
-              placeholder="職業を入力"
+            <EditableSelect
+              value={userData.occupation?.id ? String(userData.occupation.id) : null}
+              options={profileOptions.occupations || []}
+              onSave={async (value) => {
+                await handleProfileUpdate('occupation_id', parseInt(value));
+              }}
+              placeholder="職業を選択"
               className={styles.editableField}
               visibilityControl={{
                 isVisible: visibilitySettings?.occupation ?? true,
@@ -623,10 +626,13 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
             </div>
           </div>
           <div className={styles.workValue}>
-            <EditableField
-              value={userData.industry || ''}
-              onSave={(value) => handleProfileUpdate('industry', value)}
-              placeholder="業種を入力"
+            <EditableSelect
+              value={userData.industry?.id ? String(userData.industry.id) : null}
+              options={profileOptions.industries || []}
+              onSave={async (value) => {
+                await handleProfileUpdate('industry_id', parseInt(value));
+              }}
+              placeholder="業種を選択"
               className={styles.editableField}
               visibilityControl={{
                 isVisible: visibilitySettings?.industry ?? true,
@@ -649,10 +655,13 @@ const DetailedProfile: React.FC<DetailedProfileProps> = ({ userData, profileOpti
             </div>
           </div>
           <div className={styles.workValue}>
-            <EditableField
-              value={userData.position || ''}
-              onSave={(value) => handleProfileUpdate('position', value)}
-              placeholder="役職を入力"
+            <EditableSelect
+              value={userData.position?.id ? String(userData.position.id) : null}
+              options={profileOptions.positions || []}
+              onSave={async (value) => {
+                await handleProfileUpdate('position_id', parseInt(value));
+              }}
+              placeholder="役職を選択"
               className={styles.editableField}
               visibilityControl={{
                 isVisible: visibilitySettings?.position ?? true,

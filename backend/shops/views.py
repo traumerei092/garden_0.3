@@ -1912,22 +1912,22 @@ class RegularsDetailedAnalysisAPIView(RegularsAnalysisAPIView):
         return self.create_distribution(genders)
 
     def analyze_occupation(self, regulars_list):
-        """職業分析"""
-        occupations = []
+        """職業分析 - ForeignKey対応"""
+        occupation_names = []
         for relation in regulars_list:
-            if relation.user.occupation:
-                occupations.append(relation.user.occupation)
-        
-        return self.create_distribution(occupations)
+            if relation.user.occupation:  # ForeignKey
+                occupation_names.append(relation.user.occupation.name)  # .name で名前取得
+
+        return self.create_distribution(occupation_names)
 
     def analyze_industry(self, regulars_list):
-        """業種分析"""
-        industries = []
+        """業種分析 - ForeignKey対応"""
+        industry_names = []
         for relation in regulars_list:
-            if relation.user.industry:
-                industries.append(relation.user.industry)
-        
-        return self.create_distribution(industries)
+            if relation.user.industry:  # ForeignKey
+                industry_names.append(relation.user.industry.name)  # .name で名前取得
+
+        return self.create_distribution(industry_names)
 
     def analyze_mbti(self, regulars_list):
         """MBTI分析"""

@@ -19,6 +19,9 @@ from .models import (
     BudgetRange,
     VisitPurpose,
     ProfileVisibilitySettings,
+    Occupation,
+    Industry,
+    Position,
 )
 from shops.models import AtmosphereIndicator
 
@@ -50,6 +53,24 @@ class BloodTypeSerializer(serializers.ModelSerializer):
 class MBTISerializer(serializers.ModelSerializer):
     class Meta:
         model = MBTI
+        fields = "__all__"
+
+
+class OccupationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Occupation
+        fields = "__all__"
+
+
+class IndustrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Industry
+        fields = "__all__"
+
+
+class PositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Position
         fields = "__all__"
 
 
@@ -148,6 +169,9 @@ class UserSerializer(serializers.ModelSerializer):
     interests = InterestSerializer(many=True, read_only=True)
     blood_type = BloodTypeSerializer(read_only=True)
     mbti = MBTISerializer(read_only=True)
+    occupation = OccupationSerializer(read_only=True)
+    industry = IndustrySerializer(read_only=True)
+    position = PositionSerializer(read_only=True)
     alcohols = AlcoholSerializer(many=True, read_only=True)
     alcohol_categories = AlcoholCategorySerializer(many=True, read_only=True)
     alcohol_brands = AlcoholBrandSerializer(many=True, read_only=True)
@@ -167,6 +191,9 @@ class UserSerializer(serializers.ModelSerializer):
     # 書き込み用のフィールド
     blood_type_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     mbti_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    occupation_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    industry_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    position_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     exercise_frequency_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     dietary_preference_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     budget_range_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
@@ -186,8 +213,11 @@ class UserSerializer(serializers.ModelSerializer):
             "birthdate",
             "work_info",
             "occupation",
+            "occupation_id",
             "industry",
+            "industry_id",
             "position",
+            "position_id",
             "exercise_frequency",
             "exercise_frequency_id",
             "dietary_preference",
@@ -241,7 +271,40 @@ class UserSerializer(serializers.ModelSerializer):
                     pass
             else:
                 instance.mbti = None
-        
+
+        # occupation_idが提供された場合、occupationを設定
+        if 'occupation_id' in validated_data:
+            occupation_id = validated_data.pop('occupation_id')
+            if occupation_id:
+                try:
+                    instance.occupation = Occupation.objects.get(id=occupation_id)
+                except Occupation.DoesNotExist:
+                    pass
+            else:
+                instance.occupation = None
+
+        # industry_idが提供された場合、industryを設定
+        if 'industry_id' in validated_data:
+            industry_id = validated_data.pop('industry_id')
+            if industry_id:
+                try:
+                    instance.industry = Industry.objects.get(id=industry_id)
+                except Industry.DoesNotExist:
+                    pass
+            else:
+                instance.industry = None
+
+        # position_idが提供された場合、positionを設定
+        if 'position_id' in validated_data:
+            position_id = validated_data.pop('position_id')
+            if position_id:
+                try:
+                    instance.position = Position.objects.get(id=position_id)
+                except Position.DoesNotExist:
+                    pass
+            else:
+                instance.position = None
+
         # exercise_frequency_idが提供された場合、exercise_frequencyを設定
         if 'exercise_frequency_id' in validated_data:
             exercise_frequency_id = validated_data.pop('exercise_frequency_id')

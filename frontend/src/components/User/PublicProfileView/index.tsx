@@ -291,19 +291,19 @@ const PublicProfileView: React.FC<PublicProfileViewProps> = ({ userProfile }) =>
             {userProfile.occupation && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>職業</span>
-                <span className={styles.infoValue}>{userProfile.occupation}</span>
+                <span className={styles.infoValue}>{userProfile.occupation.name}</span>
               </div>
             )}
             {userProfile.industry && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>業種</span>
-                <span className={styles.infoValue}>{userProfile.industry}</span>
+                <span className={styles.infoValue}>{userProfile.industry.name}</span>
               </div>
             )}
             {userProfile.position && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>役職</span>
-                <span className={styles.infoValue}>{userProfile.position}</span>
+                <span className={styles.infoValue}>{userProfile.position.name}</span>
               </div>
             )}
           </div>

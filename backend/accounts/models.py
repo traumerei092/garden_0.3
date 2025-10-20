@@ -223,10 +223,63 @@ class VisitPurpose(BaseTag):
 
 class SocialPreference(BaseTag):
     name = models.CharField(max_length=100, unique=True)
-    
+
     class Meta:
         verbose_name = "交友関係"
         verbose_name_plural = "交友関係"
+
+
+# --- Job Data Models ---
+
+class Occupation(BaseTag):
+    """職業マスタ"""
+    name = models.CharField("職業名", max_length=100, unique=True)
+    description = models.TextField("説明", blank=True)
+    order = models.IntegerField("表示順", default=0)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+    is_active = models.BooleanField("有効", default=True)
+
+    class Meta:
+        verbose_name = "職業"
+        verbose_name_plural = "職業"
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class Industry(BaseTag):
+    """業種マスタ"""
+    name = models.CharField("業種名", max_length=100, unique=True)
+    description = models.TextField("説明", blank=True)
+    order = models.IntegerField("表示順", default=0)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+    is_active = models.BooleanField("有効", default=True)
+
+    class Meta:
+        verbose_name = "業種"
+        verbose_name_plural = "業種"
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class Position(BaseTag):
+    """役職マスタ"""
+    name = models.CharField("役職名", max_length=100, unique=True)
+    description = models.TextField("説明", blank=True)
+    order = models.IntegerField("表示順", default=0)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+    is_active = models.BooleanField("有効", default=True)
+
+    class Meta:
+        verbose_name = "役職"
+        verbose_name_plural = "役職"
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
 
 
 # --- Update UserAccount Model ---
@@ -237,15 +290,36 @@ UserAccount.add_to_class(
 )
 UserAccount.add_to_class(
     'occupation',
-    models.CharField("職業", max_length=100, blank=True, null=True)
+    models.ForeignKey(
+        Occupation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name="職業"
+    )
 )
 UserAccount.add_to_class(
     'industry',
-    models.CharField("業種", max_length=100, blank=True, null=True)
+    models.ForeignKey(
+        Industry,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name="業種"
+    )
 )
 UserAccount.add_to_class(
     'position',
-    models.CharField("役職", max_length=100, blank=True, null=True)
+    models.ForeignKey(
+        Position,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name="役職"
+    )
 )
 UserAccount.add_to_class(
     'exercise_frequency',
